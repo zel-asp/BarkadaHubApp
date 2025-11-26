@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BarkadaHub - Campus Social Network</title>
+        <link rel="stylesheet" href="dist/output.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+
+    <body class="bg-gray-50 text-gray-800">
+
+        <!-- Main App (shown after login) -->
+        <div id="app" class="hidden">
+            <header class="bg-white shadow-sm sticky top-0 z-40">
+                <div class="container mx-auto px-4">
+                    <div class="flex justify-between items-center py-3">
+                        <div class="logo flex items-center gap-2 cursor-pointer" data-page="home">
+                            <i class="fas fa-users text-primary text-2xl"></i>
+                            <span class="font-bold text-xl text-primary">BarkadaHub</span>
+                        </div>
+                        <div class="nav-links hidden md:flex gap-4">
+                            <a href="#" class="nav-link active px-3 py-2 rounded-md font-medium"
+                                data-page="home">Home</a>
+                            <a href="#" class="nav-link px-3 py-2 rounded-md font-medium" data-page="clubs">Clubs</a>
+                            <a href="#" class="nav-link px-3 py-2 rounded-md font-medium" data-page="lost-found">Lost &
+                                Found</a>
+                            <a href="#" class="nav-link px-3 py-2 rounded-md font-medium"
+                                data-page="messages">Messages</a>
+                            <a href="#" class="nav-link px-3 py-2 rounded-md font-medium" data-page="events">Events</a>
+                        </div>
+                        <div class="user-actions flex items-center gap-4">
+                            <div class="notification-icon relative cursor-pointer">
+                                <i class="fas fa-bell text-gray-600 text-xl"></i>
+                                <span
+                                    class="notification-badge absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                            </div>
+                            <div class="user-profile flex items-center gap-2 cursor-pointer" data-page="profile">
+                                <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                    <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <span class="font-medium hidden sm:block">Alex</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Left Sidebar -->
+                    <div class="sidebar hidden lg:block bg-white rounded-lg shadow-sm p-4">
+                        <ul class="space-y-2">
+                            <li><a href="#"
+                                    class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium active"
+                                    data-page="home"><i class="fas fa-home w-5 text-center"></i> News Feed</a></li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="friends"><i class="fas fa-user-friends w-5 text-center"></i> Friends</a>
+                            </li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="clubs"><i class="fas fa-users w-5 text-center"></i> Clubs</a></li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="lost-found"><i class="fas fa-search w-5 text-center"></i> Lost &
+                                    Found</a></li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="events"><i class="fas fa-calendar-alt w-5 text-center"></i> Events</a>
+                            </li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="messages"><i class="fas fa-comment-dots w-5 text-center"></i>
+                                    Messages</a></li>
+                            <li><a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-lg font-medium"
+                                    data-page="settings"><i class="fas fa-cog w-5 text-center"></i> Settings</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Main Content Area -->
+                    <div class="main-content lg:col-span-2">
+                        <!-- Home Page -->
+                        <div class="page-section active bg-white rounded-lg shadow-sm p-4" id="home-page">
+                            <!-- Create Post -->
+                            <div class="create-post bg-white rounded-lg shadow-sm p-4 mb-6">
+                                <div class="post-input flex gap-3 mb-4">
+                                    <div class="avatar w-12 h-12 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                                        <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                    <textarea placeholder="What's on your mind, Alex?"
+                                        class="flex-1 border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                                </div>
+                                <div class="post-actions flex justify-between items-center">
+                                    <div class="action-buttons flex gap-4">
+                                        <button
+                                            class="action-btn flex items-center gap-1 text-gray-600 hover:text-primary transition"><i
+                                                class="fas fa-image"></i> Photo</button>
+                                        <button
+                                            class="action-btn flex items-center gap-1 text-gray-600 hover:text-primary transition"><i
+                                                class="fas fa-video"></i> Video</button>
+                                        <button
+                                            class="action-btn flex items-center gap-1 text-gray-600 hover:text-primary transition"><i
+                                                class="fas fa-map-marker-alt"></i> Location</button>
+                                    </div>
+                                    <button
+                                        class="post-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition font-medium">Post</button>
+                                </div>
+                            </div>
+
+                            <!-- Tabs for different feeds -->
+                            <div class="tabs flex border-b border-gray-200 mb-4">
+                                <div class="tab active py-2 px-4 cursor-pointer border-b-2 border-primary text-primary font-medium"
+                                    data-tab="all">All Posts</div>
+                                <div class="tab py-2 px-4 cursor-pointer border-b-2 border-transparent hover:text-primary transition"
+                                    data-tab="clubs">Club Posts</div>
+                                <div class="tab py-2 px-4 cursor-pointer border-b-2 border-transparent hover:text-primary transition"
+                                    data-tab="lost-found">Lost & Found</div>
+                            </div>
+
+                            <!-- All Posts Tab -->
+                            <div class="tab-content active space-y-6" id="all-posts">
+                                <!-- Sample Post 1 -->
+                                <div class="post bg-white rounded-lg shadow-sm p-4">
+                                    <div class="post-header flex justify-between items-center mb-4">
+                                        <div class="post-user flex items-center gap-3">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=5" alt="User Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="post-user-info">
+                                                <h4 class="font-medium">Maria Santos</h4>
+                                                <span class="text-xs text-gray-500">2 hours ago · <i
+                                                        class="fas fa-globe-americas"></i></span>
+                                            </div>
+                                        </div>
+                                        <div class="post-options text-gray-500 cursor-pointer">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </div>
+                                    </div>
+                                    <div class="post-content mb-4">
+                                        <p>Just finished my finals! So relieved! Who's up for a study break hangout this
+                                            weekend? 🎉</p>
+                                    </div>
+                                    <div
+                                        class="post-stats flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                        <div class="likes">125 likes</div>
+                                        <div class="comments">23 comments</div>
+                                    </div>
+                                    <div class="post-actions-buttons flex justify-around">
+                                        <button
+                                            class="post-action like-btn flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i> Like
+                                        </button>
+                                        <button
+                                            class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i> Comment
+                                        </button>
+                                        <button
+                                            class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-share-square"></i> Share
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Sample Post 2 -->
+                                <div class="post bg-white rounded-lg shadow-sm p-4">
+                                    <div class="post-header flex justify-between items-center mb-4">
+                                        <div class="post-user flex items-center gap-3">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=8" alt="User Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="post-user-info">
+                                                <h4 class="font-medium">Computer Science Club</h4>
+                                                <span class="text-xs text-gray-500">5 hours ago · <i
+                                                        class="fas fa-users"></i></span>
+                                            </div>
+                                        </div>
+                                        <div class="post-options text-gray-500 cursor-pointer">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </div>
+                                    </div>
+                                    <div class="post-content mb-4">
+                                        <p>Join us this Friday for our Hackathon 2023! Prizes, food, and coding fun!
+                                            Register now at csclub.edu/events</p>
+                                        <div class="post-image mt-3 rounded-lg overflow-hidden">
+                                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
+                                                alt="Hackathon Event" class="w-full h-auto object-cover">
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="post-stats flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                        <div class="likes">89 likes</div>
+                                        <div class="comments">15 comments</div>
+                                    </div>
+                                    <div class="post-actions-buttons flex justify-around">
+                                        <button
+                                            class="post-action like-btn flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i> Like
+                                        </button>
+                                        <button
+                                            class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i> Comment
+                                        </button>
+                                        <button
+                                            class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-share-square"></i> Share
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Club Posts Tab -->
+                            <div class="tab-content hidden space-y-6" id="club-posts">
+                                <div class="post bg-white rounded-lg shadow-sm p-4">
+                                    <div class="post-header flex justify-between items-center mb-4">
+                                        <div class="post-user flex items-center gap-3">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=32" alt="Club Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="post-user-info">
+                                                <h4 class="font-medium">Photography Club</h4>
+                                                <span class="text-xs text-gray-500">3 hours ago · <i
+                                                        class="fas fa-users"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="post-content mb-4">
+                                        <p>Our next photo walk is scheduled for Saturday at the botanical gardens. Don't
+                                            forget your cameras!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lost & Found Tab -->
+                            <div class="tab-content hidden space-y-6" id="lost-found-posts">
+                                <div class="post bg-white rounded-lg shadow-sm p-4">
+                                    <div class="post-header flex justify-between items-center mb-4">
+                                        <div class="post-user flex items-center gap-3">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=22" alt="User Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="post-user-info">
+                                                <h4 class="font-medium">Sarah Lim</h4>
+                                                <span class="text-xs text-gray-500">4 hours ago · <i
+                                                        class="fas fa-map-marker-alt"></i> Student Center</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="post-content mb-4">
+                                        <p>FOUND: A set of keys with a cute cat keychain at the student center
+                                            cafeteria. Describe the keys to claim!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clubs Page -->
+                        <div class="page-section hidden" id="clubs-page">
+                            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                                <h2 class="text-xl font-bold text-primary mb-2">Clubs & Communities</h2>
+                                <p class="text-gray-600">Discover and join campus clubs based on your interests</p>
+                            </div>
+
+                            <!-- Top Clubs Section -->
+                            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                                <h3 class="text-lg font-bold text-primary mb-4">Top Clubs</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- Top Club 1 -->
+                                    <div class="club-card bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div
+                                                class="club-avatar w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
+                                                <i class="fas fa-laptop-code text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold">Computer Science Club</h4>
+                                                <p class="text-xs text-gray-500">1,245 members</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-3">For students interested in programming,
+                                            algorithms, and technology.</p>
+                                        <button
+                                            class="join-btn w-full bg-primary text-white py-2 rounded-lg hover:bg-secondary transition">Join
+                                            Club</button>
+                                    </div>
+
+                                    <!-- Top Club 2 -->
+                                    <div class="club-card bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div
+                                                class="club-avatar w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center">
+                                                <i class="fas fa-leaf text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold">Environmental Club</h4>
+                                                <p class="text-xs text-gray-500">892 members</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-3">Promoting sustainability and environmental
+                                            awareness on campus.</p>
+                                        <button
+                                            class="join-btn w-full bg-primary text-white py-2 rounded-lg hover:bg-secondary transition">Join
+                                            Club</button>
+                                    </div>
+
+                                    <!-- Top Club 3 -->
+                                    <div class="club-card bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div
+                                                class="club-avatar w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center">
+                                                <i class="fas fa-music text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold">Music Society</h4>
+                                                <p class="text-xs text-gray-500">756 members</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-3">For musicians and music lovers of all
+                                            skill levels.</p>
+                                        <button
+                                            class="join-btn w-full bg-primary text-white py-2 rounded-lg hover:bg-secondary transition">Join
+                                            Club</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- All Clubs Section -->
+                            <div class="bg-white rounded-lg shadow-sm p-4">
+                                <h3 class="text-lg font-bold text-primary mb-4">All Clubs</h3>
+                                <div class="space-y-4" id="all-clubs-list">
+                                    <!-- Club 1 -->
+                                    <div class="club-item bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="club-avatar w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
+                                                    <i class="fas fa-laptop-code text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold">Computer Science Club</h4>
+                                                    <p class="text-sm text-gray-600">For students interested in
+                                                        programming and technology</p>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        <span class="text-xs text-gray-500"><i class="fas fa-users"></i>
+                                                            245 members</span>
+                                                        <span class="text-xs text-gray-500"><i
+                                                                class="fas fa-calendar"></i> Weekly meetings</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                class="join-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">Join</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Club 2 -->
+                                    <div class="club-item bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="club-avatar w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center">
+                                                    <i class="fas fa-basketball-ball text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold">Basketball Team</h4>
+                                                    <p class="text-sm text-gray-600">Join our competitive team or just
+                                                        play for fun</p>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        <span class="text-xs text-gray-500"><i class="fas fa-users"></i>
+                                                            18 members</span>
+                                                        <span class="text-xs text-gray-500"><i
+                                                                class="fas fa-calendar"></i> Practice Tues/Thurs</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                class="join-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">Join</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Club 3 -->
+                                    <div class="club-item bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="club-avatar w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center">
+                                                    <i class="fas fa-music text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold">Music Society</h4>
+                                                    <p class="text-sm text-gray-600">For musicians and music lovers of
+                                                        all skill levels</p>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        <span class="text-xs text-gray-500"><i class="fas fa-users"></i>
+                                                            87 members</span>
+                                                        <span class="text-xs text-gray-500"><i
+                                                                class="fas fa-calendar"></i> Jam sessions weekly</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                class="join-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">Join</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Club Detail Page (Hidden by default) -->
+                        <div class="page-section hidden" id="club-detail-page">
+                            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <button class="back-to-clubs text-primary hover:text-secondary transition">
+                                        <i class="fas fa-arrow-left"></i> Back to Clubs
+                                    </button>
+                                </div>
+
+                                <div class="club-header flex items-center gap-4 mb-6">
+                                    <div
+                                        class="club-avatar w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl">
+                                        <i class="fas fa-laptop-code"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold" id="club-detail-name">Computer Science Club</h2>
+                                        <p class="text-gray-600" id="club-detail-description">For students interested in
+                                            programming, algorithms, and technology</p>
+                                        <div class="flex items-center gap-4 mt-2">
+                                            <span class="text-sm text-gray-500"><i class="fas fa-users"></i> <span
+                                                    id="club-detail-members">245</span> members</span>
+                                            <span class="text-sm text-gray-500"><i class="fas fa-calendar"></i> Weekly
+                                                meetings</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Club Feed -->
+                                <div class="club-feed space-y-6">
+                                    <!-- Club Post 1 -->
+                                    <div class="post bg-white rounded-lg shadow-sm p-4">
+                                        <div class="post-header flex justify-between items-center mb-4">
+                                            <div class="post-user flex items-center gap-3">
+                                                <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                    <img src="https://i.pravatar.cc/150?img=8" alt="User Avatar"
+                                                        class="w-full h-full object-cover">
+                                                </div>
+                                                <div class="post-user-info">
+                                                    <h4 class="font-medium">Computer Science Club</h4>
+                                                    <span class="text-xs text-gray-500">5 hours ago · <i
+                                                            class="fas fa-users"></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="post-content mb-4">
+                                            <p>Join us this Friday for our Hackathon 2023! Prizes, food, and coding fun!
+                                                Register now at csclub.edu/events</p>
+                                            <div class="post-image mt-3 rounded-lg overflow-hidden">
+                                                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
+                                                    alt="Hackathon Event" class="w-full h-auto object-cover">
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="post-stats flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                            <div class="likes">89 likes</div>
+                                            <div class="comments">15 comments</div>
+                                        </div>
+                                        <div class="post-actions-buttons flex justify-around">
+                                            <button
+                                                class="post-action like-btn flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-thumbs-up"></i> Like
+                                            </button>
+                                            <button
+                                                class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-comment"></i> Comment
+                                            </button>
+                                            <button
+                                                class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-share-square"></i> Share
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Club Post 2 -->
+                                    <div class="post bg-white rounded-lg shadow-sm p-4">
+                                        <div class="post-header flex justify-between items-center mb-4">
+                                            <div class="post-user flex items-center gap-3">
+                                                <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                    <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar"
+                                                        class="w-full h-full object-cover">
+                                                </div>
+                                                <div class="post-user-info">
+                                                    <h4 class="font-medium">Maria Santos</h4>
+                                                    <span class="text-xs text-gray-500">2 days ago · <i
+                                                            class="fas fa-users"></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="post-content mb-4">
+                                            <p>Does anyone have experience with React Native? I'm working on a mobile
+                                                app for my final project and could use some help!</p>
+                                        </div>
+                                        <div
+                                            class="post-stats flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                            <div class="likes">42 likes</div>
+                                            <div class="comments">8 comments</div>
+                                        </div>
+                                        <div class="post-actions-buttons flex justify-around">
+                                            <button
+                                                class="post-action like-btn flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-thumbs-up"></i> Like
+                                            </button>
+                                            <button
+                                                class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-comment"></i> Comment
+                                            </button>
+                                            <button
+                                                class="post-action flex items-center gap-1 text-gray-600 hover:text-primary transition px-3 py-2 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-share-square"></i> Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages Page -->
+                        <div class="page-section hidden" id="messages-page">
+                            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                                <h2 class="text-xl font-bold text-primary mb-2">Messages</h2>
+                                <p class="text-gray-600">Chat with friends and club members</p>
+                            </div>
+
+                            <div class="messages-container bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div class="flex flex-col md:flex-row h-[600px]">
+                                    <!-- Conversations List -->
+                                    <div
+                                        class="conversations-list w-full md:w-1/3 border-r border-gray-200 overflow-y-auto">
+                                        <!-- Friends Section -->
+                                        <div class="p-4 border-b border-gray-200">
+                                            <h3 class="font-bold text-primary mb-2">Friends</h3>
+                                            <div class="space-y-2">
+                                                <div
+                                                    class="conversation flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 active">
+                                                    <div
+                                                        class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                        <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar"
+                                                            class="w-full h-full object-cover">
+                                                    </div>
+                                                    <div class="conversation-info flex-1 min-w-0">
+                                                        <h4 class="font-medium truncate">Jamie Rivera</h4>
+                                                        <p class="text-xs text-gray-500 truncate">Hey, are you coming to
+                                                            the study group later?</p>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="conversation flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100">
+                                                    <div
+                                                        class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                        <img src="https://i.pravatar.cc/150?img=45" alt="User Avatar"
+                                                            class="w-full h-full object-cover">
+                                                    </div>
+                                                    <div class="conversation-info flex-1 min-w-0">
+                                                        <h4 class="font-medium truncate">Miguel Torres</h4>
+                                                        <p class="text-xs text-gray-500 truncate">Thanks for helping
+                                                            with the project!</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Clubs Section -->
+                                        <div class="p-4">
+                                            <h3 class="font-bold text-primary mb-2">My Clubs</h3>
+                                            <div class="space-y-2">
+                                                <div
+                                                    class="conversation flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100">
+                                                    <div
+                                                        class="avatar w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                                                        <i class="fas fa-laptop-code"></i>
+                                                    </div>
+                                                    <div class="conversation-info flex-1 min-w-0">
+                                                        <h4 class="font-medium truncate">Computer Science Club</h4>
+                                                        <p class="text-xs text-gray-500 truncate">Reminder: Hackathon
+                                                            this Friday</p>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="conversation flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100">
+                                                    <div
+                                                        class="avatar w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center">
+                                                        <i class="fas fa-basketball-ball"></i>
+                                                    </div>
+                                                    <div class="conversation-info flex-1 min-w-0">
+                                                        <h4 class="font-medium truncate">Basketball Team</h4>
+                                                        <p class="text-xs text-gray-500 truncate">Practice canceled
+                                                            today</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Chat Area -->
+                                    <div class="chat-container flex-1 flex flex-col">
+                                        <div class="chat-header flex items-center gap-3 p-4 border-b border-gray-200">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium">Jamie Rivera</h4>
+                                                <span class="text-xs text-success">Online</span>
+                                            </div>
+                                        </div>
+                                        <div class="chat-messages flex-1 p-4 overflow-y-auto space-y-4">
+                                            <div class="message received max-w-[70%]">
+                                                <div class="bg-gray-100 rounded-lg p-3 rounded-bl-none">
+                                                    <p>Hey, are you coming to the study group later?</p>
+                                                    <div class="message-time text-xs text-gray-500 mt-1 text-right">
+                                                        10:15 AM</div>
+                                                </div>
+                                            </div>
+                                            <div class="message sent max-w-[70%] ml-auto">
+                                                <div class="bg-primary text-white rounded-lg p-3 rounded-br-none">
+                                                    <p>Yes, I'll be there at 3 PM</p>
+                                                    <div
+                                                        class="message-time text-xs text-white text-opacity-70 mt-1 text-right">
+                                                        10:17 AM</div>
+                                                </div>
+                                            </div>
+                                            <div class="message received max-w-[70%]">
+                                                <div class="bg-gray-100 rounded-lg p-3 rounded-bl-none">
+                                                    <p>Great! Don't forget to bring the notes from last class</p>
+                                                    <div class="message-time text-xs text-gray-500 mt-1 text-right">
+                                                        10:18 AM</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="chat-input flex p-4 border-t border-gray-200 gap-2">
+                                            <input type="text" placeholder="Type a message..."
+                                                class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                                            <button
+                                                class="send-btn bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other pages would go here with similar structure -->
+                    </div>
+
+                    <!-- Right Sidebar -->
+                    <div class="right-sidebar hidden lg:block bg-white rounded-lg shadow-sm p-4">
+                        <h3 class="font-bold text-primary mb-4">My Clubs</h3>
+                        <div class="space-y-3 mb-6">
+                            <div class="club-card flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                                data-club="cs-club">
+                                <div
+                                    class="club-avatar w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                                    <i class="fas fa-laptop-code"></i>
+                                </div>
+                                <div class="club-info">
+                                    <h4 class="font-medium">Computer Science Club</h4>
+                                    <span class="text-xs text-gray-500">245 members</span>
+                                </div>
+                            </div>
+                            <div class="club-card flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                                data-club="basketball-club">
+                                <div
+                                    class="club-avatar w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center">
+                                    <i class="fas fa-basketball-ball"></i>
+                                </div>
+                                <div class="club-info">
+                                    <h4 class="font-medium">Basketball Team</h4>
+                                    <span class="text-xs text-gray-500">18 members</span>
+                                </div>
+                            </div>
+                            <div class="club-card flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                                data-club="music-club">
+                                <div
+                                    class="club-avatar w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div class="club-info">
+                                    <h4 class="font-medium">Music Society</h4>
+                                    <span class="text-xs text-gray-500">87 members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#"
+                            class="view-all block text-center text-primary hover:text-secondary transition font-medium"
+                            data-page="clubs">View All Clubs</a>
+
+                        <h3 class="font-bold text-primary mt-6 mb-4">Online Friends</h3>
+                        <div class="space-y-3">
+                            <div class="friend-card flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                                data-page="messages">
+                                <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                    <img src="https://i.pravatar.cc/150?img=32" alt="Friend Avatar"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <div class="friend-info">
+                                    <h4 class="font-medium">Jamie Rivera</h4>
+                                    <span class="text-xs text-success">Online</span>
+                                </div>
+                            </div>
+                            <div class="friend-card flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                                data-page="messages">
+                                <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                    <img src="https://i.pravatar.cc/150?img=45" alt="Friend Avatar"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <div class="friend-info">
+                                    <h4 class="font-medium">Miguel Torres</h4>
+                                    <span class="text-xs text-success">Online</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#"
+                            class="view-all block text-center text-primary hover:text-secondary transition font-medium mt-3"
+                            data-page="friends">View All Friends</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Bottom Navigation -->
+            <div
+                class="mobile-nav fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around py-2 z-30 md:hidden">
+                <a href="#" class="mobile-nav-item flex flex-col items-center text-primary active" data-page="home">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="#" class="mobile-nav-item flex flex-col items-center text-gray-600" data-page="clubs">
+                    <i class="fas fa-users text-xl"></i>
+                    <span class="text-xs mt-1">Clubs</span>
+                </a>
+                <a href="#" class="mobile-nav-item flex flex-col items-center text-gray-600" data-page="lost-found">
+                    <i class="fas fa-search text-xl"></i>
+                    <span class="text-xs mt-1">Lost & Found</span>
+                </a>
+                <a href="#" class="mobile-nav-item flex flex-col items-center text-gray-600" data-page="messages">
+                    <i class="fas fa-comment-dots text-xl"></i>
+                    <span class="text-xs mt-1">Messages</span>
+                </a>
+                <a href="#" class="mobile-nav-item flex flex-col items-center text-gray-600" data-page="profile">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs mt-1">Profile</span>
+                </a>
+            </div>
+        </div>
+
+        <script type="module" src="src/js/"></script>
+    </body>
+
+</html>

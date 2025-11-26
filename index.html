@@ -1,16 +1,125 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="dist/output.css" rel="stylesheet">
+        <title>BarkadaHub - Sign In</title>
+        <link rel="stylesheet" href="dist/output.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
-    <body>
-        <h1 class="text-3xl font-bold underline">
-            Hello world!
-        </h1>
+    <body
+        class="bg-[linear-gradient(180deg,#E3FDFD_0%,#71C9CE_100%)] min-h-screen flex items-center justify-center p-4">
+
+        <!-- Main Content -->
+        <div class="text-center text-black">
+            <div class="flex flex-col justify-center items-center" id="brand">
+                <img src="src/images/image.png" alt="App Logo" class="w-15 md:w-25">
+                <h1 class="text-md md:text-2xl font-bold mb-4">Welcome to BarkadaHub!</h1>
+            </div>
+            <p class="text-sm mb-8" id="slogan">Connect with your community and share experiences</p>
+            <button id="openModal"
+                class="bg-white text-primary px-6 py-3 rounded-lg font-bold text-sm shadow-lg hover:bg-gray-100 transition duration-300">
+                Get Started
+            </button>
+        </div>
+
+        <!-- Auth Modal -->
+        <div id="authModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="w-full max-w-md mx-4">
+                <!-- Login Form -->
+                <div id="loginContainer" class=" bg-white rounded-lg shadow-lg w-full max-w-md p-6 modal-content">
+                    <div class="relative flex items-center mb-4">
+                        <h2 class="text-lg font-bold mx-auto">Login</h2>
+                        <button
+                            class="close-modal absolute right-0 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                    </div>
+                    <form class="space-y-4" id="loginForm">
+                        <div>
+                            <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="loginEmail"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Enter your email">
+                        </div>
+                        <div>
+                            <label for="loginPassword"
+                                class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="loginPassword"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Enter your password">
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="remember"
+                                    class="h-4 w-4 focus:ring-secondary border-gray-300 rounded">
+                                <label for="remember" class="ml-2 block text-xs text-gray-700">Remember me</label>
+                            </div>
+                            <a href="" class="text-xs hover:text-indigo-500">Forgot Password?</a>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary text-black py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
+                            Login
+                        </button>
+                        <p class="text-center text-xs text-gray-600">
+                            Don't have an account? <span id="loginSwitchLink"
+                                class="hover:underline cursor-pointer text-[#00A6FF]">Sign up
+                            </span>
+                        </p>
+                    </form>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupContainer" class="bg-white rounded-lg shadow-3xl p-6 modal-content hidden mt-18 ">
+                    <div class="relative flex items-center mb-2">
+                        <h2 class="text-lg font-bold mx-auto">Sign Up</h2>
+                        <button
+                            class="close-modal absolute right-0 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                    </div>
+                    <form class=" space-y-4" id="signupForm">
+                        <div>
+                            <label for="signupName" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="signupName"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Enter your name">
+                        </div>
+                        <div>
+                            <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="signupEmail"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Enter your email">
+                        </div>
+                        <div>
+                            <label for="signupPassword"
+                                class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="signupPassword"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Enter your password">
+                        </div>
+                        <div>
+                            <label for="signupConfirmPassword"
+                                class="block text-sm font-medium text-gray-700 mb-1">Confirm
+                                Password</label>
+                            <input type="password" id="signupConfirmPassword"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
+                                placeholder="Re-enter your password">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary text-black py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200 font-medium">
+                            Sign Up
+                        </button>
+                        <p class="text-center text-xs text-gray-600">
+                            Already have an account? <span id="signupSwitchLink"
+                                class="hover:underline cursor-pointer text-[#00A6FF]">Log
+                                in</span>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="src/js/auth.js"></script>
+
     </body>
 
 </html>

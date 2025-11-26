@@ -1,9 +1,12 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 
 /* Define your custom colors as CSS variables */
 :root {
-    --color-primary: #4361ee;
-    --color-secondary: #3f37c9;
+    --main-font: 'Poppins', sans-serif;
+    --color-primary: #71C9CE;
+    --color-secondary: #CBF1F5;
     --color-accent: #4cc9f0;
     --color-success: #4bb543;
     --color-warning: #ffcc00;
@@ -25,5 +28,31 @@
     .text-success { color: var(--color-success); }
     .text-warning { color: var(--color-warning); }
     .text-danger { color: var(--color-danger); }
+}
+
+body{
+    font-family: var(--main-font);
+}
+
+.modal {
+    transition: all 0.3s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+}
+
+input{
+    border-radius: 10px;
 }
 
