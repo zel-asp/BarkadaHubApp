@@ -54,3 +54,17 @@ input{
     border-radius: 10px;
 }
 
+
+.message.sent {
+    align-self: flex-end;
+    background-color: #4361ee;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message.received {
+    align-self: flex-start;
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 5px;
+}

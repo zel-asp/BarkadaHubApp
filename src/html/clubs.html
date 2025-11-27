@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BarkadaHub - Clubs</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#4361ee',
+                            secondary: '#3f37c9',
+                            accent: '#4cc9f0',
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+
+    <body class="bg-gray-50 text-gray-800">
+        <!-- Header -->
+        <div id="header"></div>
+
+        <div class="container mx-auto px-4 py-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Left Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-sm p-5">
+                        <ul class="space-y-2">
+                            <li><a href="index.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-home w-5 text-center"></i> News Feed</a></li>
+                            <li><a href="friends.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-user-friends w-5 text-center"></i> Friends</a></li>
+                            <li><a href="clubs.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg bg-gray-100 text-primary font-medium"><i
+                                        class="fas fa-users w-5 text-center"></i> Clubs</a></li>
+                            <li><a href="lost-found.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-search w-5 text-center"></i> Lost & Found</a></li>
+                            <li><a href="events.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-calendar-alt w-5 text-center"></i> Events</a></li>
+                            <li><a href="messages.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-comment-dots w-5 text-center"></i> Messages</a></li>
+                            <li><a href="settings.html"
+                                    class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition"><i
+                                        class="fas fa-cog w-5 text-center"></i> Settings</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h1 class="text-2xl font-bold text-primary mb-2">Clubs & Communities</h1>
+                        <p class="text-gray-600 mb-6">Discover and join campus clubs based on your interests</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Club Card -->
+                            <div
+                                class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-transform duration-300 hover:-translate-y-1">
+                                <div class="h-32 bg-primary overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=735&q=80"
+                                        alt="CS Club" class="w-full h-full object-cover">
+                                </div>
+                                <div class="p-5">
+                                    <h3 class="font-bold text-lg mb-2">Computer Science Club</h3>
+                                    <p class="text-gray-600 text-sm mb-4">For students interested in programming,
+                                        algorithms, and technology.</p>
+                                    <div class="flex justify-between text-xs text-gray-500 mb-4">
+                                        <span><i class="fas fa-users mr-1"></i> 245 members</span>
+                                        <span><i class="fas fa-calendar mr-1"></i> Weekly meetings</span>
+                                    </div>
+                                    <button
+                                        class="join-btn w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-secondary transition joined">Joined</button>
+                                </div>
+                            </div>
+
+                            <!-- More club cards... -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around py-3 z-30">
+            <a href="./home.html" class="flex flex-col items-center text-primary">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="./clubs.html" class="flex flex-col items-center text-gray-500">
+                <i class="fas fa-users text-xl mb-1"></i>
+                <span class="text-xs">Clubs</span>
+            </a>
+            <a href="./lost-found.html" class="flex flex-col items-center text-gray-500">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span class="text-xs">Lost & Found</span>
+            </a>
+            <a href="./messages.html" class="flex flex-col items-center text-gray-500">
+                <i class="fas fa-comment-dots text-xl mb-1"></i>
+                <span class="text-xs">Messages</span>
+            </a>
+            <a href="./profile.html" class="flex flex-col items-center text-gray-500">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span class="text-xs">Profile</span>
+            </a>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+
+</html>
