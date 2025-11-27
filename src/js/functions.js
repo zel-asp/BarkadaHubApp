@@ -7,3 +7,4 @@ export function timeout(modal, brand, slogan) {
         slogan.classList.remove('hidden');
     }, 300);
 }
+

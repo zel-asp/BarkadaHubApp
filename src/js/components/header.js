@@ -3,23 +3,22 @@ export default function HeaderComponent() {
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
-                <div class="logo flex items-center gap-2 text-primary font-bold text-xl cursor-pointer"
+                <div class="logo flex items-center gap-2 text-black  font-extrabold text-xl cursor-pointer"
                     data-page="home">
-                    <i class="fas fa-users text-2xl"></i>
+                    <img src="../images/image.png" alt="App Logo" class="w-10">
                     <span>BarkadaHub</span>
                 </div>
                 <div class="user-actions flex items-center gap-4">
                     <div class="notification-icon relative cursor-pointer">
-                        <i class="fas fa-bell text-gray-600 text-xl"></i>
+                        <i class="fas fa-bell text-primary
+                        text-md"></i>
                         <span
                             class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
                     </div>
-                    <div class="user-profile flex items-center gap-2 cursor-pointer" data-page="profile">
-                        <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                            <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
-                                class="w-full h-full object-cover">
-                        </div>
-                        <span class="font-medium">Alex</span>
+                    <div class="notification-icon relative cursor-pointer">
+                        <i class="fas fa-envelope text-primary
+                        text-md"></i>
+
                     </div>
                 </div>
             </div>

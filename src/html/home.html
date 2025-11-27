@@ -5,7 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>BarkadaHub - Campus Social Network</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
@@ -54,7 +54,7 @@
                     <!-- Main Content Area -->
                     <div class="lg:col-span-2">
                         <!-- Home Page -->
-                        <div class="mb-15 border border-gray-300 p-4 rounded-lg shadow-2xl" id="home-page">
+                        <div class="mb-5 border border-gray-300 p-4 rounded-lg shadow-2xl" id="home-page">
                             <!-- Create Post -->
                             <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
                                 <div class="flex gap-3 mb-4">
@@ -67,17 +67,22 @@
                                         minlength="0" maxlength="100"></textarea>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <div class="flex gap-4">
+                                    <div class="flex gap-4 items-center">
                                         <button
-                                            class="action-btn flex items-center gap-1 text-gray-500 hover:text-primary transition"><i
-                                                class="fas fa-image"></i> Photo</button>
+                                            class="flex items-center gap-2 text-gray-600 hover:text-primary transition font-medium">
+                                            <i class="fas fa-image text-md"></i>
+                                            <span class="text-xs">Photo</span>
+                                        </button>
                                         <button
-                                            class="action-btn flex items-center gap-1 text-gray-500 hover:text-primary transition"><i
-                                                class="fas fa-video"></i> Video</button>
+                                            class="flex items-center gap-2 text-gray-600 hover:text-primary transition font-medium">
+                                            <i class="fas fa-video text-md"></i>
+                                            <span class="text-xs">Video</span>
+                                        </button>
                                     </div>
+
                                     <div>
                                         <button
-                                            class="bg-primary px-5 py-2 rounded-lg font-medium hover:bg-secondary transition">Post</button>
+                                            class="bg-primary py-1 px-3 rounded-lg text-sm text-white hover:bg-secondary transition">Post</button>
                                     </div>
                                 </div>
 
@@ -108,24 +113,30 @@
                                             weekend? 🎉</p>
                                     </div>
                                     <div
-                                        class="flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                        class="flex justify-between text-xs text-gray-500 mb-3 pb-3 border-b border-gray-200">
                                         <div class="likes">125 likes</div>
                                         <div class="comments">23 comments</div>
                                     </div>
-                                    <div class="flex justify-around">
+                                    <div class="flex justify-around border-t border-gray-200 pt-2">
                                         <button
-                                            class="post-action like-btn flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-thumbs-up"></i> Like
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-thumbs-up text-sm"></i>
+                                            <span class="text-xs">Like</span>
                                         </button>
+
                                         <button
-                                            class="post-action flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-comment"></i> Comment
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-comment text-sm"></i>
+                                            <span class="text-xs">Comment</span>
                                         </button>
+
                                         <button
-                                            class="post-action flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-share-square"></i> Share
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-share-square text-sm"></i>
+                                            <span class="text-xs">Share</span>
                                         </button>
                                     </div>
+
                                 </div>
 
                                 <!-- Sample Post 2 -->
@@ -155,24 +166,30 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="flex justify-between text-sm text-gray-500 mb-3 pb-3 border-b border-gray-200">
+                                        class="flex justify-between text-xs text-gray-500 mb-3 pb-3 border-b border-gray-200">
                                         <div class="likes">89 likes</div>
                                         <div class="comments">15 comments</div>
                                     </div>
-                                    <div class="flex justify-around">
+                                    <div class="flex justify-around border-t border-gray-200 pt-2">
                                         <button
-                                            class="post-action like-btn flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-thumbs-up"></i> Like
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-thumbs-up text-sm"></i>
+                                            <span class="text-xs">Like</span>
                                         </button>
+
                                         <button
-                                            class="post-action flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-comment"></i> Comment
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-comment text-sm"></i>
+                                            <span class="text-xs">Comment</span>
                                         </button>
+
                                         <button
-                                            class="post-action flex items-center gap-1 text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-lg transition">
-                                            <i class="far fa-share-square"></i> Share
+                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
+                                            <i class="far fa-share-square text-sm"></i>
+                                            <span class="text-xs">Share</span>
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -492,81 +509,80 @@
                                         <p>Just submitted my final project for Data Structures! Feeling accomplished 🎉
                                         </p>
                                     </div>
-                                    <div class="flex justify-between text-sm text-gray-500">
-                                        <div class="likes">42 likes</div>
-                                        <div class="comments">8 comments</div>
+                                    xs <div class="flex justify-between text-sm text-gray-500">
+                                        <div class="likes text-xs">42 likes <div class="comments">8 comments</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Right Sidebar -->
-                    <div class="lg:col-span-1 hidden lg:block">
-                        <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
-                            <h3 class="text-lg font-bold text-primary mb-4">My Clubs</h3>
-                            <div class="club-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                data-page="clubs">
-                                <div
-                                    class="club-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <i class="fas fa-laptop-code text-primary"></i>
+                        <!-- Right Sidebar -->
+                        <div class="lg:col-span-1 hidden lg:block">
+                            <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
+                                <h3 class="text-lg font-bold text-primary mb-4">My Clubs</h3>
+                                <div class="club-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                    data-page="clubs">
+                                    <div
+                                        class="club-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-laptop-code text-primary"></i>
+                                    </div>
+                                    <div class="club-info">
+                                        <h4 class="font-medium text-sm">Computer Science Club</h4>
+                                        <span class="text-xs text-gray-500">245 members</span>
+                                    </div>
                                 </div>
-                                <div class="club-info">
-                                    <h4 class="font-medium text-sm">Computer Science Club</h4>
-                                    <span class="text-xs text-gray-500">245 members</span>
+                                <div class="club-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                    data-page="clubs">
+                                    <div
+                                        class="club-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-basketball-ball text-primary"></i>
+                                    </div>
+                                    <div class="club-info">
+                                        <h4 class="font-medium text-sm">Basketball Team</h4>
+                                        <span class="text-xs text-gray-500">18 members</span>
+                                    </div>
                                 </div>
+                                <a href="#" class="view-all block text-center text-primary font-medium mt-3"
+                                    data-page="clubs">View All Clubs</a>
                             </div>
-                            <div class="club-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                data-page="clubs">
-                                <div
-                                    class="club-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <i class="fas fa-basketball-ball text-primary"></i>
-                                </div>
-                                <div class="club-info">
-                                    <h4 class="font-medium text-sm">Basketball Team</h4>
-                                    <span class="text-xs text-gray-500">18 members</span>
-                                </div>
-                            </div>
-                            <a href="#" class="view-all block text-center text-primary font-medium mt-3"
-                                data-page="clubs">View All Clubs</a>
-                        </div>
 
-                        <div class="bg-white rounded-lg shadow-sm p-5">
-                            <h3 class="text-lg font-bold text-primary mb-4">Online Friends</h3>
-                            <div class="friend-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                data-page="messages">
-                                <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                                    <img src="https://i.pravatar.cc/150?img=32" alt="Friend Avatar"
-                                        class="w-full h-full object-cover">
+                            <div class="bg-white rounded-lg shadow-sm p-5">
+                                <h3 class="text-lg font-bold text-primary mb-4">Online Friends</h3>
+                                <div class="friend-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                    data-page="messages">
+                                    <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                        <img src="https://i.pravatar.cc/150?img=32" alt="Friend Avatar"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="friend-info">
+                                        <h4 class="font-medium text-sm">Jamie Rivera</h4>
+                                        <span class="text-xs text-green-500">Online</span>
+                                    </div>
                                 </div>
-                                <div class="friend-info">
-                                    <h4 class="font-medium text-sm">Jamie Rivera</h4>
-                                    <span class="text-xs text-green-500">Online</span>
+                                <div class="friend-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                                    data-page="messages">
+                                    <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                        <img src="https://i.pravatar.cc/150?img=45" alt="Friend Avatar"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="friend-info">
+                                        <h4 class="font-medium text-sm">Miguel Torres</h4>
+                                        <span class="text-xs text-green-500">Online</span>
+                                    </div>
                                 </div>
+                                <a href="#" class="view-all block text-center text-primary font-medium mt-3"
+                                    data-page="friends">View All Friends</a>
                             </div>
-                            <div class="friend-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-                                data-page="messages">
-                                <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                                    <img src="https://i.pravatar.cc/150?img=45" alt="Friend Avatar"
-                                        class="w-full h-full object-cover">
-                                </div>
-                                <div class="friend-info">
-                                    <h4 class="font-medium text-sm">Miguel Torres</h4>
-                                    <span class="text-xs text-green-500">Online</span>
-                                </div>
-                            </div>
-                            <a href="#" class="view-all block text-center text-primary font-medium mt-3"
-                                data-page="friends">View All Friends</a>
                         </div>
                     </div>
                 </div>
+
+                <!-- Mobile Bottom Navigation -->
+                <div id="mobileNav"></div>
             </div>
 
-            <!-- Mobile Bottom Navigation -->
-            <div id="mobileNav"></div>
-        </div>
-
-        <script type="module" src="../js/app.js"></script>
+            <script type="module" src="../js/app.js"></script>
     </body>
 
 </html>
