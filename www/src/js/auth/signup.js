@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(data);
             alert('User created successfully!');
             signupForm.reset();
-            window.location.href = "src/html/home.html";
+          //  window.location.href = "src/html/home.html";
         }
     });
 });
