@@ -11,6 +11,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+
 -- Create an index on username for faster lookups
 CREATE INDEX idx_users_username ON users(username);
 
