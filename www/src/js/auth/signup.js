@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             email: signupEmail,
             password: signupPassword,
             options: {
-                data: { name: signupName }
+                data: { display_name: signupName }
             }
         });
 
