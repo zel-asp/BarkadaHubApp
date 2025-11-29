@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Login successful:', data);
             alert('Login successful!');
-            // Optionally redirect
-            // window.location.href = '/dashboard.html';
+            window.location.href = 'src/html/profile.html';
 
         } catch (err) {
             console.error('Unexpected error:', err);
