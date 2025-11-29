@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
 
     loginForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent the default form submission (page reload)
+        event.preventDefault();
 
         const loginEmail = document.getElementById('loginEmail').value.trim();
         const loginPassword = document.getElementById('loginPassword').value;
