@@ -68,3 +68,12 @@ input{
     color: #212529;
     border-bottom-left-radius: 5px;
 }
+
+.conversation.selected {
+    background-color: #f0f4ff;
+    border-left: 3px solid #4361ee;
+}
+
+.conversation:hover {
+    background-color: #f8f9fa;
+}
