@@ -1,7 +1,22 @@
 import supabaseClient from '../supabase.js';
-import uploadedPost from '../render/post.js'
+import uploadedPost from '../render/post.js';
+import AlertSystem from '../render/Alerts.js';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+
+    const alertSystem = new AlertSystem();
+
+    const { data, error } = await supabaseClient.auth.getUser(); // await here
+
+    if (error || !data?.user) {
+
+        alertSystem.show("You must be logged in.", 'error');
+        setTimeout(() => {
+            window.location.href = '../../index.html';
+        }, 1500);
+        return;
+    }
+
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
     const charCount = document.getElementById('charCount');
@@ -10,69 +25,43 @@ document.addEventListener('DOMContentLoaded', function () {
     const mediaPreview = document.getElementById('mediaPreview');
     const previewContainer = document.getElementById('previewContainer');
     const removeMedia = document.getElementById('removeMedia');
-    const locationBtn = document.getElementById('locationBtn');
-    const locationSelector = document.getElementById('locationSelector');
-    const closeLocation = document.getElementById('closeLocation');
-    const locationInput = document.getElementById('locationInput');
     const postButton = document.getElementById('postButton');
 
+    // FIXED: use dynamic-posts instead of all-posts
+    const postsContainer = document.getElementById('dynamic-posts');
 
     let selectedMedia = null;
-    let selectedLocation = null;
-
 
     async function LoadHome() {
         const { data, error } = await supabaseClient.auth.getUser();
-
         if (!error && data?.user) {
             const name = data.user.user_metadata?.display_name || "User";
-
-            const postContent = document.getElementById("postContent");
-
-            if (postContent) {
-                postContent.placeholder = `What's on your mind, ${name}?`;
-            }
-        } else {
-            console.log("User not logged in");
+            postContent.placeholder = `What's on your mind, ${name}?`;
         }
     }
 
     // Character counter
     postContent.addEventListener('input', function () {
-        const count = this.value.length;
-        charCount.textContent = count;
+        charCount.textContent = this.value.length;
 
-        // Disable post button if content is empty
-        if (count === 0 && !selectedMedia) {
-            postButton.disabled = true;
-        } else {
-            postButton.disabled = false;
-        }
+        postButton.disabled = (this.value.length === 0 && !selectedMedia);
     });
 
     // Photo upload
-    photoUpload.addEventListener('change', function (e) {
-        if (this.files && this.files[0]) {
-            handleMediaUpload(this.files[0], 'image');
-        }
+    photoUpload.addEventListener('change', function () {
+        if (this.files[0]) handleMediaUpload(this.files[0], 'image');
     });
 
     // Video upload
-    videoUpload.addEventListener('change', function (e) {
-        if (this.files && this.files[0]) {
-            handleMediaUpload(this.files[0], 'video');
-        }
+    videoUpload.addEventListener('change', function () {
+        if (this.files[0]) handleMediaUpload(this.files[0], 'video');
     });
 
-    // Handle media upload and preview
+    // Show preview
     function handleMediaUpload(file, type) {
-        selectedMedia = {
-            file: file,
-            type: type
-        };
+        selectedMedia = { file, type };
 
         const reader = new FileReader();
-
         reader.onload = function (e) {
             previewContainer.innerHTML = '';
 
@@ -81,20 +70,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 img.src = e.target.result;
                 img.className = 'max-h-64 rounded-lg';
                 previewContainer.appendChild(img);
-            } else if (type === 'video') {
-                const video = document.createElement('video');
-                video.src = e.target.result;
-                video.controls = true;
-                video.className = 'max-h-64 rounded-lg';
-                previewContainer.appendChild(video);
+            } else {
+                const vid = document.createElement('video');
+                vid.src = e.target.result;
+                vid.controls = true;
+                vid.className = 'max-h-64 rounded-lg';
+                previewContainer.appendChild(vid);
             }
 
             mediaPreview.classList.remove('hidden');
-
-            // Enable post button if content is empty but media is selected
-            if (postContent.value.length === 0) {
-                postButton.disabled = false;
-            }
+            if (postContent.value.length === 0) postButton.disabled = false;
         };
 
         reader.readAsDataURL(file);
@@ -107,23 +92,10 @@ document.addEventListener('DOMContentLoaded', function () {
         photoUpload.value = '';
         videoUpload.value = '';
 
-        // Disable post button if content is also empty
-        if (postContent.value.length === 0) {
-            postButton.disabled = true;
-        }
+        postButton.disabled = (postContent.value.length === 0);
     });
 
-
-    closeLocation.addEventListener('click', function () {
-        locationSelector.classList.add('hidden');
-    });
-
-    locationInput.addEventListener('input', function () {
-        selectedLocation = this.value;
-    });
-
-
-    // Form submission
+    // Submit post
     postForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -131,44 +103,53 @@ document.addEventListener('DOMContentLoaded', function () {
         const userId = userData?.user?.id;
         const userName = userData?.user.user_metadata.display_name;
 
-        if (!userId) {
-            alert("You must be logged in.");
-            return;
-        }
+        if (!userId) return alertSystem.show("You must be logged in.", 'error');
+
+        // Show loading alert
+        const loadingId = alertSystem.show("Posting...", 'loading');
 
         let uploadedMediaUrl = null;
         let mediaType = null;
 
-        // 1. Upload media if any
+        // Force minimum delay function
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Upload media
         if (selectedMedia) {
             const file = selectedMedia.file;
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${userId}-${Date.now()}.${fileExt}`;
+            const ext = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${ext}`;
 
-            const { data: uploadData, error: uploadError } = await supabaseClient
+            // Start upload AND delay in parallel
+            const uploadPromise = supabaseClient
                 .storage
                 .from("post-media")
-                .upload(fileName, file, {
-                    cacheControl: "3600",
-                    upsert: false
-                });
+                .upload(fileName, file);
+
+            const delayPromise = delay(1000); // 1 second minimum
+
+            const [{ error: uploadError }, _] = await Promise.all([uploadPromise, delayPromise]);
 
             if (uploadError) {
-                console.error(uploadError);
-                alert("Media upload failed!");
-                return;
+                alertSystem.hide(loadingId);
+                return alertSystem.show("Media upload failed!", 'error');
             }
 
-            const { data: publicUrl } = supabaseClient
+            const { data } = supabaseClient
                 .storage
                 .from("post-media")
                 .getPublicUrl(fileName);
 
-            uploadedMediaUrl = publicUrl.publicUrl;
+            uploadedMediaUrl = data.publicUrl;
             mediaType = selectedMedia.type;
+        } else {
+            // Even if no media, still wait 1 second to show loading
+            await delay(1000);
         }
 
-        // 2. Insert post into table
+        // Insert post
         const { error: insertError } = await supabaseClient
             .from("posts")
             .insert({
@@ -177,49 +158,50 @@ document.addEventListener('DOMContentLoaded', function () {
                 content: postContent.value,
                 media_url: uploadedMediaUrl,
                 media_type: mediaType,
-                location: selectedLocation
             });
 
-        if (insertError) {
-            console.error(insertError);
-            alert("Failed to publish post!");
-            return;
-        }
+        // Hide loading alert
+        alertSystem.hide(loadingId);
 
-        alert("Post created successfully!");
+        if (insertError) return alertSystem.show("Failed to publish post!", 'error');
 
-        // Reset form UI
+        // Insert immediately in UI
+        const newPostHtml = uploadedPost(userName, postContent.value, uploadedMediaUrl, mediaType);
+        postsContainer.insertAdjacentHTML("afterbegin", newPostHtml);
+
+        // Reset UI
         postForm.reset();
-        postContent.value = '';
-        charCount.textContent = '0';
-        mediaPreview.classList.add('hidden');
         selectedMedia = null;
-        selectedLocation = null;
+        mediaPreview.classList.add('hidden');
+        charCount.textContent = "0";
         postButton.disabled = true;
+
+        alertSystem.show("Post created successfully!", 'success');
     });
+
+
 
     postButton.disabled = true;
 
+    // Load posts
     async function getPost() {
-        //1. query post
-        const { data, error } = await supabaseClient
+        const { data } = await supabaseClient
             .from('posts')
             .select('*')
-            .order("created_at", {
-                ascending: false
-            });
+            .order("created_at", { ascending: false });
 
+        if (!data) return;
 
-
-        const postsContainer = document.getElementById('all-posts');
-
-        if (!data && data.length > 0) {
-            alert('No data');
-        }
+        postsContainer.innerHTML = "";
 
         data.forEach(post => {
-            const postHtml = uploadedPost(post.user_name, post.content, post.media_url);
-            postsContainer.innerHTML += postHtml;
+            const postHtml = uploadedPost(
+                post.user_name,
+                post.content,
+                post.media_url,
+                post.media_type
+            );
+            postsContainer.insertAdjacentHTML("beforeend", postHtml);
         });
     }
 

@@ -16,11 +16,11 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.classList.remove('hidden');
         modal.classList.add('active', 'flex');
         setTimeout(() => {
-            brand.classList.add('-translate-y-50', 'transition-transform', 'duration-900');
+            brand.classList.add('-translate-y-50');
+            brand.classList.remove('translate-y-0');
             slogan.classList.add('hidden');
-            modal.classList.add('mt-18');
-
         }, 100);
+
     });
 
     // Close modal for both login and signup

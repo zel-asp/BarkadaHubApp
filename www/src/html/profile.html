@@ -7,11 +7,24 @@
         <title>BarkadaHub - Campus Social Network</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            .logout-btn {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                transition: all 0.3s ease;
+            }
+
+            .logout-btn:hover {
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            }
+        </style>
     </head>
 
     <body class="bg-gray-200 pb-10">
         <div id="app">
             <div id="header"></div>
+            <div id="alertContainer" class="absolute top-5 right-5 z-40 max-w-md"></div>
 
             <div class="container mx-auto px-4 mb-10">
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -57,18 +70,20 @@
 
                                         <div class="profile-actions flex gap-3">
                                             <button
-                                                class="primary-btn bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary transition">Edit
-                                                Profile</button>
-                                            <button
-                                                class="secondary-btn bg-white text-primary border border-primary px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition">Share
-                                                Profile</button>
+                                                class="primary-btn bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary transition">
+                                                <i class="fas fa-edit mr-2"></i>Edit Profile
+                                            </button>
+                                            <button id="logoutBtn"
+                                                class="logout-btn text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md">
+                                                <i class="fas fa-sign-out-alt"></i>Logout
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="bg-white rounded-lg shadow-sm p-5">
-                                <h3 class="text-lg font-bold text-primary mb-4" id="Name_post"></h3>
+                                <h3 class="text-lg font-bold text-primary mb-4">Recent Posts</h3>
 
                                 <div class="post bg-white rounded-lg border border-gray-200 p-4 mb-4">
                                     <div class="flex justify-between items-center mb-3">
@@ -78,7 +93,7 @@
                                                     class="w-full h-full object-cover">
                                             </div>
                                             <div>
-                                                <h4 class="font-medium" id="name"></h4>
+                                                <h4 class="font-medium">John Dela Cruz</h4>
                                                 <span class="text-xs text-gray-500">2 days ago · <i
                                                         class="fas fa-globe-americas"></i></span>
                                             </div>
@@ -88,9 +103,38 @@
                                         <p>Just submitted my final project for Data Structures! Feeling accomplished 🎉
                                         </p>
                                     </div>
-                                    xs <div class="flex justify-between text-sm text-gray-500">
-                                        <div class="likes text-xs">42 likes <div class="comments">8 comments</div>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <div class="likes text-xs">42 likes</div>
+                                        <div class="comments text-xs">8 comments</div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional post for demonstration -->
+                                <div class="post bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium">John Dela Cruz</h4>
+                                                <span class="text-xs text-gray-500">1 week ago · <i
+                                                        class="fas fa-users"></i></span>
+                                            </div>
                                         </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p>Had an amazing time at the campus tech fair today! So many innovative
+                                            projects from fellow students. #TechCommunity #Innovation</p>
+                                        <div class="mt-3 rounded-lg overflow-hidden">
+                                            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                                alt="Tech Fair" class="w-full h-48 object-cover rounded-lg">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <div class="likes text-xs">128 likes</div>
+                                        <div class="comments text-xs">24 comments</div>
                                     </div>
                                 </div>
                             </div>
@@ -104,9 +148,35 @@
             <div id="mobileNav"></div>
         </div>
 
+        <!-- Logout Confirmation Modal -->
+        <div class="p-10 shadow-2xl">
+            <div id="logoutModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-sign-out-alt text-red-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Logout</h3>
+                            <p class="text-gray-600 text-sm">Are you sure you want to logout?</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button id="cancelLogout"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition">
+                            Cancel
+                        </button>
+                        <button id="confirmLogout"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition">
+                            Yes, Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <script type="module" src="../js/app.js"></script>
-        <script type="module" src="../js/pages/profile.js"></script>
+
+            <script type="module" src="../js/app.js"></script>
+            <script type="module" src="../js/pages/profile.js"></script>
     </body>
 
 </html>

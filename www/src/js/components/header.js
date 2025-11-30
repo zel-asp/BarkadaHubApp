@@ -10,13 +10,25 @@ export default function HeaderComponent() {
             </div>
             <div class="user-actions flex items-center gap-4">
                 <div class="notification-icon relative cursor-pointer">
-                    <i class="fas fa-bell text-primary
-                        text-md"></i>
+                <a href="./messages.html">
+                    <i class="fas fa-bell text-primary text-lg"></i>
                     <span
-                        class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                        class="notification-badge absolute -top-2 -right-1
+                        text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-extrabold text-white bg-red-500">
+                        3
+                    </span>
+                </a>
                 </div>
+
                 <div class="notification-icon relative cursor-pointer">
-                    <a href="./messages.html"><i class="fa-solid fa-message text-primary text-md"></i></a>
+                    <a href="./messages.html">
+                        <i class="fa-solid fa-message text-primary text-lg"></i>
+                        <span
+                            class="notification-badge absolute -top-2 -right-1
+                            text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-extrabold text-white bg-red-500">
+                            3
+                        </span>
+                    </a>
                     
                 </div>
             </div>
