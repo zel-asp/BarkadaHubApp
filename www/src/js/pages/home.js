@@ -1,3 +1,6 @@
+import supabaseClient from '../supabase.js';
+import uploadedPost from '../render/post.js'
+
 document.addEventListener('DOMContentLoaded', function () {
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
@@ -11,15 +14,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const locationSelector = document.getElementById('locationSelector');
     const closeLocation = document.getElementById('closeLocation');
     const locationInput = document.getElementById('locationInput');
-    const feelingBtn = document.getElementById('feelingBtn');
-    const feelingSelector = document.getElementById('feelingSelector');
-    const closeFeeling = document.getElementById('closeFeeling');
-    const feelingOptions = document.querySelectorAll('.feeling-option');
     const postButton = document.getElementById('postButton');
+
 
     let selectedMedia = null;
     let selectedLocation = null;
-    let selectedFeeling = null;
+
+
+    async function LoadHome() {
+        const { data, error } = await supabaseClient.auth.getUser();
+
+        if (!error && data?.user) {
+            const name = data.user.user_metadata?.display_name || "User";
+
+            const postContent = document.getElementById("postContent");
+
+            if (postContent) {
+                postContent.placeholder = `What's on your mind, ${name}?`;
+            }
+        } else {
+            console.log("User not logged in");
+        }
+    }
 
     // Character counter
     postContent.addEventListener('input', function () {
@@ -97,11 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Location selector
-    locationBtn.addEventListener('click', function () {
-        locationSelector.classList.toggle('hidden');
-        feelingSelector.classList.add('hidden');
-    });
 
     closeLocation.addEventListener('click', function () {
         locationSelector.classList.add('hidden');
@@ -111,91 +122,107 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedLocation = this.value;
     });
 
-    // Feeling selector
-    feelingBtn.addEventListener('click', function () {
-        feelingSelector.classList.toggle('hidden');
-        locationSelector.classList.add('hidden');
-    });
-
-    closeFeeling.addEventListener('click', function () {
-        feelingSelector.classList.add('hidden');
-    });
-
-    feelingOptions.forEach(option => {
-        option.addEventListener('click', function () {
-            selectedFeeling = this.getAttribute('data-feeling');
-
-            // Update feeling button text
-            const feelingText = this.querySelector('.text-xs').textContent;
-            feelingBtn.innerHTML = `<i class="fas fa-smile text-md"></i><span class="text-xs">${feelingText}</span>`;
-
-            feelingSelector.classList.add('hidden');
-        });
-    });
 
     // Form submission
-    postForm.addEventListener('submit', function (e) {
+    postForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        // In a real application, you would send this data to your backend
-        const formData = new FormData();
-        formData.append('content', postContent.value);
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const userId = userData?.user?.id;
+        const userName = userData?.user.user_metadata.display_name;
 
+        if (!userId) {
+            alert("You must be logged in.");
+            return;
+        }
+
+        let uploadedMediaUrl = null;
+        let mediaType = null;
+
+        // 1. Upload media if any
         if (selectedMedia) {
-            formData.append('media', selectedMedia.file);
+            const file = selectedMedia.file;
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${fileExt}`;
+
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
+                .from("post-media")
+                .upload(fileName, file, {
+                    cacheControl: "3600",
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error(uploadError);
+                alert("Media upload failed!");
+                return;
+            }
+
+            const { data: publicUrl } = supabaseClient
+                .storage
+                .from("post-media")
+                .getPublicUrl(fileName);
+
+            uploadedMediaUrl = publicUrl.publicUrl;
+            mediaType = selectedMedia.type;
         }
 
-        if (selectedLocation) {
-            formData.append('location', selectedLocation);
+        // 2. Insert post into table
+        const { error: insertError } = await supabaseClient
+            .from("posts")
+            .insert({
+                user_id: userId,
+                user_name: userName,
+                content: postContent.value,
+                media_url: uploadedMediaUrl,
+                media_type: mediaType,
+                location: selectedLocation
+            });
+
+        if (insertError) {
+            console.error(insertError);
+            alert("Failed to publish post!");
+            return;
         }
 
-        if (selectedFeeling) {
-            formData.append('feeling', selectedFeeling);
-        }
+        alert("Post created successfully!");
 
-        // Simulate successful post submission
-        alert('Post created successfully!');
-
-        // Reset form
+        // Reset form UI
         postForm.reset();
         postContent.value = '';
         charCount.textContent = '0';
         mediaPreview.classList.add('hidden');
         selectedMedia = null;
         selectedLocation = null;
-        selectedFeeling = null;
-
-        // Reset feeling button
-        feelingBtn.innerHTML = `<i class="fas fa-smile text-md"></i><span class="text-xs">Feeling</span>`;
-
-        // Disable post button
         postButton.disabled = true;
     });
 
-    // Initialize post button as disabled
     postButton.disabled = true;
 
+    async function getPost() {
+        //1. query post
+        const { data, error } = await supabaseClient
+            .from('posts')
+            .select('*')
+            .order("created_at", {
+                ascending: false
+            });
 
 
 
-    document.addEventListener('DOMContentLoaded', function() {
-    LoadHome();
-});
+        const postsContainer = document.getElementById('all-posts');
 
-     async function LoadHome() {
-    const { data, error } = await supabaseClient.auth.getUser();
-
-    if (!error && data?.user) {
-        const name = data.user.user_metadata?.display_name || "User";
-
-        const FeedElement = document.getElementById("postContent");
-        
-          
-        if (FeedElement ) {
-            FeedElement.placeholder= `What's on your mind, ${name}?`;
+        if (!data && data.length > 0) {
+            alert('No data');
         }
-    } else {
-        console.log("User not logged in");
+
+        data.forEach(post => {
+            const postHtml = uploadedPost(post.user_name, post.content, post.media_url);
+            postsContainer.innerHTML += postHtml;
+        });
     }
-}
+
+    LoadHome();
+    getPost();
 });

@@ -8,10 +8,10 @@ async function LoadHome() {
         const name = data.user.user_metadata?.display_name || "User";
 
         const FeedElement = document.getElementById("FeedPost");
-        
-          
-        if (FeedElement ) {
-            FeedElement.placeholder= `What's on your mind, ${name}?`;
+
+
+        if (FeedElement) {
+            FeedElement.placeholder = `What's on your mind, ${name}?`;
         }
     } else {
         console.log("User not logged in");

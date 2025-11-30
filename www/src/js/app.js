@@ -2,8 +2,6 @@ import HeaderComponent from "./components/header.js";
 import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navigations.js";
 
 document.addEventListener('DOMContentLoaded', function () {
-
-
     // Load components
     const headerElement = document.getElementById('header');
     const mobileNav = document.getElementById('mobileNav');

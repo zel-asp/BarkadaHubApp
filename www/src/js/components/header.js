@@ -1,6 +1,6 @@
 export default function HeaderComponent() {
     return `
-<header class="bg-white shadow-sm sticky top-0 z-40">
+<header class="bg-white shadow-sm sticky top-0 z-40 md:mb-10">
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center py-4">
             <div class="logo flex items-center gap-2 text-black  font-extrabold text-xl cursor-pointer"

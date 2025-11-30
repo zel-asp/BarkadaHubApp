@@ -31,8 +31,7 @@
                                             <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
                                                 class="w-full h-full object-cover">
                                         </div>
-                                        <textarea id="postContent" name="postContent"
-                                            placeholder="What's on your mind, Alex?"
+                                        <textarea id="postContent" name="postContent" placeholder=""
                                             class="flex-1 border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                                             minlength="0" maxlength="500" rows="3"></textarea>
                                     </div>
@@ -85,124 +84,22 @@
                                             </button>
                                         </div>
                                     </div>
-
-                                    <!-- Location Selector (Hidden by default) -->
-                                    <div id="locationSelector" class="hidden border border-gray-300 rounded-lg p-3">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm font-medium">Add Location</span>
-                                            <button type="button" id="closeLocation"
-                                                class="text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <input type="text" id="locationInput" placeholder="Where are you?"
-                                            class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-primary">
-                                        <div class="mt-2 text-xs text-gray-500">
-                                            Popular locations: University Campus, Library, Student Center, Cafeteria
-                                        </div>
-                                    </div>
-
-                                    <!-- Feeling Selector (Hidden by default) -->
-                                    <div id="feelingSelector" class="hidden border border-gray-300 rounded-lg p-3">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm font-medium">How are you feeling?</span>
-                                            <button type="button" id="closeFeeling"
-                                                class="text-gray-500 hover:text-gray-700">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="grid grid-cols-4 gap-2">
-                                            <button type="button"
-                                                class="feeling-option p-2 rounded-lg hover:bg-gray-100 transition text-center"
-                                                data-feeling="happy">
-                                                <i class="fas fa-smile text-yellow-500 text-xl"></i>
-                                                <div class="text-xs mt-1">Happy</div>
-                                            </button>
-                                            <button type="button"
-                                                class="feeling-option p-2 rounded-lg hover:bg-gray-100 transition text-center"
-                                                data-feeling="excited">
-                                                <i class="fas fa-grin-stars text-purple-500 text-xl"></i>
-                                                <div class="text-xs mt-1">Excited</div>
-                                            </button>
-                                            <button type="button"
-                                                class="feeling-option p-2 rounded-lg hover:bg-gray-100 transition text-center"
-                                                data-feeling="tired">
-                                                <i class="fas fa-tired text-blue-500 text-xl"></i>
-                                                <div class="text-xs mt-1">Tired</div>
-                                            </button>
-                                            <button type="button"
-                                                class="feeling-option p-2 rounded-lg hover:bg-gray-100 transition text-center"
-                                                data-feeling="studious">
-                                                <i class="fas fa-book text-green-500 text-xl"></i>
-                                                <div class="text-xs mt-1">Studious</div>
-                                            </button>
-                                        </div>
-                                    </div>
                                 </form>
                             </div>
 
                             <!-- All Posts Tab -->
                             <div class="tab-content active" id="all-posts">
-                                <!-- Sample Post 1 -->
+                                <!-- initial Post by Developers -->
                                 <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
                                     <div class="flex justify-between items-center mb-4">
                                         <div class="flex items-center gap-3">
                                             <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                                                <img src="https://i.pravatar.cc/150?img=5" alt="User Avatar"
+                                                <img src="https://i.pravatar.cc/150?img=1" alt="Developer Avatar"
                                                     class="w-full h-full object-cover">
                                             </div>
                                             <div>
-                                                <h4 class="font-medium">Maria Santos</h4>
-                                                <span class="text-xs text-gray-500">2 hours ago · <i
-                                                        class="fas fa-globe-americas"></i></span>
-                                            </div>
-                                        </div>
-                                        <div class="text-gray-500 cursor-pointer">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <p>Just finished my finals! So relieved! Who's up for a study break hangout this
-                                            weekend? 🎉</p>
-                                    </div>
-                                    <div
-                                        class="flex justify-between text-xs text-gray-500 mb-3 pb-3 border-b border-gray-200">
-                                        <div class="likes">125 likes</div>
-                                        <div class="comments">23 comments</div>
-                                    </div>
-                                    <div class="flex justify-around border-t border-gray-200 pt-2">
-                                        <button
-                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
-                                            <i class="far fa-thumbs-up text-sm"></i>
-                                            <span class="text-xs">Like</span>
-                                        </button>
-
-                                        <button
-                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
-                                            <i class="far fa-comment text-sm"></i>
-                                            <span class="text-xs">Comment</span>
-                                        </button>
-
-                                        <button
-                                            class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
-                                            <i class="far fa-share-square text-sm"></i>
-                                            <span class="text-xs">Share</span>
-                                        </button>
-                                    </div>
-
-                                </div>
-
-                                <!-- Sample Post 2 -->
-                                <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                                                <img src="https://i.pravatar.cc/150?img=8" alt="User Avatar"
-                                                    class="w-full h-full object-cover">
-                                            </div>
-                                            <div>
-                                                <h4 class="font-medium">Computer Science Club</h4>
-                                                <span class="text-xs text-gray-500">5 hours ago · <i
+                                                <h4 class="font-medium">Developer Team</h4>
+                                                <span class="text-xs text-gray-500">Just now · <i
                                                         class="fas fa-users"></i></span>
                                             </div>
                                         </div>
@@ -211,17 +108,22 @@
                                         </div>
                                     </div>
                                     <div class="mb-4">
-                                        <p>Join us this Friday for our Hackathon 2023! Prizes, food, and coding fun!
-                                            Register now at csclub.edu/events</p>
-                                        <div class="post-image mt-3 rounded-lg overflow-hidden">
-                                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-                                                alt="Hackathon Event" class="w-full h-auto object-cover">
+                                        <p>Welcome to BarkadaHub! This is the first post created by the developers.
+                                            Enjoy connecting with your campus community!</p>
+                                        <div class="post-image mt-3 rounded-lg overflow-hidden h-64 w-full">
+                                            <img src="../images/image.png" alt="Post Image"
+                                                class="w-full h-full object-fit">
+                                        </div>
+
+                                        <div class="post-video mt-3 rounded-lg overflow-hidden h-64 w-full">
+                                            <video src="../videos/video.mp4" controls
+                                                class="w-full h-full object-cover"></video>
                                         </div>
                                     </div>
                                     <div
                                         class="flex justify-between text-xs text-gray-500 mb-3 pb-3 border-b border-gray-200">
-                                        <div class="likes">89 likes</div>
-                                        <div class="comments">15 comments</div>
+                                        <div class="likes">0 likes</div>
+                                        <div class="comments">0 comments</div>
                                     </div>
                                     <div class="flex justify-around border-t border-gray-200 pt-2">
                                         <button
@@ -229,25 +131,24 @@
                                             <i class="far fa-thumbs-up text-sm"></i>
                                             <span class="text-xs">Like</span>
                                         </button>
-
                                         <button
                                             class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
                                             <i class="far fa-comment text-sm"></i>
                                             <span class="text-xs">Comment</span>
                                         </button>
-
                                         <button
                                             class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-100 py-2 rounded-lg transition">
                                             <i class="far fa-share-square text-sm"></i>
                                             <span class="text-xs">Share</span>
                                         </button>
                                     </div>
-
                                 </div>
                             </div>
                             <div id="mobileNav"></div>
                         </div>
                     </div>
+
+                    <div id="rightSideBar"></div>
                 </div>
             </div>
         </div>
@@ -255,7 +156,7 @@
 
         <script type="module" src="../js/app.js"></script>
         <script type="module" src="../js/pages/home.js"></script>
-     
+
     </body>
 
 </html>
