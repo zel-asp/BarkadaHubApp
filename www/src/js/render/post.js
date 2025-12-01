@@ -55,3 +55,46 @@ export default function uploadedPost(name, content, file, media_type) {
         </div>
     `
 }
+
+export function lost_found(img, type, item, description, location, datePosted) {
+    return `
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            <div class="h-56 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50 p-2 relative group">
+                <div class="w-full h-full rounded-lg overflow-hidden border-2 border-blue-100/50">
+                    <img src="${img}"
+                        alt="${item}" 
+                        class="w-full h-full object-fit transition-transform duration-500 group-hover:scale-110">
+                </div>
+            </div>
+            
+            <div class="p-6 bg-linear-to-b from-white to-gray-50/50">
+                <!-- Enhanced status badge with better colors -->
+                <span
+                    class="item-status status-lost inline-block ${type === 'lost' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'} text-xs px-3 py-1.5 rounded-full font-semibold mb-3 shadow-sm">
+                    ${type === 'lost' ? 'LOST' : 'FOUND'}
+                </span>
+                
+                <h3 class="font-bold text-md mb-3 text-gray-800">Item: ${item}</h3>
+                <p class="text-gray-600 mb-4 text-sm  leading-relaxed">Desciption: ${description}</p>
+                
+                <!-- Enhanced location/date with colored icons -->
+                <div class="flex justify-between text-sm text-gray-600 mb-5 bg-gray-50/80 rounded-lg p-3">
+                    <span class="flex items-center font-medium">
+                        <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> 
+                        <span class="text-gray-700">${location}</span>
+                    </span>
+                    <span class="flex items-center font-medium">
+                        <i class="fas fa-clock mr-2 text-gray-500"></i> 
+                        <span class="text-gray-700">${datePosted}</span>
+                    </span>
+                </div>
+                
+                <!-- Enhanced button with gradient -->
+                <button
+                    class="claim-btn w-full bg-primary text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]">
+                    ${type === 'lost' ? 'I Found This' : 'This is Mine'}
+                </button>
+            </div>
+        </div>
+    `
+}

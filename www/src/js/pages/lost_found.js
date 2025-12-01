@@ -1,20 +1,19 @@
 import supabaseClient from '../supabase.js';
+import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
+    // Get logged-in user
     const { data, error } = await supabaseClient.auth.getUser();
+    const userId = data?.user?.id;
 
     if (error || !data?.user) {
-
         alertSystem.show("You must be logged in.", 'error');
-        setTimeout(() => {
-            window.location.href = '../../index.html';
-        }, 1500);
+        setTimeout(() => window.location.href = '../../index.html', 1500);
         return;
     }
-
 
     const openUploadFormBtn = document.getElementById('openUploadForm');
     const uploadModal = document.getElementById('uploadModal');
@@ -23,11 +22,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const imageUpload = document.getElementById('imageUpload');
     const imagePreview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
+    const lostFoundContainer = document.getElementById('lostFoundContainer');
 
-    // Open modal
+    const displayedItemIds = new Set(); // Track rendered items
+
+    // Open / Close modal
     openUploadFormBtn.addEventListener('click', () => uploadModal.classList.remove('hidden'));
-
-    // Close modal
     const closeModal = () => {
         uploadModal.classList.add('hidden');
         lostFoundForm.reset();
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     uploadModal.addEventListener('click', e => { if (e.target === uploadModal) closeModal(); });
 
     // Image preview
-    imageUpload.addEventListener('change', function (e) {
+    imageUpload.addEventListener('change', e => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -49,44 +49,34 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Form submission
-    lostFoundForm.addEventListener('submit', async function (e) {
+    // Submit report
+    lostFoundForm.addEventListener('submit', async e => {
         e.preventDefault();
 
-        // Check if user is logged in
         const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) {
-            alert("You must be logged in to submit a report!");
-            return;
-        }
+        if (!user) return alertSystem.show("You must be logged in!", 'error');
 
         const itemType = document.querySelector('input[name="itemType"]:checked').value;
         const itemName = document.getElementById('itemName').value;
         const category = document.getElementById('category').value;
         const description = document.getElementById('description').value;
         const location = document.getElementById('location').value;
-        const date = document.getElementById('date').value;
-        const contact = document.getElementById('contact').value;
         const file = imageUpload.files[0];
 
         let filePath = null;
-
         if (file) {
-            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            const ext = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${ext}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
                 .from('lost_found')
-                .upload(`${user.id}/${file.name}`, file);
-
-            if (uploadError) {
-                console.error(uploadError);
-                alert("Failed to upload image");
-                return;
-            }
-
+                .upload(fileName, file);
+            if (uploadError) return alertSystem.show("Failed to upload image!", 'error');
             filePath = uploadData.path;
         }
 
-        // Insert into Supabase table
-        const { data: report, error: insertError } = await supabaseClient
+        // Insert row
+        const { data: insertedData, error: insertError } = await supabaseClient
             .from('lost_found')
             .insert([{
                 item_type: itemType,
@@ -94,22 +84,71 @@ document.addEventListener('DOMContentLoaded', async function () {
                 category,
                 description,
                 location,
-                contact_number: contact,
                 auth_id: user.id,
                 file_name: filePath,
                 created_at: new Date()
-            }]);
+            }])
+            .select(); // return inserted row
 
-        if (insertError) {
-            console.error(insertError);
-            alert("Failed to submit report!");
-            return;
-        }
+        if (insertError) return alertSystem.show("Failed to submit report!", 'error');
 
-        alert("Your report has been submitted successfully!");
+        alertSystem.show("Report submitted successfully!", 'success');
         closeModal();
+
+        // Render new report immediately
+        renderLostFoundSingle(insertedData[0], true);
     });
 
-    // Set today's date as default
-    document.getElementById('date').valueAsDate = new Date();
+    // Render all lost & found items on page load
+    async function renderLostFound() {
+        try {
+            const { data: items, error } = await supabaseClient
+                .from('lost_found')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            if (!items) return;
+
+            lostFoundContainer.innerHTML = '';
+            items.forEach(item => renderLostFoundSingle(item));
+        } catch (err) {
+            console.error("Failed to render lost & found:", err);
+        }
+    }
+
+    // Render single item (can prepend or append)
+    async function renderLostFoundSingle(item, prepend = false) {
+        if (displayedItemIds.has(item.id)) return;
+
+        let fileUrl = '';
+        if (item.file_name) {
+            const { data: storageData } = supabaseClient
+                .storage
+                .from('lost_found')
+                .getPublicUrl(item.file_name);
+            fileUrl = storageData.publicUrl;
+        }
+
+        const datePosted = new Date(item.created_at).toLocaleString();
+        const postHtml = lost_found(
+            fileUrl,
+            item.item_type,
+            item.item_name,
+            item.description,
+            item.location,
+            datePosted
+        );
+
+        if (prepend) {
+            lostFoundContainer.insertAdjacentHTML("afterbegin", postHtml);
+        } else {
+            lostFoundContainer.insertAdjacentHTML("beforeend", postHtml);
+        }
+
+        displayedItemIds.add(item.id);
+    }
+
+    renderLostFound();
+
+
 });

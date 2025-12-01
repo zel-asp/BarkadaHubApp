@@ -11,7 +11,7 @@
 
     <body class="bg-primary">
         <div id="app">
-            <!-- Simple Header -->
+            <!-- Header video-->
             <div class="bg-none  py-4 px-4 fixed top-0 w-full z-50">
                 <div class="flex items-center justify-between">
                     <h1 class="text-white text-xl font-bold">Videos</h1>
@@ -83,35 +83,7 @@
 
 
         <script type="module" src="../js/app.js"></script>
-        <script>
-            // Simple video play/pause on click
-            document.addEventListener('click', function (e) {
-                if (e.target.closest('.video-item')) {
-                    const video = e.target.closest('.video-item').querySelector('video');
-                    if (video.paused) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
-                }
-            });
-
-            // Auto-play videos when they come into view
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target.querySelector('video');
-                    if (entry.isIntersecting) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
-                });
-            }, { threshold: 0.8 });
-
-            document.querySelectorAll('.video-item').forEach(item => {
-                observer.observe(item);
-            });
-        </script>
+        <script type="module" src="../js/pages/videos.js"></script>
     </body>
 
 </html>
