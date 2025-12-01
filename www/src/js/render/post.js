@@ -10,7 +10,7 @@ export default function uploadedPost(name, content, file, media_type) {
                     <div>
                         <h4 class="font-medium">${name}</h4>
                         <span class="text-xs text-gray-500">Just now · <i
-                                class="fas fa-users"></i></span>
+                                class="fa-regular fa-user"></i></span>
                     </div>
                 </div>
                 <div class="text-gray-500 cursor-pointer">

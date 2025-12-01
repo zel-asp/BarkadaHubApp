@@ -2,18 +2,7 @@ import supabaseClient from '../supabase.js';
 import uploadedPost from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 
-document.addEventListener('DOMContentLoaded', async function () {
-
-    const alertSystem = new AlertSystem();
-
-    const { data, error } = await supabaseClient.auth.getUser();
-    if (error || !data?.user) {
-        alertSystem.show("You must be logged in.", 'error');
-        setTimeout(() => {
-            window.location.href = '../../index.html';
-        }, 1500);
-        return;
-    }
+document.addEventListener('DOMContentLoaded', function () {
 
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
@@ -27,13 +16,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     const postsContainer = document.getElementById('dynamic-posts');
 
     let selectedMedia = null;
-    const displayedPostIds = new Set(); // Track posts already shown
+    const displayedPostIds = new Set();
+    const alertSystem = new AlertSystem();
+
 
     async function LoadHome() {
         const { data, error } = await supabaseClient.auth.getUser();
         if (!error && data?.user) {
             const name = data.user.user_metadata?.display_name || "User";
             postContent.placeholder = `What's on your mind, ${name}?`;
+        } else {
+            alertSystem.show("You must be logged in.", 'error');
+            setTimeout(() => {
+                window.location.href = '../../index.html';
+            }, 1500);
+            return;
         }
     }
 
