@@ -10,3 +10,18 @@ export function timeout(modal, brand, slogan) {
         slogan.classList.add('block');
     }, 300);
 }
+
+export async function checkConnection() {
+    try {
+
+        await fetch('https://www.gstatic.com/generate_204', {
+            method: 'HEAD',
+            mode: 'no-cors',
+            cache: 'no-store'
+        });
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}

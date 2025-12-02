@@ -5,6 +5,10 @@ export default class AlertSystem {
         this.alertCount = 0;
     }
 
+    setContainer(containerId = 'alertContainer') {
+        this.container = document.getElementById(containerId);
+    }
+
     show(message, type = 'info', duration = 5000) {
         this.alertCount++;
         const alertId = `alert-${this.alertCount}`;
