@@ -740,6 +740,9 @@
   .flex-shrink-0 {
     flex-shrink: 0;
   }
+  .flex-grow {
+    flex-grow: 1;
+  }
   .grow {
     flex-grow: 1;
   }
@@ -780,6 +783,9 @@
   }
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+  }
+  .animate-\[fadeIn_0\.3s_ease-out\] {
+    animation: fadeIn 0.3s ease-out;
   }
   .animate-bounce {
     animation: var(--animate-bounce);
@@ -1226,6 +1232,9 @@
   .bg-indigo-700 {
     background-color: var(--color-indigo-700);
   }
+  .bg-orange-600 {
+    background-color: var(--color-orange-600);
+  }
   .bg-orange-700 {
     background-color: var(--color-orange-700);
   }
@@ -1336,6 +1345,12 @@
   }
   .bg-\[linear-gradient\(135deg\,\#E3FDFD_0\%\,\#71C9CE_50\%\,\#A6E3E9_100\%\)\] {
     background-image: linear-gradient(135deg,#E3FDFD 0%,#71C9CE 50%,#A6E3E9 100%);
+  }
+  .bg-\[url\(\'\.\.\/images\.css\.png\'\)\] {
+    background-image: url('../images.css.png');
+  }
+  .bg-\[url\(\'\.\.\/images\/css\.png\'\)\] {
+    background-image: url('../images/css.png');
   }
   .bg-none {
     background-image: none;
@@ -1475,8 +1490,14 @@
     --tw-gradient-to: var(--color-white);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
+  .bg-cover {
+    background-size: cover;
+  }
   .bg-clip-text {
     background-clip: text;
+  }
+  .bg-center {
+    background-position: center;
   }
   .object-cover {
     object-fit: cover;
@@ -1501,6 +1522,9 @@
   }
   .p-10 {
     padding: calc(var(--spacing) * 10);
+  }
+  .p-12 {
+    padding: calc(var(--spacing) * 12);
   }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
