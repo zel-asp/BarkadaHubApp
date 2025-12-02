@@ -109,9 +109,6 @@
                                                         class="fas fa-users"></i></span>
                                             </div>
                                         </div>
-                                        <div class="text-gray-500 cursor-pointer">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </div>
                                     </div>
                                     <div class="mb-4">
                                         <p>Welcome to BarkadaHub! This is the first post created by the developers.
@@ -156,6 +153,84 @@
 
         <div id="offlinePage" class="hidden">
         </div>
+
+        <!-- Improved Ellipsis Menu Modal -->
+        <div id="ellipsisMenuModal"
+            class="fixed inset-0  bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-xs mx-4 transform transition-all duration-200 scale-95 animate-scaleIn">
+                <div class="p-4">
+
+                    <!-- Delete Option -->
+                    <button id="deletePostBtn"
+                        class="w-full flex items-center px-4 py-3.5 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 group relative overflow-hidden mb-2">
+                        <!-- Animated left accent bar -->
+                        <div
+                            class="absolute left-0 top-0 h-full w-1 bg-red-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300">
+                        </div>
+                        <!-- Icon with hover effect -->
+                        <div class="relative w-8 h-8 flex items-center justify-center mr-3">
+                            <div
+                                class="absolute inset-0 bg-red-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                            </div>
+                            <i class="fas fa-trash-alt text-sm relative z-10"></i>
+                        </div>
+                        <!-- Text -->
+                        <span class="font-medium text-sm">Delete Post</span>
+                        <!-- Chevron indicator -->
+                        <i
+                            class="fas fa-chevron-right ml-auto text-gray-400 text-xs group-hover:translate-x-1 transition-transform duration-200"></i>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="border-t border-gray-100 mb-4"></div>
+
+                    <!-- Cancel Option -->
+                    <button id="closeEllipsisMenu"
+                        class="w-full flex items-center justify-center px-4 py-3.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium border border-gray-200 hover:border-gray-300 hover:shadow-sm">
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal for Deletion -->
+        <div id="deleteConfirmationModal"
+            class="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div
+                class="delete-card bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 transform transition-all duration-200 scale-95">
+                <div class="p-6">
+                    <!-- Warning Icon -->
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Text -->
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Delete this post?</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            This action cannot be undone. The post will be permanently removed from BarkadaHub.
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col space-y-3">
+                        <button type="button" id="confirmDeleteBtn"
+                            class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
+                            Delete permanently
+                        </button>
+                        <button type="button" id="cancelDeleteBtn"
+                            class="w-full py-3.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 rounded-xl font-medium transition-all duration-200">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
 
         <script type="module" src="../js/app.js"></script>

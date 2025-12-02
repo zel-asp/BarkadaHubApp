@@ -4,105 +4,108 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BarkadaHub - Campus Social Network</title>
+        <title>BarkadaHub - Videos</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
-    <body class="bg-gray-200 ">
-        <!-- for alerts -->
+    <body class="bg-white">
         <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
         <div id="app">
-            <div id="header"></div>
 
-            <div class="container mx-auto px-4 mb-10">
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <!-- Left Sidebar -->
-                    <div id="leftSideBar"></div>
+            <!-- Videos Container -->
+            <div class="h-screen">
+                <div class="p-4 bg-white ">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-arrow-left hover:cursor-pointer"></i>
+                            <h1 class="text-2xl font-bold text-gray-900">Chats</h1>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button
+                                class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors group"
+                                title="More Options">
+                                <i class="fas fa-ellipsis-h text-gray-600 group-hover:text-primary"></i>
+                            </button>
+                            <button
+                                class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors group"
+                                title="New Message">
+                                <i class="fas fa-edit text-gray-600 group-hover:text-primary"></i>
+                            </button>
+                        </div>
+                    </div>
 
-                    <!-- Main Content Area -->
-                    <div class="lg:col-span-2">
-                        <!-- Messages Page -->
-                        <div class="page-section" id="messages-page">
-                            <h2 class="text-xl font-bold text-primary mb-6">Messages</h2>
+                    <!-- Search Box -->
+                    <div class="mb-8">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" placeholder="Search conversations..."
+                                class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-800 placeholder-gray-500 transition-all">
+                        </div>
+                    </div>
 
-                            <div
-                                class="bg-white rounded-lg shadow-sm overflow-hidden h-[600px] flex flex-col md:flex-row">
-                                <!-- Conversations List -->
-                                <div
-                                    class="conversations-list w-full md:w-2/5 border-r border-gray-200 overflow-y-auto">
-                                    <!-- Search Bar -->
-                                    <div class="p-4 border-b border-gray-200">
-                                        <input type="text" placeholder="🔍 Search messages"
-                                            class="w-full bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-400">
-                                    </div>
+                    <!-- Messages Section Header -->
+                    <div class="flex items-center justify-between ">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                Messages
+                            </h2>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Chat List -->
+                <div class="flex-1 overflow-y-auto scrollbar-hide">
+                    <!-- Example Chat Item 1 -->
+                    <div class="chat-list-item px-4 py-3 cursor-pointer hover:bg-gray-200">
+                        <div class="flex items-center">
+                            <img src="../images/image.png" alt="Profile"
+                                class="w-12 h-12 rounded-full object-cover border-primary shadow-lg">
 
-                                    <!-- Conversation Items -->
-                                    <div
-                                        class="conversation selected flex items-center gap-3 p-4 border-b border-gray-200 cursor-pointer">
-                                        <div class="avatar w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                                            <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-center">
-                                                <h4 class="font-medium truncate">Friend 1</h4>
-                                                <span class="text-xs text-gray-500">10:48</span>
-                                            </div>
-                                            <p class="text-sm text-gray-500 truncate">Qui maiores impedit ea rerum ipsa
-                                                qui fuga</p>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="conversation selected flex items-center gap-3 p-4 border-b border-gray-200 cursor-pointer">
-                                        <div class="avatar w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                                            <img src="https://i.pravatar.cc/150?img=32" alt="User Avatar"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-center">
-                                                <h4 class="font-medium truncate">Friend 2</h4>
-                                                <span class="text-xs text-gray-500">10:48</span>
-                                            </div>
-                                            <p class="text-sm text-gray-500 truncate">Qui maiores impedit ea rerum ipsa
-                                                qui fuga</p>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="conversation flex items-center gap-3 p-4 border-b border-gray-200 cursor-pointer">
-                                        <div class="avatar w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                                            <img src="https://i.pravatar.cc/150?img=45" alt="User Avatar"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-center">
-                                                <h4 class="font-medium truncate">It Club</h4>
-                                                <span class="text-xs text-gray-500">10:48</span>
-                                            </div>
-                                            <p class="text-sm text-gray-500 truncate">Fue impedit nesciunt sed
-                                                recusandae ratione qui...</p>
-                                        </div>
-                                    </div>
+                            <div class="ml-3 flex-1">
+                                <div class="flex justify-between">
+                                    <div class="font-semibold">BSIT 32010 IM</div>
+                                    <div class="text-xs text-gray-400">15m</div>
+                                </div>
+                                <div class="text-sm text-gray-500 truncate">
+                                    IPM po ako sa mga wala ...
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Right Sidebar -->
-                    <div id="rightSideBar"></div>
+
+                    <!-- Example Chat Item 2 -->
+                    <div class="chat-list-item px-4 py-3 cursor-pointer hover:bg-gray-200">
+                        <div class="flex items-center">
+                            <img src="../images/wp3792745.jpg" alt="Profile"
+                                class="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-lg">
+
+
+                            <div class="ml-3 flex-1">
+                                <div class="flex justify-between">
+                                    <div class="font-semibold">IT Club</div>
+                                    <div class="text-xs text-gray-400">15h</div>
+                                </div>
+                                <div class="text-sm text-gray-500 truncate">
+                                    Switch ka na mamaya.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <!-- Mobile Bottom Navigation -->
-                <div id="mobileNav"></div>
             </div>
         </div>
 
         <div id="offlinePage" class="hidden">
         </div>
 
+
         <script type="module" src="../js/app.js"></script>
-        <script type="module" src="../js/pages/messages.js"></script>
+        <script type="module" src="../js/pages/videos.js"></script>
     </body>
 
 </html>

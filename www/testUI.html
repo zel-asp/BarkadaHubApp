@@ -9,178 +9,36 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
-    <body class="bg-gray-200 pb-10">
+    <body class="bg-gray-200">
         <div id="app">
 
-            <div class="h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
-                <div class="max-w-md w-full text-center">
-                    <!-- Animated icon -->
-                    <div class="relative w-32 h-32 mx-auto mb-8">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-r from-red-100 to-red-50 rounded-full animate-pulse">
-                        </div>
-                        <div class="relative w-full h-full flex items-center justify-center">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
-                                <i class="fas fa-wifi-slash text-4xl text-red-500"></i>
-                            </div>
-                        </div>
+            <div id="ellipsisMenuModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-xs mx-4">
+                    <div class="p-4">
+                        <!-- Delete Option -->
+                        <button id="deletePostBtn"
+                            class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <i class="fas fa-trash-alt mr-3"></i>
+                            <span class="font-medium">Delete Post</span>
+                        </button>
 
-                        <!-- Signal waves -->
-                        <div class="absolute -inset-4">
-                            <div class="absolute inset-0 border-2 border-red-200 rounded-full animate-ping"></div>
-                            <div class="absolute inset-2 border-2 border-red-100 rounded-full animate-ping"
-                                style="animation-delay: 0.5s"></div>
-                        </div>
-                    </div>
+                        <!-- Edit Option (optional) -->
+                        <button id="editPostBtn"
+                            class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition mt-1">
+                            <i class="fas fa-edit mr-3"></i>
+                            <span class="font-medium">Edit Post</span>
+                        </button>
 
-                    <!-- Title -->
-                    <h1 class="text-2xl font-bold text-gray-800 mb-3">No Internet Connection</h1>
-
-                    <!-- Description -->
-                    <p class="text-gray-600 mb-8 leading-relaxed">
-                        You're currently offline. Please check your network connection and try again.
-                        <span class="block text-sm text-gray-500 mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            We'll automatically retry when connection is restored
-                        </span>
-                    </p>
-
-                    <!-- Refresh Button -->
-                    <button id="retryBtn"
-                        class="retry-btn w-full max-w-xs mx-auto px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center">
-                        <i class="fas fa-sync-alt mr-3"></i>
-                        <span class="btn-text">Retry Connection</span>
-                    </button>
-
-                    <!-- Offline Tips -->
-                    <div class="mt-10 p-5 bg-gray-50 rounded-xl border border-gray-200 text-left">
-                        <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
-                            <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
-                            Try these steps:
-                        </h3>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
-                                Check your Wi-Fi or mobile data connection
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
-                                Turn airplane mode on and off
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
-                                Restart your router or modem
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
-                                Try accessing other websites to confirm
-                            </li>
-                        </ul>
+                        <!-- Cancel Option -->
+                        <button id="closeEllipsisMenu"
+                            class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition mt-1">
+                            <i class="fas fa-times mr-3"></i>
+                            <span class="font-medium">Cancel</span>
+                        </button>
                     </div>
                 </div>
             </div>
-
         </div>
-
-        <script type="module" src="./src/js/app.js"></script>
-
-        <script>
-            // Add this JavaScript for the retry functionality
-            document.addEventListener('DOMContentLoaded', function () {
-                const retryBtn = document.getElementById('retryBtn');
-
-                if (retryBtn) {
-                    retryBtn.addEventListener('click', function () {
-                        const btn = this;
-                        const originalContent = btn.innerHTML;
-
-                        // Show loading state
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i><span class="btn-text">Checking connection...</span>';
-                        btn.disabled = true;
-
-                        // Check if online
-                        function checkConnection() {
-                            return new Promise((resolve) => {
-                                // Try to fetch a small resource
-                                fetch('https://www.google.com/favicon.ico?cache=' + new Date().getTime(), {
-                                    method: 'HEAD',
-                                    mode: 'no-cors',
-                                    cache: 'no-cache'
-                                })
-                                    .then(() => resolve(true))
-                                    .catch(() => resolve(false));
-                            });
-                        }
-
-                        // Simulate check with timeout
-                        setTimeout(async () => {
-                            const isOnline = await checkConnection();
-
-                            if (isOnline || navigator.onLine) {
-                                // Show success
-                                btn.innerHTML = '<i class="fas fa-check mr-3"></i><span class="btn-text">Connected! Reloading...</span>';
-                                btn.classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
-                                btn.classList.add('from-green-500', 'to-green-600');
-
-                                // Reload page after 1.5 seconds
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1500);
-                            } else {
-                                // Still offline
-                                btn.innerHTML = originalContent;
-                                btn.disabled = false;
-
-                                // Add error effect
-                                btn.classList.add('animate-shake');
-                                setTimeout(() => {
-                                    btn.classList.remove('animate-shake');
-                                }, 500);
-
-                                alert('Still offline. Please check your internet connection and try again.');
-                            }
-                        }, 2000);
-                    });
-                }
-
-                // Listen for connection status changes
-                window.addEventListener('online', function () {
-                    console.log('Connection restored!');
-                    // You could auto-reload or show a message
-                    const connectionAlert = document.createElement('div');
-                    connectionAlert.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-                    connectionAlert.innerHTML = '<i class="fas fa-wifi mr-2"></i>Connection restored! Reloading...';
-                    document.body.appendChild(connectionAlert);
-
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-
-                    setTimeout(() => {
-                        connectionAlert.remove();
-                    }, 3000);
-                });
-
-                window.addEventListener('offline', function () {
-                    console.log('Connection lost!');
-                    // The page is already showing offline state
-                });
-
-                // Add shake animation for CSS
-                const style = document.createElement('style');
-                style.textContent = `
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-                .animate-shake {
-                    animation: shake 0.5s ease-in-out;
-                }
-            `;
-                document.head.appendChild(style);
-            });
-        </script>
     </body>
 
 </html>

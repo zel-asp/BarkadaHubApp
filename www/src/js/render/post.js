@@ -1,6 +1,6 @@
-export default function uploadedPost(name, content, file, media_type) {
+export default function uploadedPost(name, content, file, media_type, postId = 1) {
     return `
-       <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
@@ -13,9 +13,13 @@ export default function uploadedPost(name, content, file, media_type) {
                                 class="fa-regular fa-user"></i></span>
                     </div>
                 </div>
-                <div class="text-gray-500 cursor-pointer">
-                    <i class="fas fa-ellipsis-h"></i>
-                </div>
+                <button class="ellipsis-btn group" data-post-id="${postId}">
+                    <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 group-hover:bg-gray-100">
+                        <i
+                            class="fas fa-ellipsis-h text-gray-500 group-hover:text-gray-700"></i>
+                    </div>
+                </button>
             </div>
             <div class="mb-4">
             <p>${content}</p>

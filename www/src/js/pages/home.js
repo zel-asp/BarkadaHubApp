@@ -183,7 +183,63 @@ document.addEventListener('DOMContentLoaded', function () {
             );
             postsContainer.insertAdjacentHTML("beforeend", postHtml);
             displayedPostIds.add(post.id);
+
+            showEllipsisModal();
         });
+    }
+
+    //show the confirmation modal then will cal each getpost
+    function showEllipsisModal() {
+        const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
+        const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
+        const app = document.getElementById('app');
+        const closeEllipsisMenu = document.getElementById('closeEllipsisMenu');
+        const deletePostBtn = document.getElementById('deletePostBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+        ellipsisButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ellipsisMenuModal.classList.remove('hidden');
+                app.classList.add('opacity-50');
+                document.body.classList.add('overflow-hidden');
+            });
+        });
+
+        closeEllipsisMenu.addEventListener('click', () => {
+            ellipsisMenuModal.classList.add('hidden');
+            app.classList.remove('opacity-50');
+            document.body.classList.remove('overflow-hidden');
+        });
+
+        deletePostBtn.addEventListener('click', showDeleteConfirmation);
+        cancelDeleteBtn.addEventListener('click', hideDeleteConfirmation);
+    }
+
+    //show another modal for confirmation
+    function showDeleteConfirmation() {
+        const modal = document.getElementById('deleteConfirmationModal');
+        const card = modal.querySelector('.delete-card');
+
+        modal.classList.remove('hidden');
+
+        // Start animation next frame
+        setTimeout(() => {
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }, 10);
+    }
+
+    //hide the confimation
+    function hideDeleteConfirmation() {
+        const modal = document.getElementById('deleteConfirmationModal');
+        const card = modal.querySelector('.delete-card');
+
+        card.classList.add('scale-95');
+        card.classList.remove('scale-100');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 150);
     }
 
     LoadHome();

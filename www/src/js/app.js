@@ -16,7 +16,6 @@ function showOfflinePage() {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
 
-    // Inject offline HTML if not already present
     if (!offlinePage.innerHTML.trim()) {
         offlinePage.innerHTML = `
             <div class="h-screen bg-linear-to-b from-gray-50 to-white flex items-center justify-center p-4">
@@ -39,10 +38,6 @@ function showOfflinePage() {
                     <h1 class="text-2xl font-bold text-gray-800 mb-3">No Internet Connection</h1>
                     <p class="text-gray-600 mb-8 leading-relaxed">
                         You're currently offline. Please check your network connection and try again.
-                        <span class="block text-sm text-gray-500 mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            We'll automatically retry when connection is restored
-                        </span>
                     </p>
 
                     <button id="retryBtn"
@@ -71,7 +66,7 @@ function showOfflinePage() {
     appBody.classList.add('hidden');
     offlinePage.classList.remove('hidden');
 
-    // Retry button functionality
+    // rtry button 
     const retryBtn = document.getElementById('retryBtn');
     retryBtn.addEventListener('click', async () => {
         const originalContent = retryBtn.innerHTML;
@@ -104,7 +99,7 @@ function hideOfflinePage() {
     appBody.classList.remove('hidden');
 }
 
-// Load page components
+//render te page
 async function loadPageComponents() {
     const { data, error } = await supabaseClient.auth.getUser();
     if (error || !data?.user) {
@@ -138,7 +133,7 @@ async function loadPageComponents() {
     });
 }
 
-// Main initialization
+//initialize all
 document.addEventListener('DOMContentLoaded', async function () {
     storeCurrentPage();
 
