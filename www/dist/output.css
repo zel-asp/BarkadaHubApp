@@ -46,7 +46,6 @@
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-blue-800: oklch(42.4% 0.199 265.638);
     --color-indigo-50: oklch(96.2% 0.018 272.314);
-    --color-indigo-500: oklch(58.5% 0.233 277.117);
     --color-indigo-700: oklch(45.7% 0.24 277.023);
     --color-purple-50: oklch(97.7% 0.014 308.299);
     --color-purple-100: oklch(94.6% 0.033 307.174);
@@ -274,9 +273,6 @@
   }
   .relative {
     position: relative;
-  }
-  .static {
-    position: static;
   }
   .sticky {
     position: sticky;
@@ -1238,10 +1234,6 @@
     --tw-gradient-from: var(--color-green-600);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
-  .from-indigo-500 {
-    --tw-gradient-from: var(--color-indigo-500);
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
   .from-orange-500 {
     --tw-gradient-from: var(--color-orange-500);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
@@ -1258,16 +1250,8 @@
     --tw-gradient-from: var(--color-red-100);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
-  .from-red-500 {
-    --tw-gradient-from: var(--color-red-500);
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
   .from-white {
     --tw-gradient-from: var(--color-white);
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-  .to-amber-500 {
-    --tw-gradient-to: var(--color-amber-500);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .to-blue-50 {
@@ -1315,10 +1299,6 @@
   }
   .to-orange-700 {
     --tw-gradient-to: var(--color-orange-700);
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-  .to-pink-500 {
-    --tw-gradient-to: var(--color-pink-500);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .to-purple-500 {
@@ -2487,7 +2467,7 @@ body {
 input {
   border-radius: 10px;
 }
-//for alert notification .alert {
+.alert {
   animation: slideIn 0.3s ease-out;
   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
   border-left: 4px solid;
@@ -2531,7 +2511,7 @@ input {
     transform: rotate(360deg);
   }
 }
-//profile page .logout-btn {
+.logout-btn {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   transition: all 0.3s ease;
 }
@@ -2540,7 +2520,7 @@ input {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
-//videos .video-container {
+.video-container {
   height: calc(100vh - 80px);
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
@@ -2596,7 +2576,7 @@ input {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
 }
-//notificatiom .notification-item.unread {
+.notification-item.unread {
   background-color: #f0f8ff;
   border-left: 4px solid #3b82f6;
 }
@@ -2608,7 +2588,7 @@ input {
   height: 8px;
   background: #3b82f6;
 }
-//clubs .line-clamp-2 {
+.line-clamp-2 {
   display: -webkit-box;
   line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -2626,7 +2606,7 @@ input {
 .relative:hover img {
   transform: scale(1.05);
 }
-//direct message @keyframes slideInLeft {
+@keyframes slideInLeft {
   from {
     transform: translateX(-10px);
     opacity: 0;
@@ -2651,6 +2631,33 @@ input {
 }
 .message-out {
   animation: slideInRight 0.3s ease-out;
+}
+.active-chat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #3b82f6;
+  border-radius: 0 2px 2px 0;
+}
+.unread-badge {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.online-status {
+  box-shadow: 0 0 0 2px white;
 }
 @property --tw-translate-x {
   syntax: "*";
