@@ -19,13 +19,26 @@ export default function uploadedPost(name, content, file, media_type, postId = 1
             </div>
 
             <div class="mb-4">
-                <p>${content}</p>
+                <p class="whitespace-pre-line mb-3">${content}</p>
                 ${file ? `
-                    <div class="post-image mt-3 rounded-lg overflow-hidden h-50 w-full shadow-lg">
-                        ${media_type === "video"
-                ? `<video src="${file}" controls class="w-full h-full object-cover"></video>`
-                : `<img src="${file}" alt="Post Image" class="w-full h-50 object-cover">`
+                    <div class="media-container mt-3 rounded-lg overflow-hidden bg-gray-100">
+                        <div class="media-wrapper flex items-center justify-center max-h-96">
+                            ${media_type === "video"
+                ? `<video src="${file}" controls class="w-auto max-w-full h-auto max-h-96 object-contain"></video>`
+                : `<img src="${file}" alt="Post Image" 
+                            class="w-auto max-w-full h-auto max-h-96 object-contain" 
+                            onload="this.style.opacity='1'" 
+                            style="opacity: 0; transition: opacity 0.3s;">`
             }
+                        </div>
+                        ${media_type === "image" ? `
+                            <div class="image-actions flex justify-center gap-2 p-2 bg-gray-50 border-t">
+                                <button class="view-full-btn text-xs text-gray-600 hover:text-primary px-3 py-1 rounded"
+                                        onclick="viewFullImage('${file}')">
+                                    <i class="fas fa-expand mr-1"></i>View Full
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 ` : ''}
             </div>

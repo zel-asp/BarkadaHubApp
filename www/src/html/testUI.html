@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BarkadaHub - Comments</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            /* Custom styles */
+            .comment-container {
+                background: linear-gradient(to bottom, #f8fafc, #ffffff);
+            }
+
+            .comment-item {
+                transition: all 0.2s ease;
+                border-left: 3px solid transparent;
+            }
+
+            .comment-item:hover {
+                border-left-color: #3b82f6;
+                background-color: #f8fafc;
+            }
+
+            .like-btn.active {
+                color: #3b82f6;
+            }
+
+            .like-btn.active i {
+                color: #3b82f6;
+            }
+
+            .reply-input-container {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .reply-input-container.active {
+                max-height: 150px;
+                margin-top: 16px;
+            }
+
+            .replies-container {
+                border-left: 2px solid #e2e8f0;
+                padding-left: 1rem;
+                margin-left: 0.75rem;
+            }
+
+            /* Mobile optimizations */
+            @media (max-width: 768px) {
+                .comment-item {
+                    border-radius: 0.5rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .comment-actions button {
+                    padding: 0.5rem;
+                    font-size: 0.875rem;
+                }
+
+                .comment-text {
+                    font-size: 0.95rem;
+                    line-height: 1.4;
+                }
+
+                .replies-container {
+                    margin-left: 0.5rem;
+                    padding-left: 0.75rem;
+                }
+            }
+
+            /* Animation for new comments */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .new-comment {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Custom scrollbar */
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #a1a1a1;
+            }
+        </style>
+    </head>
+
+    <body class="bg-gray-50 min-h-screen">
+        <!-- Alert Container -->
+        <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+
+        <!-- Main App Container -->
+        <div id="app">
+            <!-- Header -->
+            <div class="bg-white shadow-sm sticky top-0 z-20">
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button id="backButton"
+                                class="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-arrow-left text-xl"></i>
+                            </button>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">Comments</h1>
+                                <p class="text-sm text-gray-600">24 comments</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <button id="sortButton"
+                                class="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm">
+                                <i class="fas fa-sort"></i>
+                                <span class="hidden sm:inline">Sort by</span>
+                            </button>
+                            <button id="refreshButton"
+                                class="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="container mx-auto px-4 py-6 max-w-3xl">
+                <!-- Comment Input Section -->
+                <div class="bg-white rounded-xl shadow-sm mb-6 sticky top-20 z-10">
+                    <div class="p-4">
+                        <div class="flex gap-3">
+                            <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar"
+                                class="w-10 h-10 rounded-full flex-shrink-0">
+                            <div class="flex-1">
+                                <textarea id="mainCommentInput" placeholder="Add a comment..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm min-h-[100px] max-h-[200px]"
+                                    rows="3"></textarea>
+                                <div class="flex items-center justify-between mt-3">
+                                    <div class="flex items-center gap-2 text-gray-500">
+                                        <button class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-smile text-lg"></i>
+                                        </button>
+                                        <button class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-image text-lg"></i>
+                                        </button>
+                                        <button class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-paperclip text-lg"></i>
+                                        </button>
+                                    </div>
+                                    <button id="postCommentBtn"
+                                        class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 text-sm">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span>Post</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments List -->
+                <div id="commentsList" class="space-y-4">
+                    <!-- Comment 1 with Replies -->
+                    <div class="bg-white rounded-xl shadow-sm comment-item new-comment">
+                        <div class="p-4">
+                            <div class="flex gap-3">
+                                <img src="https://i.pravatar.cc/150?img=32" alt="Maria Santos"
+                                    class="w-10 h-10 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="mb-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold text-gray-900 text-sm">Maria Santos</span>
+                                                <span class="text-xs text-gray-500">2h ago</span>
+                                            </div>
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-gray-800 comment-text">Has anyone tried the new coding bootcamp
+                                            at the tech hub? I'm thinking of joining but would love to hear some reviews
+                                            first!</p>
+                                    </div>
+                                    <div class="comment-actions flex items-center gap-4 text-sm text-gray-600">
+                                        <button
+                                            class="like-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i>
+                                            <span>Like</span>
+                                        </button>
+                                        <button
+                                            class="reply-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i>
+                                            <span>Reply</span>
+                                        </button>
+                                        <span class="flex items-center gap-2 text-blue-600 ml-auto">
+                                            <i class="fas fa-heart"></i>
+                                            <span>15</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Replies Section -->
+                                    <div class="replies-container mt-4 space-y-4">
+                                        <!-- Reply 1 -->
+                                        <div class="flex gap-3">
+                                            <img src="https://i.pravatar.cc/150?img=12" alt="John Dela Cruz"
+                                                class="w-8 h-8 rounded-full flex-shrink-0">
+                                            <div class="flex-1">
+                                                <div class="bg-gray-50 rounded-xl p-3">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-semibold text-sm">John Dela Cruz</span>
+                                                            <span class="text-xs text-gray-500">1h ago</span>
+                                                        </div>
+                                                        <button class="text-gray-400 hover:text-gray-600 text-xs">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-gray-800 text-sm mb-2">I attended their web
+                                                        development track last month! The instructors are amazing and
+                                                        the projects are really practical. Definitely worth it! 💯</p>
+                                                    <div
+                                                        class="comment-actions flex items-center gap-4 text-xs text-gray-500">
+                                                        <button
+                                                            class="like-btn flex items-center gap-1 hover:text-blue-600">
+                                                            <i class="far fa-thumbs-up"></i>
+                                                            <span>Like</span>
+                                                        </button>
+                                                        <span class="flex items-center gap-1 text-blue-600 ml-auto">
+                                                            <i class="fas fa-heart"></i>
+                                                            8
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Reply 2 -->
+                                        <div class="flex gap-3">
+                                            <img src="https://i.pravatar.cc/150?img=25" alt="Ana Reyes"
+                                                class="w-8 h-8 rounded-full flex-shrink-0">
+                                            <div class="flex-1">
+                                                <div class="bg-gray-50 rounded-xl p-3">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-semibold text-sm">Ana Reyes</span>
+                                                            <span class="text-xs text-gray-500">45m ago</span>
+                                                        </div>
+                                                        <button class="text-gray-400 hover:text-gray-600 text-xs">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-gray-800 text-sm mb-2">The data science program is
+                                                        also great! They have industry projects that look really good on
+                                                        your portfolio.</p>
+                                                    <div
+                                                        class="comment-actions flex items-center gap-4 text-xs text-gray-500">
+                                                        <button
+                                                            class="like-btn flex items-center gap-1 hover:text-blue-600">
+                                                            <i class="far fa-thumbs-up"></i>
+                                                            <span>Like</span>
+                                                        </button>
+                                                        <span class="flex items-center gap-1 text-blue-600 ml-auto">
+                                                            <i class="fas fa-heart"></i>
+                                                            5
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Reply Input Container -->
+                                        <div class="reply-input-container">
+                                            <div class="flex gap-3">
+                                                <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar"
+                                                    class="w-8 h-8 rounded-full flex-shrink-0">
+                                                <div class="flex-1">
+                                                    <div class="flex gap-2">
+                                                        <input type="text" placeholder="Write a reply..."
+                                                            class="reply-input flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                                                        <button
+                                                            class="send-reply-btn bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                                            Reply
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comment 2 -->
+                    <div class="bg-white rounded-xl shadow-sm comment-item">
+                        <div class="p-4">
+                            <div class="flex gap-3">
+                                <img src="https://i.pravatar.cc/150?img=8" alt="Carlos Lim"
+                                    class="w-10 h-10 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="mb-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold text-gray-900 text-sm">Carlos Lim</span>
+                                                <span class="text-xs text-gray-500">3h ago</span>
+                                            </div>
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-gray-800 comment-text">Looking for study buddies for the upcoming
+                                            finals! Anyone from Engineering major want to form a study group? We can
+                                            reserve a room at the library. 📚✨</p>
+                                    </div>
+                                    <div class="comment-actions flex items-center gap-4 text-sm text-gray-600">
+                                        <button
+                                            class="like-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i>
+                                            <span>Like</span>
+                                        </button>
+                                        <button
+                                            class="reply-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i>
+                                            <span>Reply</span>
+                                        </button>
+                                        <span class="flex items-center gap-2 text-blue-600 ml-auto">
+                                            <i class="fas fa-heart"></i>
+                                            <span>22</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Reply Input Container -->
+                                    <div class="reply-input-container">
+                                        <div class="flex gap-3 mt-3">
+                                            <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar"
+                                                class="w-8 h-8 rounded-full flex-shrink-0">
+                                            <div class="flex-1">
+                                                <div class="flex gap-2">
+                                                    <input type="text" placeholder="Write a reply..."
+                                                        class="reply-input flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                                                    <button
+                                                        class="send-reply-btn bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                                        Reply
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comment 3 -->
+                    <div class="bg-white rounded-xl shadow-sm comment-item">
+                        <div class="p-4">
+                            <div class="flex gap-3">
+                                <img src="https://i.pravatar.cc/150?img=15" alt="Sarah Chen"
+                                    class="w-10 h-10 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="mb-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold text-gray-900 text-sm">Sarah Chen</span>
+                                                <span class="text-xs text-gray-500">4h ago</span>
+                                            </div>
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-gray-800 comment-text">Just found this amazing coffee shop near
+                                            campus with great WiFi and unlimited refills! Perfect for study sessions. DM
+                                            me for location! ☕💻</p>
+                                    </div>
+                                    <div class="comment-actions flex items-center gap-4 text-sm text-gray-600">
+                                        <button
+                                            class="like-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i>
+                                            <span>Like</span>
+                                        </button>
+                                        <button
+                                            class="reply-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i>
+                                            <span>Reply</span>
+                                        </button>
+                                        <span class="flex items-center gap-2 text-blue-600 ml-auto">
+                                            <i class="fas fa-heart"></i>
+                                            <span>31</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Replies Section -->
+                                    <div class="replies-container mt-4 space-y-4">
+                                        <!-- Reply 1 -->
+                                        <div class="flex gap-3">
+                                            <img src="https://i.pravatar.cc/150?img=18" alt="Mike Torres"
+                                                class="w-8 h-8 rounded-full flex-shrink-0">
+                                            <div class="flex-1">
+                                                <div class="bg-gray-50 rounded-xl p-3">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-semibold text-sm">Mike Torres</span>
+                                                            <span class="text-xs text-gray-500">3h ago</span>
+                                                        </div>
+                                                        <button class="text-gray-400 hover:text-gray-600 text-xs">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-gray-800 text-sm mb-2">Is it the one with the blue
+                                                        facade? I think I know which one you're talking about! Their
+                                                        pastries are amazing too 🥐</p>
+                                                    <div
+                                                        class="comment-actions flex items-center gap-4 text-xs text-gray-500">
+                                                        <button
+                                                            class="like-btn flex items-center gap-1 hover:text-blue-600">
+                                                            <i class="far fa-thumbs-up"></i>
+                                                            <span>Like</span>
+                                                        </button>
+                                                        <span class="flex items-center gap-1 text-blue-600 ml-auto">
+                                                            <i class="fas fa-heart"></i>
+                                                            12
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comment 4 -->
+                    <div class="bg-white rounded-xl shadow-sm comment-item">
+                        <div class="p-4">
+                            <div class="flex gap-3">
+                                <img src="https://i.pravatar.cc/150?img=22" alt="David Park"
+                                    class="w-10 h-10 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="mb-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold text-gray-900 text-sm">David Park</span>
+                                                <span class="text-xs text-gray-500">5h ago</span>
+                                            </div>
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-gray-800 comment-text">Anyone interested in starting a campus
+                                            photography club? I have some professional equipment we can use and I'd love
+                                            to teach basics to beginners! 📸</p>
+                                    </div>
+                                    <div class="comment-actions flex items-center gap-4 text-sm text-gray-600">
+                                        <button
+                                            class="like-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-thumbs-up"></i>
+                                            <span>Like</span>
+                                        </button>
+                                        <button
+                                            class="reply-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                            <i class="far fa-comment"></i>
+                                            <span>Reply</span>
+                                        </button>
+                                        <span class="flex items-center gap-2 text-blue-600 ml-auto">
+                                            <i class="fas fa-heart"></i>
+                                            <span>28</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More Comments -->
+                <div class="text-center mt-8 mb-10">
+                    <button id="loadMoreBtn"
+                        class="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-50 transition duration-200 font-medium text-sm">
+                        <i class="fas fa-chevron-down mr-2"></i>
+                        Load More Comments
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Back button functionality
+                document.getElementById('backButton').addEventListener('click', function () {
+                    window.history.back();
+                });
+
+                // Sort button functionality
+                document.getElementById('sortButton').addEventListener('click', function () {
+                    alert('Sort options would appear here');
+                });
+
+                // Refresh button functionality
+                document.getElementById('refreshButton').addEventListener('click', function () {
+                    this.classList.add('animate-spin');
+                    setTimeout(() => {
+                        this.classList.remove('animate-spin');
+                    }, 1000);
+                });
+
+                // Auto-resize main comment textarea
+                const mainCommentInput = document.getElementById('mainCommentInput');
+                if (mainCommentInput) {
+                    mainCommentInput.addEventListener('input', function () {
+                        this.style.height = 'auto';
+                        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+                    });
+                }
+
+                // Post comment functionality
+                const postCommentBtn = document.getElementById('postCommentBtn');
+                if (postCommentBtn) {
+                    postCommentBtn.addEventListener('click', function () {
+                        const commentText = mainCommentInput.value.trim();
+                        if (commentText) {
+                            // Create new comment element
+                            const newComment = document.createElement('div');
+                            newComment.className = 'bg-white rounded-xl shadow-sm comment-item new-comment';
+                            newComment.innerHTML = `
+                            <div class="p-4">
+                                <div class="flex gap-3">
+                                    <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar" class="w-10 h-10 rounded-full flex-shrink-0">
+                                    <div class="flex-1">
+                                        <div class="mb-3">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-semibold text-gray-900 text-sm">You</span>
+                                                    <span class="text-xs text-gray-500">just now</span>
+                                                </div>
+                                                <button class="text-gray-400 hover:text-gray-600">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                            </div>
+                                            <p class="text-gray-800 comment-text">${commentText}</p>
+                                        </div>
+                                        <div class="comment-actions flex items-center gap-4 text-sm text-gray-600">
+                                            <button class="like-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-thumbs-up"></i>
+                                                <span>Like</span>
+                                            </button>
+                                            <button class="reply-btn flex items-center gap-2 hover:text-blue-600 px-2 py-1.5 rounded-lg hover:bg-gray-100">
+                                                <i class="far fa-comment"></i>
+                                                <span>Reply</span>
+                                            </button>
+                                            <span class="flex items-center gap-2 text-blue-600 ml-auto">
+                                                <i class="fas fa-heart"></i>
+                                                <span>0</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                            // Add new comment to the top of the comments list
+                            const commentsList = document.getElementById('commentsList');
+                            commentsList.insertBefore(newComment, commentsList.firstChild);
+
+                            // Clear the input
+                            mainCommentInput.value = '';
+                            mainCommentInput.style.height = 'auto';
+
+                            // Add event listeners to new comment
+                            initializeCommentEvents(newComment);
+
+                            // Scroll to new comment
+                            newComment.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                            // Show success message
+                            showAlert('Comment posted successfully!', 'success');
+                        }
+                    });
+                }
+
+                // Load more comments functionality
+                document.getElementById('loadMoreBtn').addEventListener('click', function () {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+                    this.disabled = true;
+
+                    // Simulate API call
+                    setTimeout(() => {
+                        // In a real app, you would fetch more comments from an API
+                        this.innerHTML = '<i class="fas fa-chevron-down mr-2"></i> Load More Comments';
+                        this.disabled = false;
+                        showAlert('No more comments to load', 'info');
+                    }, 1500);
+                });
+
+                // Initialize all comment events
+                function initializeCommentEvents(commentElement) {
+                    // Like button functionality
+                    const likeBtns = commentElement.querySelectorAll('.like-btn');
+                    likeBtns.forEach(button => {
+                        button.addEventListener('click', function () {
+                            const icon = this.querySelector('i');
+                            const likeText = this.querySelector('span');
+                            const likesCount = this.parentElement.querySelector('.fa-heart').parentElement.querySelector('span');
+
+                            if (icon.classList.contains('far')) {
+                                // Like
+                                icon.classList.remove('far', 'fa-thumbs-up');
+                                icon.classList.add('fas', 'fa-heart');
+                                likeText.textContent = 'Liked';
+                                this.classList.add('active');
+
+                                // Update likes count
+                                const currentLikes = parseInt(likesCount.textContent);
+                                likesCount.textContent = currentLikes + 1;
+                            } else {
+                                // Unlike
+                                icon.classList.remove('fas', 'fa-heart');
+                                icon.classList.add('far', 'fa-thumbs-up');
+                                likeText.textContent = 'Like';
+                                this.classList.remove('active');
+
+                                // Update likes count
+                                const currentLikes = parseInt(likesCount.textContent);
+                                likesCount.textContent = currentLikes - 1;
+                            }
+                        });
+                    });
+
+                    // Reply button functionality
+                    const replyBtns = commentElement.querySelectorAll('.reply-btn');
+                    replyBtns.forEach(button => {
+                        button.addEventListener('click', function () {
+                            const commentItem = this.closest('.comment-item');
+                            let replyInputContainer = commentItem.querySelector('.reply-input-container');
+
+                            if (replyInputContainer) {
+                                // Toggle visibility
+                                replyInputContainer.classList.toggle('active');
+
+                                // Focus input when opened
+                                if (replyInputContainer.classList.contains('active')) {
+                                    setTimeout(() => {
+                                        replyInputContainer.querySelector('.reply-input').focus();
+                                    }, 300);
+                                }
+                            }
+                        });
+                    });
+
+                    // Send reply functionality
+                    const sendReplyBtns = commentElement.querySelectorAll('.send-reply-btn');
+                    sendReplyBtns.forEach(button => {
+                        button.addEventListener('click', function () {
+                            const replyInput = this.parentElement.querySelector('.reply-input');
+                            const replyText = replyInput.value.trim();
+
+                            if (replyText) {
+                                // Here you would typically send the reply to your backend
+                                console.log('Sending reply:', replyText);
+                                replyInput.value = '';
+
+                                // Hide reply input
+                                const replyInputContainer = this.closest('.reply-input-container');
+                                replyInputContainer.classList.remove('active');
+
+                                showAlert('Reply posted!', 'success');
+                            }
+                        });
+                    });
+
+                    // Reply input enter key functionality
+                    const replyInputs = commentElement.querySelectorAll('.reply-input');
+                    replyInputs.forEach(input => {
+                        input.addEventListener('keypress', function (e) {
+                            if (e.key === 'Enter') {
+                                this.closest('.reply-input-container').querySelector('.send-reply-btn').click();
+                            }
+                        });
+                    });
+                }
+
+                // Initialize events for existing comments
+                document.querySelectorAll('.comment-item').forEach(comment => {
+                    initializeCommentEvents(comment);
+                });
+
+                // Alert function
+                function showAlert(message, type) {
+                    const alertContainer = document.getElementById('alertContainer');
+                    const alert = document.createElement('div');
+
+                    const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+                        type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+                            'bg-blue-50 border-blue-200 text-blue-800';
+
+                    alert.className = `${bgColor} border rounded-lg p-4 mb-3 shadow-md transition-opacity duration-300`;
+                    alert.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-3"></i>
+                        <span>${message}</span>
+                        <button class="ml-auto text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                    alertContainer.appendChild(alert);
+
+                    // Auto remove after 3 seconds
+                    setTimeout(() => {
+                        if (alert.parentElement) {
+                            alert.style.opacity = '0';
+                            setTimeout(() => {
+                                if (alert.parentElement) {
+                                    alert.remove();
+                                }
+                            }, 300);
+                        }
+                    }, 3000);
+                }
+            });
+        </script>
+    </body>
+
+</html>

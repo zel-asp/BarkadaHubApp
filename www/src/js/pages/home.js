@@ -244,6 +244,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 150);
     }
 
+    // Function called by "View Full" button
+    window.viewFullImage = function (imageUrl) {
+        const modal = document.getElementById('fullImageModal');
+        const img = document.getElementById('fullImageContent');
+
+        img.src = imageUrl;        // Set the clicked image
+        modal.classList.remove('hidden'); // Show modal
+    };
+
+    // Close modal when clicking "×"
+    document.getElementById('closeFullImage').addEventListener('click', () => {
+        const modal = document.getElementById('fullImageModal');
+        modal.classList.add('hidden');
+    });
+
 
     LoadHome();
     getPost();

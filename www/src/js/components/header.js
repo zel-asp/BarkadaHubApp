@@ -3,11 +3,14 @@ export default function HeaderComponent() {
 <header class="bg-white shadow-sm sticky top-0 z-30 md:mb-10">
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center py-4">
-            <div class="logo flex items-center gap-2 text-black  font-extrabold text-xl cursor-pointer"
-                data-page="home">
+            <a href="javascript:void(0)" 
+            class="logo flex items-center gap-2 text-black font-extrabold text-xl cursor-pointer"
+            onclick="history.back()"
+            data-page="home">
                 <img src="../images/image.png" alt="App Logo" class="w-10">
                 <span>BarkadaHub</span>
-            </div>
+            </a>
+
             <div class="user-actions flex items-center gap-4">
                 <div class="notification-icon relative cursor-pointer">
                 <a href="./notification.html">

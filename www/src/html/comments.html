@@ -4,535 +4,309 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BarkadaHub - Comments</title>
+        <title>Comments Section</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-            .comment-item {
-                transition: all 0.2s ease;
-            }
-
-            .comment-item:hover {
-                background-color: #f8fafc;
-            }
-
-            .like-btn.active {
-                color: #3b82f6;
-            }
-
-            .like-btn.active i {
-                color: #3b82f6;
-            }
-
-            .reply-section {
-                transition: all 0.3s ease;
-                max-height: 0;
-                overflow: hidden;
-            }
-
-            .reply-section.active {
-                max-height: 500px;
-            }
-
-            .comment-actions button {
-                transition: all 0.2s ease;
-            }
-
-            .comment-actions button:hover {
-                transform: translateY(-1px);
-            }
-
-            .comment-input-container {
-                position: sticky;
-                top: 0;
-                background: white;
-                z-index: 10;
-                border-bottom: 1px solid #e5e7eb;
-            }
-        </style>
     </head>
 
-    <body class="bg-gray-100 min-h-screen">
-        <!-- for alerts -->
-        <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
-        <div id="app">
-            <div id="header"></div>
+    <body class="bg-gray-50 min-h-screen p-4 md:p-8">
+        <div class="max-w-3xl mx-auto">
+            <!-- Post Content -->
+            <div class="bg-white rounded-2xl shadow-md p-6 mb-8 border border-gray-100">
+                <div class="flex items-start gap-4 mb-5">
+                    <div
+                        class="w-14 h-14 rounded-full bg-linear-to-r from-blue-500 to-purple-500 overflow-hidden flex-0 shadow">
+                        <img src="https://i.pravatar.cc/150?img=8" alt="Author" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-lg">Edralyn Rafises</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <p class="text-sm text-gray-500">Shared a post</p>
+                            <span class="text-gray-300">•</span>
+                            <p class="text-sm text-gray-500">2 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-800 leading-relaxed mb-4 text-base">
+                    This is the original post content that was shared. The post discusses important matters that
+                    everyone should be aware of. It contains valuable insights and perspectives that encourage
+                    thoughtful discussion among the community.
+                </p>
+                <div class="flex items-center gap-6 pt-4 border-t border-gray-100">
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i class="far fa-thumbs-up"></i>
+                        <span class="text-sm">42</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i class="far fa-comment"></i>
+                        <span class="text-sm">3 comments</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i class="far fa-share-square"></i>
+                        <span class="text-sm">8 shares</span>
+                    </div>
+                </div>
+            </div>
 
-            <div class="container mx-auto px-4 mb-10 mt-6">
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <!-- Left Sidebar -->
-                    <div id="leftSideBar"></div>
+            <!-- Comments Section -->
+            <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900">Comments</h2>
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">3</span>
+                </div>
 
-                    <!-- Main Content Area -->
-                    <div class="lg:col-span-2">
-                        <!-- Comment Section Header -->
-                        <div class="bg-white rounded-lg shadow-sm mb-6">
-                            <div class="p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h1 class="text-2xl font-bold text-gray-900">Comments</h1>
-                                    <div class="flex items-center gap-4 text-sm text-gray-600">
-                                        <span class="flex items-center gap-1">
-                                            <i class="fas fa-comment"></i>
-                                            24 total comments
-                                        </span>
-                                        <button class="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-                                            <i class="fas fa-sort"></i>
-                                            Sort by
-                                        </button>
-                                    </div>
-                                </div>
+                <!-- Comment 1 -->
+                <div class="comment-container border-b border-gray-100 pb-6 mb-6">
+                    <div class="flex gap-4">
+                        <div class="flex-0">
+                            <div
+                                class="w-11 h-11 rounded-full bg-linear-to-r from-green-500 to-teal-500 overflow-hidden shadow">
+                                <img src="https://i.pravatar.cc/150?img=32" alt="Florchita"
+                                    class="w-full h-full object-cover">
                             </div>
                         </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-900">Florchita T De Jesus</span>
+                                    <span
+                                        class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Follow</span>
+                                </div>
+                                <div class="text-gray-400">
+                                    <button class="hover:text-gray-600 p-1">
+                                        <i class="fas fa-ellipsis-h text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-gray-500 text-sm mb-2">2 minutes ago</p>
+                            <p class="text-gray-800 mb-4 leading-relaxed">
+                                Charm sissy ipaubaya mo na hayain na maganda na ang kalagayan mo ngayon. Hindi ka nag
+                                lisa sa bagay na yan day. Marami tayo at pinagpala na sa bandang huli.
+                            </p>
 
-                        <!-- Comment Input Section -->
-                        <div class="bg-white rounded-lg shadow-sm mb-6 comment-input-container">
-                            <div class="p-6">
-                                <div class="flex gap-4">
-                                    <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar"
-                                        class="w-12 h-12 rounded-full flex-0">
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                                    <i class="fas fa-thumbs-up text-blue-600"></i>
+                                    <span class="font-medium">3</span>
+                                </div>
+                                <button class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </button>
+                            </div>
+
+                            <!-- Replies to Comment 1 -->
+                            <div class="mt-5 ml-10 space-y-5">
+                                <!-- Reply 1 -->
+                                <div class="flex gap-4 pt-5 border-t border-gray-100">
+                                    <div class="flex-0">
+                                        <div
+                                            class="w-9 h-9 rounded-full bg-linear-to-r from-pink-500 to-rose-500 overflow-hidden shadow">
+                                            <img src="https://i.pravatar.cc/150?img=24" alt="Abesamis"
+                                                class="w-full h-full object-cover">
+                                        </div>
+                                    </div>
                                     <div class="flex-1">
-                                        <textarea placeholder="What's on your mind? Start a conversation..."
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
-                                            rows="3"></textarea>
-                                        <div class="flex items-center justify-between mt-3">
-                                            <div class="flex items-center gap-4 text-gray-500">
-                                                <button
-                                                    class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-smile text-xl"></i>
-                                                </button>
-                                                <button
-                                                    class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-image text-xl"></i>
-                                                </button>
-                                                <button
-                                                    class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-paperclip text-xl"></i>
-                                                </button>
-                                                <button
-                                                    class="hover:text-blue-600 transition p-2 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-heart text-xl"></i>
-                                                </button>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="font-bold text-gray-900">Abesamis Ma. Eunice Joy</span>
+                                        </div>
+                                        <p class="text-gray-500 text-sm mb-2">1 minute ago</p>
+                                        <p class="text-gray-800 mb-4 leading-relaxed">
+                                            Sana nirereport tong mga nagnanakaw ng post ng tunay na may arili eilii no
+                                            credit to owner man lang to. Kakaiba ..sya ..
+                                        </p>
+
+                                        <div class="flex items-center gap-6 text-sm">
+                                            <div class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                                                <i class="far fa-thumbs-up"></i>
+                                                <span>1</span>
                                             </div>
-                                            <button
-                                                class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2">
-                                                <i class="fas fa-paper-plane"></i>
-                                                Post Comment
+                                            <button class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+                                                <i class="far fa-comment"></i>
+                                                <span>Reply</span>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Comments List -->
-                        <div class="space-y-4">
-                            <!-- Comment 1 with Replies -->
-                            <div class="bg-white rounded-lg shadow-sm comment-item">
-                                <div class="p-6">
+                                <!-- Hidden Replies Section -->
+                                <div class="pt-5 border-t border-gray-100">
+                                    <!-- Hidden Reply (visible in static version) -->
                                     <div class="flex gap-4">
-                                        <img src="https://i.pravatar.cc/150?img=32" alt="Maria Santos"
-                                            class="w-12 h-12 rounded-full flex-0">
-                                        <div class="flex-1">
-                                            <div class="mb-3">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="font-semibold text-gray-900">Maria Santos</span>
-                                                    <span class="text-xs text-gray-500">• 2 hours ago</span>
-                                                </div>
-                                                <p class="text-gray-800">Has anyone tried the new coding bootcamp at the
-                                                    tech hub? I'm thinking of joining but would love to hear some
-                                                    reviews first!</p>
+                                        <div class="flex-0">
+                                            <div
+                                                class="w-9 h-9 rounded-full bg-linear-to-r from-orange-500 to-amber-500 overflow-hidden shadow">
+                                                <img src="https://i.pravatar.cc/150?img=15" alt="Lenivic"
+                                                    class="w-full h-full object-cover">
                                             </div>
-                                            <div class="comment-actions flex items-center gap-6 text-sm text-gray-600">
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="font-bold text-gray-900">Lenivic Odehimar</span>
+                                            </div>
+                                            <p class="text-gray-500 text-sm mb-2">Just now</p>
+                                            <p class="text-gray-800 mb-4 leading-relaxed">
+                                                Florchita T De Jesus hindi nman sa kanya nangyari yyn. Ang totoong may
+                                                post yung Edralyn Rafises.
+                                            </p>
+
+                                            <div class="flex items-center gap-6 text-sm">
+                                                <div class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                                                    <i class="fas fa-thumbs-up text-blue-600"></i>
+                                                    <span class="font-medium">5</span>
+                                                </div>
                                                 <button
-                                                    class="like-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    <span>Like</span>
-                                                </button>
-                                                <button
-                                                    class="reply-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
+                                                    class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
                                                     <i class="far fa-comment"></i>
                                                     <span>Reply</span>
                                                 </button>
-                                                <span class="flex items-center gap-2 text-blue-600">
-                                                    <i class="fas fa-heart"></i>
-                                                    <span>15 likes</span>
-                                                </span>
-                                            </div>
-
-                                            <!-- Replies Section -->
-                                            <div class="mt-4 ml-4 space-y-4 border-l-2 border-gray-200 pl-4">
-                                                <!-- Reply 1 -->
-                                                <div class="flex gap-3">
-                                                    <img src="https://i.pravatar.cc/150?img=12" alt="John Dela Cruz"
-                                                        class="w-10 h-10 rounded-full flex-0">
-                                                    <div class="flex-1">
-                                                        <div class="bg-gray-50 rounded-2xl p-4">
-                                                            <div class="flex items-center gap-2 mb-2">
-                                                                <span class="font-semibold text-sm">John Dela
-                                                                    Cruz</span>
-                                                                <span class="text-xs text-gray-500">1 hour ago</span>
-                                                            </div>
-                                                            <p class="text-gray-800 text-sm mb-2">I attended their web
-                                                                development track last month! The instructors are
-                                                                amazing and the projects are really practical.
-                                                                Definitely worth it! 💯</p>
-                                                            <div
-                                                                class="comment-actions flex items-center gap-4 text-xs text-gray-500">
-                                                                <button
-                                                                    class="like-btn flex items-center gap-1 hover:text-blue-600">
-                                                                    <i class="far fa-thumbs-up"></i>
-                                                                    <span>Like</span>
-                                                                </button>
-                                                                <span class="flex items-center gap-1 text-blue-600">
-                                                                    <i class="fas fa-heart"></i>
-                                                                    8 likes
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Reply 2 -->
-                                                <div class="flex gap-3">
-                                                    <img src="https://i.pravatar.cc/150?img=25" alt="Ana Reyes"
-                                                        class="w-10 h-10 rounded-full flex-0">
-                                                    <div class="flex-1">
-                                                        <div class="bg-gray-50 rounded-2xl p-4">
-                                                            <div class="flex items-center gap-2 mb-2">
-                                                                <span class="font-semibold text-sm">Ana Reyes</span>
-                                                                <span class="text-xs text-gray-500">45 minutes
-                                                                    ago</span>
-                                                            </div>
-                                                            <p class="text-gray-800 text-sm mb-2">The data science
-                                                                program is also great! They have industry projects that
-                                                                look really good on your portfolio.</p>
-                                                            <div
-                                                                class="comment-actions flex items-center gap-4 text-xs text-gray-500">
-                                                                <button
-                                                                    class="like-btn flex items-center gap-1 hover:text-blue-600">
-                                                                    <i class="far fa-thumbs-up"></i>
-                                                                    <span>Like</span>
-                                                                </button>
-                                                                <span class="flex items-center gap-1 text-blue-600">
-                                                                    <i class="fas fa-heart"></i>
-                                                                    5 likes
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Reply Input -->
-                                                <div class="flex gap-3">
-                                                    <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar"
-                                                        class="w-10 h-10 rounded-full flex-0">
-                                                    <div class="flex-1">
-                                                        <div class="flex gap-2">
-                                                            <input type="text" placeholder="Write a reply..."
-                                                                class="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-                                                            <button
-                                                                class="bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                                                                Reply
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Comment 2 -->
-                            <div class="bg-white rounded-lg shadow-sm comment-item">
-                                <div class="p-6">
-                                    <div class="flex gap-4">
-                                        <img src="https://i.pravatar.cc/150?img=8" alt="Carlos Lim"
-                                            class="w-12 h-12 rounded-full flex-0">
-                                        <div class="flex-1">
-                                            <div class="mb-3">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="font-semibold text-gray-900">Carlos Lim</span>
-                                                    <span class="text-xs text-gray-500">• 3 hours ago</span>
-                                                </div>
-                                                <p class="text-gray-800">Looking for study buddies for the upcoming
-                                                    finals! Anyone from Engineering major want to form a study group? We
-                                                    can reserve a room at the library. 📚✨</p>
-                                            </div>
-                                            <div class="comment-actions flex items-center gap-6 text-sm text-gray-600">
-                                                <button
-                                                    class="like-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    <span>Like</span>
-                                                </button>
-                                                <button
-                                                    class="reply-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-comment"></i>
-                                                    <span>Reply</span>
-                                                </button>
-                                                <span class="flex items-center gap-2 text-blue-600">
-                                                    <i class="fas fa-heart"></i>
-                                                    <span>22 likes</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Comment 3 -->
-                            <div class="bg-white rounded-lg shadow-sm comment-item">
-                                <div class="p-6">
-                                    <div class="flex gap-4">
-                                        <img src="https://i.pravatar.cc/150?img=15" alt="Sarah Chen"
-                                            class="w-12 h-12 rounded-full flex-0">
-                                        <div class="flex-1">
-                                            <div class="mb-3">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="font-semibold text-gray-900">Sarah Chen</span>
-                                                    <span class="text-xs text-gray-500">• 4 hours ago</span>
-                                                </div>
-                                                <p class="text-gray-800">Just found this amazing coffee shop near campus
-                                                    with great WiFi and unlimited refills! Perfect for study sessions.
-                                                    DM me for location! ☕💻</p>
-                                            </div>
-                                            <div class="comment-actions flex items-center gap-6 text-sm text-gray-600">
-                                                <button
-                                                    class="like-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    <span>Like</span>
-                                                </button>
-                                                <button
-                                                    class="reply-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-comment"></i>
-                                                    <span>Reply</span>
-                                                </button>
-                                                <span class="flex items-center gap-2 text-blue-600">
-                                                    <i class="fas fa-heart"></i>
-                                                    <span>31 likes</span>
-                                                </span>
-                                            </div>
-
-                                            <!-- Replies Section -->
-                                            <div class="mt-4 ml-4 space-y-4 border-l-2 border-gray-200 pl-4">
-                                                <!-- Reply 1 -->
-                                                <div class="flex gap-3">
-                                                    <img src="https://i.pravatar.cc/150?img=18" alt="Mike Torres"
-                                                        class="w-10 h-10 rounded-full flex-0">
-                                                    <div class="flex-1">
-                                                        <div class="bg-gray-50 rounded-2xl p-4">
-                                                            <div class="flex items-center gap-2 mb-2">
-                                                                <span class="font-semibold text-sm">Mike Torres</span>
-                                                                <span class="text-xs text-gray-500">3 hours ago</span>
-                                                            </div>
-                                                            <p class="text-gray-800 text-sm mb-2">Is it the one with the
-                                                                blue facade? I think I know which one you're talking
-                                                                about! Their pastries are amazing too 🥐</p>
-                                                            <div
-                                                                class="comment-actions flex items-center gap-4 text-xs text-gray-500">
-                                                                <button
-                                                                    class="like-btn flex items-center gap-1 hover:text-blue-600">
-                                                                    <i class="far fa-thumbs-up"></i>
-                                                                    <span>Like</span>
-                                                                </button>
-                                                                <span class="flex items-center gap-1 text-blue-600">
-                                                                    <i class="fas fa-heart"></i>
-                                                                    12 likes
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Comment 4 -->
-                            <div class="bg-white rounded-lg shadow-sm comment-item">
-                                <div class="p-6">
-                                    <div class="flex gap-4">
-                                        <img src="https://i.pravatar.cc/150?img=22" alt="David Park"
-                                            class="w-12 h-12 rounded-full flex-0">
-                                        <div class="flex-1">
-                                            <div class="mb-3">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="font-semibold text-gray-900">David Park</span>
-                                                    <span class="text-xs text-gray-500">• 5 hours ago</span>
-                                                </div>
-                                                <p class="text-gray-800">Anyone interested in starting a campus
-                                                    photography club? I have some professional equipment we can use and
-                                                    I'd love to teach basics to beginners! 📸</p>
-                                            </div>
-                                            <div class="comment-actions flex items-center gap-6 text-sm text-gray-600">
-                                                <button
-                                                    class="like-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    <span>Like</span>
-                                                </button>
-                                                <button
-                                                    class="reply-btn flex items-center gap-2 hover:text-blue-600 px-3 py-1 rounded-lg hover:bg-gray-100">
-                                                    <i class="far fa-comment"></i>
-                                                    <span>Reply</span>
-                                                </button>
-                                                <span class="flex items-center gap-2 text-blue-600">
-                                                    <i class="fas fa-heart"></i>
-                                                    <span>28 likes</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Load More Comments -->
-                        <div class="text-center mt-8">
-                            <button
-                                class="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
-                                Load More Comments
-                            </button>
                         </div>
                     </div>
-
-                    <!-- Right Sidebar -->
-                    <div id="rightSideBar"></div>
                 </div>
-            </div>
 
-            <!-- Mobile Bottom Navigation -->
-            <div id="mobileNav"></div>
-        </div>
-
-        <div id="offlinePage" class="hidden">
-        </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                // Like button functionality
-                document.querySelectorAll('.like-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        const icon = this.querySelector('i');
-                        const likeText = this.querySelector('span');
-                        const likesCount = this.parentElement.querySelector('.fa-heart').parentElement;
-
-                        if (icon.classList.contains('far')) {
-                            // Like
-                            icon.classList.remove('far', 'fa-thumbs-up');
-                            icon.classList.add('fas', 'fa-heart');
-                            likeText.textContent = 'Liked';
-                            this.classList.add('active');
-
-                            // Update likes count
-                            const currentLikes = parseInt(likesCount.textContent.match(/\d+/)[0]);
-                            likesCount.innerHTML = `<i class="fas fa-heart"></i> ${currentLikes + 1} likes`;
-                        } else {
-                            // Unlike
-                            icon.classList.remove('fas', 'fa-heart');
-                            icon.classList.add('far', 'fa-thumbs-up');
-                            likeText.textContent = 'Like';
-                            this.classList.remove('active');
-
-                            // Update likes count
-                            const currentLikes = parseInt(likesCount.textContent.match(/\d+/)[0]);
-                            likesCount.innerHTML = `<i class="fas fa-heart"></i> ${currentLikes - 1} likes`;
-                        }
-                    });
-                });
-
-                // Reply button functionality
-                document.querySelectorAll('.reply-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        const commentItem = this.closest('.bg-white');
-                        let replySection = commentItem.querySelector('.reply-section');
-
-                        if (!replySection) {
-                            // Create reply input section
-                            const repliesContainer = commentItem.querySelector('.space-y-4') || commentItem.querySelector('.ml-4');
-                            replySection = document.createElement('div');
-                            replySection.className = 'reply-section flex gap-3 mt-4';
-                            replySection.innerHTML = `
-                            <img src="https://i.pravatar.cc/150?img=5" alt="Your Avatar" class="w-10 h-10 rounded-full flex-0">
-                            <div class="flex-1">
-                                <div class="flex gap-2">
-                                    <input type="text" 
-                                           placeholder="Write a reply..." 
-                                           class="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-                                    <button class="send-reply bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                                        Reply
+                <!-- Comment 2 -->
+                <div class="comment-container border-b border-gray-100 pb-6 mb-6">
+                    <div class="flex gap-4">
+                        <div class="flex-0">
+                            <div
+                                class="w-11 h-11 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 overflow-hidden shadow">
+                                <img src="https://i.pravatar.cc/150?img=5" alt="Maria"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-900">Maria Santos</span>
+                                    <span
+                                        class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Follow</span>
+                                </div>
+                                <div class="text-gray-400">
+                                    <button class="hover:text-gray-600 p-1">
+                                        <i class="fas fa-ellipsis-h text-sm"></i>
                                     </button>
                                 </div>
                             </div>
-                        `;
+                            <p class="text-gray-500 text-sm mb-2">15 minutes ago</p>
+                            <p class="text-gray-800 mb-4 leading-relaxed">
+                                This is such an important topic that needs more attention. Thank you for sharing your
+                                perspective. I hope more people engage in this conversation.
+                            </p>
 
-                            if (repliesContainer) {
-                                repliesContainer.appendChild(replySection);
-                            } else {
-                                const commentContent = this.closest('.flex-1');
-                                commentContent.appendChild(replySection);
-                            }
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                                    <i class="far fa-thumbs-up"></i>
+                                    <span>8</span>
+                                </div>
+                                <button class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            // Add send reply functionality
-                            const sendBtn = replySection.querySelector('.send-reply');
-                            const replyInput = replySection.querySelector('input');
+                <!-- Comment 3 -->
+                <div class="comment-container pb-6 mb-6">
+                    <div class="flex gap-4">
+                        <div class="flex-0">
+                            <div
+                                class="w-11 h-11 rounded-full bg-linear-to-r from-red-500 to-pink-500 overflow-hidden shadow">
+                                <img src="https://i.pravatar.cc/150?img=11" alt="Juan"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-900">Juan Dela Cruz</span>
+                                </div>
+                                <div class="text-gray-400">
+                                    <button class="hover:text-gray-600 p-1">
+                                        <i class="fas fa-ellipsis-h text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-gray-500 text-sm mb-2">1 hour ago</p>
+                            <p class="text-gray-800 mb-4 leading-relaxed">
+                                I completely agree with the points made here. This is a conversation that needs to
+                                happen more often in our community.
+                            </p>
 
-                            sendBtn.addEventListener('click', function () {
-                                const replyText = replyInput.value.trim();
-                                if (replyText) {
-                                    // Here you would typically send the reply to your backend
-                                    console.log('Sending reply:', replyText);
-                                    replyInput.value = '';
-                                    replySection.remove();
-                                }
-                            });
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                                    <i class="fas fa-thumbs-up text-blue-600"></i>
+                                    <span class="font-medium">12</span>
+                                </div>
+                                <button class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+                                    <i class="far fa-comment"></i>
+                                    <span>Reply</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            // Also send on Enter key
-                            replyInput.addEventListener('keypress', function (e) {
-                                if (e.key === 'Enter') {
-                                    sendBtn.click();
-                                }
-                            });
-                        }
+                <!-- Add Comment Section -->
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <h3 class="font-bold text-gray-900 mb-4">Add a comment</h3>
+                    <div class="flex gap-4">
+                        <div class="flex-0">
+                            <div
+                                class="w-11 h-11 rounded-full bg-linear-to-r from-blue-500 to-cyan-500 overflow-hidden shadow">
+                                <img src="https://i.pravatar.cc/150?img=12" alt="You"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="mb-4">
+                                <textarea placeholder="What are your thoughts on this post?"
+                                    class="w-full border border-gray-300 rounded-xl p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                                    rows="3"></textarea>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-5 text-gray-500">
+                                    <button
+                                        class="flex items-center gap-2 hover:text-blue-600 transition-colors text-sm">
+                                        <i class="far fa-smile text-lg"></i>
+                                    </button>
+                                    <button
+                                        class="flex items-center gap-2 hover:text-blue-600 transition-colors text-sm">
+                                        <i class="fas fa-camera text-lg"></i>
+                                    </button>
+                                    <button
+                                        class="flex items-center gap-2 hover:text-blue-600 transition-colors text-sm">
+                                        <i class="fas fa-at text-lg"></i>
+                                    </button>
+                                    <button
+                                        class="flex items-center gap-2 hover:text-blue-600 transition-colors text-sm">
+                                        <i class="fas fa-link text-lg"></i>
+                                    </button>
+                                </div>
+                                <button
+                                    class="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow hover:shadow-md">
+                                    Post Comment
+                                </button>
+                            </div>
+                            <p class="text-gray-400 text-xs mt-3">
+                                Press Ctrl+Enter to post your comment
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        // Toggle reply section
-                        replySection.classList.toggle('active');
-
-                        // Focus input when opened
-                        if (replySection.classList.contains('active')) {
-                            setTimeout(() => {
-                                replySection.querySelector('input').focus();
-                            }, 300);
-                        }
-                    });
-                });
-
-                // Auto-resize main comment textarea
-                const commentTextarea = document.querySelector('textarea');
-                if (commentTextarea) {
-                    commentTextarea.addEventListener('input', function () {
-                        this.style.height = 'auto';
-                        this.style.height = (this.scrollHeight) + 'px';
-                    });
-                }
-
-                // Post comment functionality
-                const postCommentBtn = document.querySelector('.bg-blue-600');
-                if (postCommentBtn) {
-                    postCommentBtn.addEventListener('click', function () {
-                        const commentText = commentTextarea.value.trim();
-                        if (commentText) {
-                            // Here you would typically send the comment to your backend
-                            console.log('Posting comment:', commentText);
-                            commentTextarea.value = '';
-                            commentTextarea.style.height = 'auto';
-                        }
-                    });
-                }
-            });
-        </script>
-
-        <script type="module" src="../js/app.js"></script>
+            <!-- Footer Info -->
+            <div class="mt-8 text-center text-gray-500 text-sm">
+                <p>Comments section • All comments are public • Be respectful</p>
+            </div>
+        </div>
     </body>
 
 </html>
