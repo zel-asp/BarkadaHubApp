@@ -274,3 +274,17 @@ input{
 .online-status {
     box-shadow: 0 0 0 2px white;
 }
+
+/* comment */
+
+.reply-input-container {
+    display: none;
+}
+
+.reply-input-container.active {
+    display: block;
+}
+
+.comment-container {
+    position: relative;
+}

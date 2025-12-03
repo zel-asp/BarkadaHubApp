@@ -2659,6 +2659,15 @@ input {
 .online-status {
   box-shadow: 0 0 0 2px white;
 }
+.reply-input-container {
+  display: none;
+}
+.reply-input-container.active {
+  display: block;
+}
+.comment-container {
+  position: relative;
+}
 @property --tw-translate-x {
   syntax: "*";
   inherits: false;
