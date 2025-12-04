@@ -12,6 +12,144 @@
     <body class="bg-primary">
         <div id="alertContainer" class="fixed top-5 right-5 z-50 max-w-md"></div>
 
+
+
+        <div id="app">
+            <!-- Header -->
+            <div class="bg-linear-to-b from-black/70 to-transparent py-4 px-4 fixed top-0 w-full z-40">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-white text-xl font-bold" id="videoHeader"> Videos</h1>
+                    <div class="flex items-center gap-4">
+                        <button id="openCreateVideoBtn"
+                            class="text-white hover:text-primary transition-colors duration-200">
+                            <i class="fa-solid fa-circle-plus text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Container -->
+            <div class="video-barkadahub-container">
+                <!-- Video 1 -->
+                <div class="video-barkadahub-item">
+                    <div class="w-screen h-screen bg-black flex items-center justify-center">
+                        <video class="w-full h-full object-contain" loop muted autoplay>
+                            <source src="../images/vid.mp4" type="video/mp4">
+                        </video>
+                    </div>
+
+
+                    <!-- Video Overlay -->
+                    <div class="absolute inset-0 video-barkadahub-overlay"></div>
+
+                    <!-- Video Info -->
+                    <div class="absolute bottom-10 left-0 right-0 p-6 z-30">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                                <img src="../images/image.png" alt="Bazia Fangabin" class="w-full h-full object-cover">
+                            </div>
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Bazia Fangabin</h3>
+                                <p class="text-sm opacity-90">@bazia_fang</p>
+                            </div>
+                            <button
+                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-white hover:text-black transition-all duration-200">
+                                Follow
+                            </button>
+                        </div>
+                        <p class="text-white text-sm mb-2">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum
+                            est
+                            motone qui eget nihil est cujus voluptatem atterratae eu juici che.
+                        </p>
+                    </div>
+
+                    <!-- Sidebar Actions -->
+                    <div class="absolute right-4 bottom-32 z-30 flex flex-col items-center gap-6">
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <span class="action-count">2.4K</span>
+                        </div>
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-comment text-xl"></i>
+                            </div>
+                            <span class="action-count">142</span>
+                        </div>
+
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-ellipsis-h text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- video 2 -->
+                <div class="video-barkadahub-item">
+                    <div class="w-screen h-screen bg-black flex items-center justify-center">
+                        <video class="w-full h-full object-contain" loop muted autoplay>
+                            <source src="../images/vid.mp4" type="video/mp4">
+                        </video>
+                    </div>
+
+
+                    <!-- Video Overlay -->
+                    <div class="absolute inset-0 video-barkadahub-overlay"></div>
+
+                    <!-- Video Info -->
+                    <div class="absolute bottom-10 left-0 right-0 p-6 z-30">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                                <img src="../images/image.png" alt="Bazia Fangabin" class="w-full h-full object-cover">
+                            </div>
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Bazia Fangabin</h3>
+                                <p class="text-sm opacity-90">@bazia_fang</p>
+                            </div>
+                            <button
+                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-white hover:text-black transition-all duration-200">
+                                Follow
+                            </button>
+                        </div>
+                        <p class="text-white text-sm mb-2">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum
+                            est
+                            motone qui eget nihil est cujus voluptatem atterratae eu juici che.
+                        </p>
+                    </div>
+
+                    <!-- Sidebar Actions -->
+                    <div class="absolute right-4 bottom-32 z-30 flex flex-col items-center gap-6">
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <span class="action-count">2.4K</span>
+                        </div>
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-comment text-xl"></i>
+                            </div>
+                            <span class="action-count">142</span>
+                        </div>
+
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-ellipsis-h text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="mobileNav"></div>
+        </div>
+
+        <div id="offlinePage" class="hidden"></div>
+
         <!-- Create Video Modal -->
         <div id="createVideoModal" class="fixed inset-0 z-50 hidden">
             <!-- Backdrop -->
@@ -208,82 +346,6 @@
                 </div>
             </div>
         </div>
-
-        <div id="app">
-            <!-- Header -->
-            <div class="bg-linear-to-b from-black/70 to-transparent py-4 px-4 fixed top-0 w-full z-40">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-white text-xl font-bold" id="videoHeader">BarkadaHub Videos</h1>
-                    <div class="flex items-center gap-4">
-                        <button id="openCreateVideoBtn"
-                            class="text-white hover:text-primary transition-colors duration-200">
-                            <i class="fa-solid fa-circle-plus text-2xl"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Videos Container -->
-            <div class="video-barkadahub-container">
-                <!-- Video 1 -->
-                <div class="video-barkadahub-item">
-                    <video class="video-barkadahub-player w-full h-full" loop muted autoplay>
-                        <source src="../images/vid.mp4" type="video/mp4">
-                    </video>
-
-                    <!-- Video Overlay -->
-                    <div class="absolute inset-0 video-barkadahub-overlay"></div>
-
-                    <!-- Video Info -->
-                    <div class="absolute bottom-10 left-0 right-0 p-6 z-30">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                                <img src="../images/image.png" alt="Bazia Fangabin" class="w-full h-full object-cover">
-                            </div>
-                            <div class="text-white">
-                                <h3 class="font-bold text-lg">Bazia Fangabin</h3>
-                                <p class="text-sm opacity-90">@bazia_fang</p>
-                            </div>
-                            <button
-                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-white hover:text-black transition-all duration-200">
-                                Follow
-                            </button>
-                        </div>
-                        <p class="text-white text-sm mb-2">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum
-                            est
-                            motone qui eget nihil est cujus voluptatem atterratae eu juici che.
-                        </p>
-                    </div>
-
-                    <!-- Sidebar Actions -->
-                    <div class="absolute right-4 bottom-32 z-30 flex flex-col items-center gap-6">
-                        <div class="action-button">
-                            <div class="action-icon">
-                                <i class="fas fa-heart text-xl"></i>
-                            </div>
-                            <span class="action-count">2.4K</span>
-                        </div>
-                        <div class="action-button">
-                            <div class="action-icon">
-                                <i class="fas fa-comment text-xl"></i>
-                            </div>
-                            <span class="action-count">142</span>
-                        </div>
-
-                        <div class="action-button">
-                            <div class="action-icon">
-                                <i class="fas fa-ellipsis-h text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div id="mobileNav"></div>
-        </div>
-
-        <div id="offlinePage" class="hidden"></div>
 
         <script type="module" src="../js/app.js"></script>
         <script type="module" src="../js/pages/videos.js"></script>

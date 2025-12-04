@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeModal() {
         createModal.classList.add('hidden');
-        document.body.style.overflow = ''; // restore scroll
+        document.body.style.overflow = '';
         resetModal();
     }
 
