@@ -7,41 +7,6 @@
         <title>BarkadaHub - Campus Social Network</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-            /* Custom animations */
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(-5px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .animate-fadeIn {
-                animation: fadeIn 0.3s ease-out;
-            }
-
-            /* Smooth image loading */
-            .image-loading {
-                background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
-                background-size: 200% 100%;
-                animation: shimmer 1.5s infinite;
-            }
-
-            @keyframes shimmer {
-                0% {
-                    background-position: -200% 0;
-                }
-
-                100% {
-                    background-position: 200% 0;
-                }
-            }
-        </style>
     </head>
 
     <body class="bg-gray-100">
@@ -67,7 +32,7 @@
                                     <div class="flex gap-2 sm:gap-3 mb-3 sm:mb-4">
                                         <div
                                             class="avatar w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-linear-to-br from-gray-100 to-gray-200 overflow-hidden shrink-0">
-                                            <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar"
+                                            <img src="../images/image.png" alt="User Avatar"
                                                 class="w-full h-full object-cover">
                                         </div>
                                         <textarea id="postContent" name="postContent" placeholder="What's on your mind?"

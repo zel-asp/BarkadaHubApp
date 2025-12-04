@@ -4,512 +4,90 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BarkadaHub - Campus Social Network</title>
+        <title>BarkadaHub - Videos</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
-    <body class="bg-gray-200 ">
-
+    <body class="bg-primary">
         <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
         <div id="app">
+            <!-- Header video-->
+            <div class="bg-none  py-4 px-4 fixed top-0 w-full z-50">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-white text-xl font-bold" id="videoHeader">Videos</h1>
+                    <div class="flex items-center gap-4">
+                        <button class="text-white">
+                            <i class="fa-solid fa-circle-plus text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            <div id="header"></div>
-            <div class="container mx-auto px-4" id="pageContent">
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <!-- Left Sidebar -->
-                    <div id="leftSideBar"></div>
+            <!-- Videos Container -->
+            <div class="video-container h-screen">
+                <!-- Video 1 -->
+                <div class="video-item relative ">
+                    <video class="video-player w-full h-screen" loop muted autoplay>
+                        <source src="../images/vid.mp4" type="video/mp4" class="object-fit">
+                    </video>
 
-                    <div class="lg:col-span-2">
-                        <!-- Profile Page -->
-                        <div class="page-section" id="profile-page">
-                            <!-- Profile Header Card -->
-                            <div
-                                class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl">
-                                <!-- Banner with overlay gradient -->
-                                <div class="h-56 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-                                        alt="University campus banner with modern architecture"
-                                        class="w-full h-full object-cover mix-blend-overlay opacity-90">
-                                    <div class="absolute bottom-4 right-4">
-                                        <button
-                                            class="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-all duration-300 border border-white/30">
-                                            <i class="fas fa-camera mr-2"></i>Update Cover
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Profile Content -->
-                                <div class="px-8 pb-8 pt-16 relative">
-                                    <!-- Avatar Container -->
-                                    <div class="absolute -top-16 left-1/2 -translate-x-1/2 group">
-                                        <div class="relative">
-                                            <div
-                                                class="w-36 h-36 rounded-full border-6 border-white shadow-2xl overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100">
-                                                <img src="https://i.pravatar.cc/150?img=12"
-                                                    alt="Profile photo of John Dela Cruz"
-                                                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                                            </div>
-                                            <button
-                                                class="absolute bottom-2 right-2 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                                                aria-label="Update profile picture">
-                                                <i class="fas fa-camera text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Profile Details -->
-                                    <div class="text-center mt-4 md:mt-0">
-                                        <h1 class="text-3xl font-bold text-gray-900 mb-2" id="username">John Dela Cruz
-                                        </h1>
-                                        <p class="text-lg text-gray-600 mb-1">
-                                            <i class="fas fa-graduation-cap text-primary mr-2"></i>
-                                            Computer Science Major · Class of 2024
-                                        </p>
-                                        <p class="text-gray-500 mb-6">
-                                            <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i>
-                                            Manila, Philippines
-                                        </p>
-
-                                        <!-- Stats Grid -->
-                                        <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto mb-8">
-                                            <div class="stat group cursor-pointer">
-                                                <div
-                                                    class="stat-value font-bold text-2xl text-gray-900 group-hover:text-primary transition-colors duration-300">
-                                                    245</div>
-                                                <div
-                                                    class="stat-label text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                                                    Friends</div>
-                                                <div
-                                                    class="mt-1 h-1 w-8 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mx-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                </div>
-                                            </div>
-                                            <div class="stat group cursor-pointer">
-                                                <div
-                                                    class="stat-value font-bold text-2xl text-gray-900 group-hover:text-primary transition-colors duration-300">
-                                                    12</div>
-                                                <div
-                                                    class="stat-label text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                                                    Clubs</div>
-                                                <div
-                                                    class="mt-1 h-1 w-8 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mx-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                </div>
-                                            </div>
-                                            <div class="stat group cursor-pointer">
-                                                <div
-                                                    class="stat-value font-bold text-2xl text-gray-900 group-hover:text-primary transition-colors duration-300">
-                                                    47</div>
-                                                <div
-                                                    class="stat-label text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                                                    Posts</div>
-                                                <div
-                                                    class="mt-1 h-1 w-8 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full mx-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Action Buttons -->
-                                        <div class="flex flex-wrap justify-center gap-4">
-                                            <a href="editProfile.html"
-                                                class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                                <i class="fas fa-edit"></i>
-                                                Edit Profile
-                                            </a>
-                                            <button
-                                                class="inline-flex items-center gap-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
-                                                <i class="fas fa-share-alt"></i>
-                                                Share Profile
-                                            </button>
-                                            <a href="#logout"
-                                                class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                                Logout
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Video Info -->
+                    <div class="video-info">
+                        <div class="flex items-center gap-3">
+                            <div class="profile-avatar rounded-full overflow-hidden">
+                                <img src="../images/image.png" alt="Bazia Fangabin"
+                                    class="w-full h-screen object-cover">
                             </div>
-
-                            <!-- Profile Information Card -->
-                            <div
-                                class="bg-white rounded-xl shadow-lg p-6 mb-8 transition-all duration-300 hover:shadow-xl">
-                                <div class="flex items-center gap-4 mb-8">
-                                    <div
-                                        class="bg-gradient-to-br from-blue-100 to-indigo-100 w-12 h-12 rounded-xl flex items-center justify-center shadow-sm">
-                                        <i class="fas fa-user-circle text-xl text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-900">Profile Information</h3>
-                                        <p class="text-gray-500 text-sm">Personal and academic details</p>
-                                    </div>
-                                </div>
-
-                                <!-- Information Grid -->
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                    <!-- Personal Information -->
-                                    <div class="space-y-6">
-                                        <div
-                                            class="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
-                                            <div class="flex items-center gap-3 mb-4">
-                                                <div
-                                                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                    <i class="fas fa-user text-primary"></i>
-                                                </div>
-                                                <h4 class="font-bold text-gray-800">Personal Information</h4>
-                                            </div>
-                                            <div class="space-y-4">
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Full Name</p>
-                                                        <p class="font-semibold text-gray-900">John Dela Cruz</p>
-                                                    </div>
-                                                    <i class="fas fa-id-card text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Email Address</p>
-                                                        <p class="font-semibold text-gray-900">john.delacruz@student.edu
-                                                        </p>
-                                                    </div>
-                                                    <i class="fas fa-envelope text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Phone Number</p>
-                                                        <p class="font-semibold text-gray-900">+63 912 345 6789</p>
-                                                    </div>
-                                                    <i class="fas fa-phone text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Academic Information -->
-                                    <div class="space-y-6">
-                                        <div
-                                            class="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow duration-300">
-                                            <div class="flex items-center gap-3 mb-4">
-                                                <div
-                                                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                    <i class="fas fa-graduation-cap text-primary"></i>
-                                                </div>
-                                                <h4 class="font-bold text-gray-800">Academic Information</h4>
-                                            </div>
-                                            <div class="space-y-4">
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Major</p>
-                                                        <p class="font-semibold text-gray-900">Bachelor of Science in
-                                                            Information Technology</p>
-                                                    </div>
-                                                    <i class="fas fa-book text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Year Level</p>
-                                                        <p class="font-semibold text-gray-900">3rd Year</p>
-                                                    </div>
-                                                    <i class="fas fa-calendar-alt text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                                <div
-                                                    class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                                    <div>
-                                                        <p class="text-sm text-gray-500">Student ID</p>
-                                                        <p class="font-semibold text-gray-900">2021-00123-CS</p>
-                                                    </div>
-                                                    <i class="fas fa-id-badge text-gray-400 mt-2 sm:mt-0"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Bio Section -->
-                                <div
-                                    class="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 mb-8">
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <div
-                                            class="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-quote-left text-primary"></i>
-                                        </div>
-                                        <h4 class="font-bold text-gray-800">About Me</h4>
-                                    </div>
-                                    <div class="p-4 bg-white rounded-lg border-l-4 border-primary">
-                                        <p class="text-gray-700 leading-relaxed text-lg italic">
-                                            "Passionate BSIT student specializing in full-stack web development and
-                                            UI/UX design. Currently focused on mastering React and Node.js. Love
-                                            collaborating on innovative projects, participating in hackathons, and
-                                            exploring emerging technologies. Always eager to learn and contribute to
-                                            meaningful tech solutions."
-                                        </p>
-                                    </div>
-                                    <div class="mt-4 flex flex-wrap gap-2">
-                                        <span
-                                            class="px-3 py-1 bg-blue-100 text-primary text-sm rounded-full font-medium">#WebDevelopment</span>
-                                        <span
-                                            class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">#UIUXDesign</span>
-                                        <span
-                                            class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full font-medium">#ReactJS</span>
-                                        <span
-                                            class="px-3 py-1 bg-pink-100 text-pink-700 text-sm rounded-full font-medium">#TechEnthusiast</span>
-                                    </div>
-                                </div>
-
-                                <!-- Footer Actions -->
-                                <div
-                                    class="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gray-200">
-                                    <div class="flex items-center gap-3 text-gray-500 mb-4 sm:mb-0">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-history text-sm"></i>
-                                            <span class="text-sm">Last updated: Today, 2:30 PM</span>
-                                        </div>
-                                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Online">
-                                        </div>
-                                    </div>
-                                    <a href="editProfile.html"
-                                        class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                        <i class="fas fa-edit"></i>
-                                        Edit Full Profile
-                                    </a>
-                                </div>
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg ">Bazia Fangabin</h3>
                             </div>
+                            <button
+                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold">
+                                Follow
+                            </button>
+                        </div>
+                        <p class="text-sm ">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum est
+                            motone
+                            qui eget nihil est cujus voluptatem atterratae eu juici che.
+                        </p>
+                    </div>
 
-                            <!-- Recent Activity Card -->
-                            <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
-                                <div class="flex items-center justify-between mb-8">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-900">Recent Activity</h3>
-                                        <p class="text-gray-500 text-sm">Posts, updates, and interactions</p>
-                                    </div>
-                                    <a href="#all-posts"
-                                        class="text-primary hover:text-blue-700 font-medium text-sm flex items-center gap-2 group">
-                                        View All
-                                        <i
-                                            class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-300"></i>
-                                    </a>
-                                </div>
+                    <!-- Sidebar Actions -->
+                    <div class="video-sidebar">
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <span class="action-count">2.4K</span>
+                        </div>
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-comment text-xl"></i>
+                            </div>
+                            <span class="action-count">142</span>
+                        </div>
 
-                                <!-- Activity Feed -->
-                                <div class="space-y-6">
-                                    <!-- Post 1 -->
-                                    <div
-                                        class="bg-white rounded-xl border border-gray-200 p-5 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="relative">
-                                                    <div
-                                                        class="w-12 h-12 rounded-full border-2 border-white shadow-md overflow-hidden">
-                                                        <img src="https://i.pravatar.cc/150?img=12" alt="John Dela Cruz"
-                                                            class="w-full h-full object-cover">
-                                                    </div>
-                                                    <div
-                                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full">
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-bold text-gray-900">John Dela Cruz</h4>
-                                                    <div class="flex items-center gap-2 text-sm text-gray-500">
-                                                        <span>2 days ago</span>
-                                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                        <i class="fas fa-globe-americas text-xs"></i>
-                                                        <span>Public</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                                                aria-label="More options">
-                                                <i class="fas fa-ellipsis-h"></i>
-                                            </button>
-                                        </div>
-
-                                        <div class="mb-5">
-                                            <p class="text-gray-800 mb-3 text-lg">
-                                                Just submitted my final project for Data Structures! Feeling
-                                                accomplished 🎉
-                                                The journey through algorithms and data structures has been challenging
-                                                but incredibly rewarding.
-                                            </p>
-                                            <div class="flex items-center gap-2 text-sm text-gray-500">
-                                                <i class="fas fa-hashtag text-primary"></i>
-                                                <span class="font-medium">#DataStructures #FinalProject
-                                                    #ComputerScience</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                            <div class="flex items-center gap-6">
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors duration-200 group/like">
-                                                    <i
-                                                        class="fas fa-heart text-gray-400 group-hover/like:text-red-500"></i>
-                                                    <span class="font-medium">42</span>
-                                                </button>
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors duration-200 group/comment">
-                                                    <i
-                                                        class="fas fa-comment text-gray-400 group-hover/comment:text-primary"></i>
-                                                    <span class="font-medium">8</span>
-                                                </button>
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                                    <i class="fas fa-share text-gray-400"></i>
-                                                    <span class="font-medium">Share</span>
-                                                </button>
-                                            </div>
-                                            <div class="text-sm text-gray-400">
-                                                <i class="fas fa-eye mr-1"></i>
-                                                245 views
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Post 2 -->
-                                    <div
-                                        class="bg-white rounded-xl border border-gray-200 p-5 hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
-                                        <div class="flex items-start justify-between mb-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="relative">
-                                                    <div
-                                                        class="w-12 h-12 rounded-full border-2 border-white shadow-md overflow-hidden">
-                                                        <img src="https://i.pravatar.cc/150?img=12" alt="John Dela Cruz"
-                                                            class="w-full h-full object-cover">
-                                                    </div>
-                                                    <div
-                                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full">
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <h4 class="font-bold text-gray-900">John Dela Cruz</h4>
-                                                    <div class="flex items-center gap-2 text-sm text-gray-500">
-                                                        <span>1 week ago</span>
-                                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                        <i class="fas fa-users text-xs text-primary"></i>
-                                                        <span>Club Members</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                                                aria-label="More options">
-                                                <i class="fas fa-ellipsis-h"></i>
-                                            </button>
-                                        </div>
-
-                                        <div class="mb-5">
-                                            <p class="text-gray-800 mb-4 text-lg">
-                                                Had an amazing time at the campus tech fair today! So many innovative
-                                                projects from fellow students.
-                                                The AI-powered campus navigation system was particularly impressive!
-                                            </p>
-
-                                            <div
-                                                class="rounded-xl overflow-hidden mb-3 shadow-sm hover:shadow-md transition-shadow duration-300">
-                                                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                                    alt="Campus tech fair with students presenting projects"
-                                                    class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105">
-                                            </div>
-
-                                            <div class="flex flex-wrap gap-2">
-                                                <span
-                                                    class="px-3 py-1 bg-blue-100 text-primary text-sm rounded-full font-medium">#TechFair</span>
-                                                <span
-                                                    class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">#Innovation</span>
-                                                <span
-                                                    class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full font-medium">#CampusLife</span>
-                                                <span
-                                                    class="px-3 py-1 bg-pink-100 text-pink-700 text-sm rounded-full font-medium">#StudentProjects</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                            <div class="flex items-center gap-6">
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors duration-200 group/like">
-                                                    <i
-                                                        class="fas fa-heart text-gray-400 group-hover/like:text-red-500"></i>
-                                                    <span class="font-medium">128</span>
-                                                </button>
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors duration-200 group/comment">
-                                                    <i
-                                                        class="fas fa-comment text-gray-400 group-hover/comment:text-primary"></i>
-                                                    <span class="font-medium">24</span>
-                                                </button>
-                                                <button
-                                                    class="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors duration-200">
-                                                    <i class="fas fa-share text-gray-400"></i>
-                                                    <span class="font-medium">Share</span>
-                                                </button>
-                                            </div>
-                                            <div class="text-sm text-gray-400">
-                                                <i class="fas fa-eye mr-1"></i>
-                                                512 views
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- View More Button -->
-                                <div class="mt-8 text-center">
-                                    <a href="#more-posts"
-                                        class="inline-flex items-center gap-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
-                                        <i class="fas fa-plus"></i>
-                                        Load More Activities
-                                        <i
-                                            class="fas fa-chevron-down ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
-                                    </a>
-                                </div>
+                        <div class="action-button">
+                            <div class="action-icon">
+                                <i class="fas fa-ellipsis-h text-xl"></i>
                             </div>
                         </div>
                     </div>
-                    <!-- Right Sidebar -->
-                    <div id="rightSideBar"></div>
                 </div>
+
+
             </div>
-            <!-- Mobile Bottom Navigation -->
+
             <div id="mobileNav"></div>
         </div>
 
         <div id="offlinePage" class="hidden">
         </div>
 
-        <!-- Logout Confirmation Modal -->
-        <div class="p-10 shadow-2xl">
-            <div id="logoutModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
-                            <i class="fas fa-sign-out-alt text-red-500 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800">Logout</h3>
-                            <p class="text-gray-600 text-sm">Are you sure you want to logout?</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button id="cancelLogout"
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition">
-                            Cancel
-                        </button>
-                        <button id="confirmLogout"
-                            class="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition">
-                            Yes, Logout
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
 
         <script type="module" src="../js/app.js"></script>
-        <script type="module" src="../js/pages/profile.js"></script>
+        <script type="module" src="../js/pages/videos.js"></script>
     </body>
 
 </html>

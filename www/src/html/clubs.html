@@ -11,6 +11,148 @@
 
     <body class="bg-gray-50">
         <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+
+        <!-- Create Club Modal -->
+        <div id="createClubModal" class="fixed inset-0 z-50 hidden">
+            <!-- Backdrop -->
+            <div class="modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+            <!-- Modal Content -->
+            <div class="fixed inset-0 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div
+                        class="modal-content relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <!-- Modal Header -->
+                        <div class="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Create New Club</h2>
+                                    <p class="text-gray-600 text-sm">Start a new campus community</p>
+                                </div>
+                                <button id="closeModalBtn"
+                                    class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="p-6">
+                            <form id="createClubForm" class="space-y-6">
+                                <!-- Club Name -->
+                                <div>
+                                    <label for="clubName" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Club Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="clubName" required placeholder="e.g., Computer Science Club"
+                                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                </div>
+
+                                <!-- Category Selection -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Category <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        <label class="relative">
+                                            <input type="radio" name="category" value="tech" class="sr-only peer">
+                                            <div
+                                                class="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all duration-200 peer-checked:border-primary peer-checked:bg-blue-50">
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <i class="fas fa-code text-blue-500 text-lg"></i>
+                                                    <span class="text-sm font-medium">Tech</span>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label class="relative">
+                                            <input type="radio" name="category" value="sports" class="sr-only peer">
+                                            <div
+                                                class="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all duration-200 peer-checked:border-primary peer-checked:bg-red-50">
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <i class="fas fa-basketball-ball text-red-500 text-lg"></i>
+                                                    <span class="text-sm font-medium">Sports</span>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label class="relative">
+                                            <input type="radio" name="category" value="arts" class="sr-only peer">
+                                            <div
+                                                class="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all duration-200 peer-checked:border-primary peer-checked:bg-purple-50">
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <i class="fas fa-paint-brush text-purple-500 text-lg"></i>
+                                                    <span class="text-sm font-medium">Arts</span>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label class="relative">
+                                            <input type="radio" name="category" value="academic" class="sr-only peer">
+                                            <div
+                                                class="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all duration-200 peer-checked:border-primary peer-checked:bg-green-50">
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <i class="fas fa-graduation-cap text-green-500 text-lg"></i>
+                                                    <span class="text-sm font-medium">Academic</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div>
+                                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Description <span class="text-red-500">*</span>
+                                    </label>
+                                    <textarea id="description" rows="4" required
+                                        placeholder="Describe your club's purpose, activities, and goals..."
+                                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none"></textarea>
+                                    <p class="text-gray-500 text-xs mt-2">Briefly explain what members can expect from
+                                        this club</p>
+                                </div>
+
+                                <!-- Meeting Details -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Meeting Location
+                                        </label>
+                                        <input type="text" id="location" placeholder="e.g., Room 304, Tech Building"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    </div>
+
+                                    <div>
+                                        <label for="schedule" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Meeting Schedule
+                                        </label>
+                                        <input type="text" id="schedule" placeholder="e.g., Every Wednesday, 3-5 PM"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="sticky bottom-0 z-10 bg-white border-t border-gray-200 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <button type="button" id="cancelBtn"
+                                    class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="createClubForm"
+                                    class="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-xl font-medium transition-colors duration-200 flex items-center gap-2">
+                                    <i class="fas fa-plus"></i>
+                                    Create Club
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="app">
             <div id="header"></div>
 
@@ -33,7 +175,7 @@
                                             based on your interests</p>
                                     </div>
                                     <div class="flex gap-2">
-                                        <button
+                                        <button id="openCreateClubBtn"
                                             class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-xl text-sm font-medium transition-colors duration-200">
                                             <i class="fas fa-plus mr-2"></i>Create Club
                                         </button>
@@ -94,16 +236,6 @@
                                             programming, algorithms, AI, and emerging technologies. Weekly workshops and
                                             hackathons.</p>
 
-                                        <!-- Tags -->
-                                        <div class="flex flex-wrap gap-2 mb-4">
-                                            <span
-                                                class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-full">Programming</span>
-                                            <span
-                                                class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-full">AI</span>
-                                            <span class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-full">Web
-                                                Dev</span>
-                                        </div>
-
                                         <!-- Action Button -->
                                         <button
                                             class="join-btn w-full bg-success text-white py-3 rounded-xl font-medium hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow">
@@ -149,15 +281,6 @@
                                             basketball team or play for fun. Open to all skill levels with professional
                                             coaching available.</p>
 
-                                        <!-- Tags -->
-                                        <div class="flex flex-wrap gap-2 mb-4">
-                                            <span
-                                                class="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-full">Sports</span>
-                                            <span
-                                                class="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-full">Fitness</span>
-                                            <span
-                                                class="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-full">Competitive</span>
-                                        </div>
                                         <!-- Action Button -->
                                         <button
                                             class="join-btn w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow">
@@ -189,6 +312,48 @@
 
         <div id="offlinePage" class="hidden"></div>
         <script type="module" src="../js/app.js"></script>
+
+        <script>
+            // Minimal JavaScript for modal functionality
+            document.addEventListener('DOMContentLoaded', function () {
+                // Get modal elements
+                const modal = document.getElementById('createClubModal');
+                const openBtn = document.getElementById('openCreateClubBtn');
+                const closeBtn = document.getElementById('closeModalBtn');
+                const cancelBtn = document.getElementById('cancelBtn');
+
+
+                // Open modal
+                openBtn.addEventListener('click', function () {
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                });
+
+                // Close modal functions
+                function closeModal() {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+
+                // Close modal on various buttons
+                closeBtn.addEventListener('click', closeModal);
+                cancelBtn.addEventListener('click', closeModal);
+
+                // Close modal when clicking on backdrop
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                });
+            });
+        </script>
 
     </body>
 

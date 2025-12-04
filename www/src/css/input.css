@@ -57,6 +57,40 @@ input{
     border-radius: 10px;
 }
 
+/*home*/
+@keyframes homeFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: homeFadeIn 0.3s ease-out;
+}
+
+/* Smooth image loading */
+.image-loading {
+    background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
 /* for alert notification */
 .alert {
     animation: slideIn 0.3s ease-out;
@@ -101,6 +135,63 @@ input{
 
 
 /* videos */
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.video-barkadahub-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+}
+
+.video-barkadahub-item {
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+}
+
+.video-barkadahub-player {
+    object-fit: cover;
+}
+
+.video-barkadahub-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 30%, transparent 50%);
+}
+
+.video-barkadahub-container::-webkit-scrollbar {
+    display: none;
+}
+
+.video-barkadahub-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.modal-barkadahub-enter {
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+.backdrop-barkadahub-enter {
+    animation: fadeIn 0.2s ease-out;
+}
 .video-container {
     height: calc(100vh - 80px);
     scroll-snap-type: y mandatory;
@@ -166,6 +257,8 @@ input{
     backdrop-filter: blur(10px);
 }
 
+
+
 /* notificatiom */
 .notification-item.unread {
     background-color: #f0f8ff;
@@ -183,12 +276,6 @@ input{
 }
 
 /* clubs */
-.line-clamp-2 {
-    display: -webkit-box;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
 
 .join-btn {
     transition: all 0.3s ease;
@@ -198,13 +285,34 @@ input{
     transform: translateY(-2px);
 }
 
-/* Gradient overlay for images */
-.relative img {
-    transition: transform 0.5s ease;
+@keyframes clubsModalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.relative:hover img {
-    transform: scale(1.05);
+@keyframes backdropFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-backdrop {
+    animation: backdropFadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    animation: clubsModalFadeIn 0.3s ease-out;
 }
 
 /* direct message */
@@ -304,7 +412,6 @@ input{
 
 
 /* edit pofile */
-
 @keyframes fadeIn {
     from {
         opacity: 0;

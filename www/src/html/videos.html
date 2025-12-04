@@ -10,51 +10,253 @@
     </head>
 
     <body class="bg-primary">
-        <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+        <div id="alertContainer" class="fixed top-5 right-5 z-50 max-w-md"></div>
+
+        <!-- Create Video Modal -->
+        <div id="createVideoModal" class="fixed inset-0 z-50 hidden">
+            <!-- Backdrop -->
+            <div class="backdrop-barkadahub-enter fixed inset-0 bg-black/80 backdrop-blur-md"></div>
+
+            <!-- Modal Content -->
+            <div class="fixed inset-0 overflow-hidden">
+                <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4">
+                    <div
+                        class="modal-barkadahub-enter relative w-full max-w-lg bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh]">
+                        <!-- Modal Header -->
+                        <div class="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">Create New Video</h2>
+                                    <p class="text-gray-400 text-sm">Share a moment with your campus</p>
+                                </div>
+                                <button id="closeCreateModalBtn"
+                                    class="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-xl transition-colors duration-200">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                            <form id="createVideoForm" class="space-y-6">
+                                <!-- Video Upload Area -->
+                                <div class="border-2 border-dashed border-gray-700 rounded-2xl p-8 text-center hover:border-primary transition-all duration-300 cursor-pointer"
+                                    id="videoUploadArea">
+                                    <div class="mb-4">
+                                        <i class="fas fa-video text-4xl text-gray-400"></i>
+                                    </div>
+                                    <h3 class="text-white font-medium mb-2">Upload Video</h3>
+                                    <p class="text-gray-400 text-sm mb-4">Select a video from your device</p>
+                                    <input type="file" id="videoFile" accept="video/*" class="hidden">
+                                    <button type="button" id="selectVideoBtn"
+                                        class="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-xl font-medium transition-colors duration-200">
+                                        Select Video
+                                    </button>
+                                    <p class="text-gray-500 text-xs mt-4">MP4, MOV up to 100MB</p>
+                                </div>
+
+                                <!-- Video Preview -->
+                                <div id="videoPreview" class="hidden">
+                                    <div class="relative rounded-xl overflow-hidden bg-black">
+                                        <video id="videoPreviewPlayer" class="w-full h-64 object-cover"
+                                            controls></video>
+                                        <button type="button" id="removeVideoBtn"
+                                            class="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors duration-200">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Caption -->
+                                <div>
+                                    <label for="videoCaption" class="block text-sm font-medium text-gray-200 mb-2">
+                                        Caption
+                                    </label>
+                                    <textarea id="videoCaption" rows="3"
+                                        placeholder="What's happening? Add a caption..."
+                                        class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none text-white placeholder-gray-500"></textarea>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <p class="text-gray-500 text-xs">Add hashtags to reach more people</p>
+                                        <span class="text-gray-400 text-xs" id="charCount">0/150</span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="sticky bottom-0 z-10 bg-gray-900 border-t border-gray-800 px-6 py-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <button type="button" id="cancelCreateBtn"
+                                    class="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-medium transition-colors duration-200 flex-1">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="createVideoForm" id="postVideoBtn" disabled
+                                    class="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-xl font-medium transition-colors duration-200 flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Post Video
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Options Modal -->
+        <div id="videoOptionsModal" class="fixed inset-0 z-50 hidden">
+            <!-- Backdrop -->
+            <div class="backdrop-barkadahub-enter fixed inset-0 bg-black/80 backdrop-blur-md"></div>
+
+            <!-- Modal Content -->
+            <div class="fixed inset-0 overflow-hidden">
+                <div class="flex min-h-full items-end justify-center p-0">
+                    <div
+                        class="modal-barkadahub-enter relative w-full bg-gray-900 rounded-t-2xl shadow-2xl overflow-hidden max-h-[80vh]">
+                        <!-- Modal Header -->
+                        <div class="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-6 py-4">
+                            <div class="flex items-center justify-center">
+                                <h2 class="text-xl font-bold text-white">Video Options</h2>
+                            </div>
+                            <button id="closeOptionsModalBtn"
+                                class="absolute right-4 top-4 text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-xl transition-colors duration-200">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="p-2">
+                            <!-- Options List -->
+                            <div class="space-y-1">
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-flag text-red-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Report</span>
+                                        <p class="text-gray-400 text-sm">Report inappropriate content</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-volume-mute text-yellow-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Mute User</span>
+                                        <p class="text-gray-400 text-sm">Stop seeing their videos</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-share text-blue-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Share Video</span>
+                                        <p class="text-gray-400 text-sm">Copy link or share to other apps</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-download text-green-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Save Video</span>
+                                        <p class="text-gray-400 text-sm">Download to your device</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-eye-slash text-purple-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Hide Video</span>
+                                        <p class="text-gray-400 text-sm">Remove this from your feed</p>
+                                    </div>
+                                </button>
+
+                                <div class="border-t border-gray-800 my-2"></div>
+
+                                <button
+                                    class="video-option-btn w-full text-left px-6 py-4 hover:bg-gray-800 transition-colors duration-200 flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-gray-500/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-cog text-gray-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <span class="font-medium text-white">Video Settings</span>
+                                        <p class="text-gray-400 text-sm">Adjust autoplay and other settings</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="sticky bottom-0 z-10 bg-gray-900 border-t border-gray-800 p-4">
+                            <button id="closeBottomOptionsBtn"
+                                class="w-full px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-medium transition-colors duration-200">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="app">
-            <!-- Header video-->
-            <div class="bg-none  py-4 px-4 fixed top-0 w-full z-50">
+            <!-- Header -->
+            <div class="bg-linear-to-b from-black/70 to-transparent py-4 px-4 fixed top-0 w-full z-40">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-white text-xl font-bold">Videos</h1>
+                    <h1 class="text-white text-xl font-bold" id="videoHeader">BarkadaHub Videos</h1>
                     <div class="flex items-center gap-4">
-                        <button class="text-white">
-                            <i class="fa-solid fa-circle-plus text-lg"></i>
+                        <button id="openCreateVideoBtn"
+                            class="text-white hover:text-primary transition-colors duration-200">
+                            <i class="fa-solid fa-circle-plus text-2xl"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Videos Container -->
-            <div class="video-container h-screen">
+            <div class="video-barkadahub-container">
                 <!-- Video 1 -->
-                <div class="video-item relative ">
-                    <video class="video-player w-full h-screen" loop muted autoplay>
-                        <source src="../images/vid.mp4" type="video/mp4" class="object-fit">
+                <div class="video-barkadahub-item">
+                    <video class="video-barkadahub-player w-full h-full" loop muted autoplay>
+                        <source src="../images/vid.mp4" type="video/mp4">
                     </video>
 
+                    <!-- Video Overlay -->
+                    <div class="absolute inset-0 video-barkadahub-overlay"></div>
+
                     <!-- Video Info -->
-                    <div class="video-info">
-                        <div class="flex items-center gap-3">
-                            <div class="profile-avatar rounded-full overflow-hidden">
-                                <img src="https://i.pravatar.cc/150?img=12" alt="Bazia Fangabin"
-                                    class="w-full h-screen object-cover">
+                    <div class="absolute bottom-10 left-0 right-0 p-6 z-30">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                                <img src="../images/image.png" alt="Bazia Fangabin" class="w-full h-full object-cover">
                             </div>
                             <div class="text-white">
-                                <h3 class="font-bold text-lg ">Bazia Fangabin</h3>
+                                <h3 class="font-bold text-lg">Bazia Fangabin</h3>
+                                <p class="text-sm opacity-90">@bazia_fang</p>
                             </div>
                             <button
-                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold">
+                                class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-white hover:text-black transition-all duration-200">
                                 Follow
                             </button>
                         </div>
-                        <p class="text-sm ">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum est
-                            motone
-                            qui eget nihil est cujus voluptatem atterratae eu juici che.
+                        <p class="text-white text-sm mb-2">Lorem ipsum dolor sit amet. Est molestiae similisae et lismum
+                            est
+                            motone qui eget nihil est cujus voluptatem atterratae eu juici che.
                         </p>
                     </div>
 
                     <!-- Sidebar Actions -->
-                    <div class="video-sidebar">
+                    <div class="absolute right-4 bottom-32 z-30 flex flex-col items-center gap-6">
                         <div class="action-button">
                             <div class="action-icon">
                                 <i class="fas fa-heart text-xl"></i>
@@ -70,21 +272,18 @@
 
                         <div class="action-button">
                             <div class="action-icon">
-                                <i class="fas fa-ellipsis-v text-xl"></i>
+                                <i class="fas fa-ellipsis-h text-xl"></i>
                             </div>
                         </div>
                     </div>
+
                 </div>
-
-
             </div>
 
             <div id="mobileNav"></div>
         </div>
 
-        <div id="offlinePage" class="hidden">
-        </div>
-
+        <div id="offlinePage" class="hidden"></div>
 
         <script type="module" src="../js/app.js"></script>
         <script type="module" src="../js/pages/videos.js"></script>
