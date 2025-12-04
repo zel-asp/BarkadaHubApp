@@ -14,7 +14,7 @@ export default function HeaderComponent() {
             <div class="user-actions flex items-center gap-4">
                 <div class="notification-icon relative cursor-pointer">
                 <a href="./notification.html">
-                    <i class="fas fa-bell text-primary text-lg"></i>
+                    <i class="fas fa-bell text-primary text-xl"></i>
                     <span
                         class="notification-badge absolute -top-2 -right-1
                         text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-extrabold text-white bg-red-500">
@@ -25,7 +25,7 @@ export default function HeaderComponent() {
 
                 <div class="notification-icon relative cursor-pointer">
                     <a href="./messages.html">
-                        <i class="fa-solid fa-message text-primary text-lg"></i>
+                        <i class="fa-solid fa-message text-primary text-xl"></i>
                         <span
                             class="notification-badge absolute -top-2 -right-1
                             text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-extrabold text-white bg-red-500">
