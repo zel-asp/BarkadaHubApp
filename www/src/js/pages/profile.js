@@ -1,6 +1,7 @@
 import supabaseClient from '../supabase.js';
 import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
+import { displayBio, displayInformation } from '../render/profile.js'
 
 document.addEventListener('DOMContentLoaded', () => {
     const app = document.getElementById('app');
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelLogout = document.getElementById('cancelLogout');
     const confirmLogout = document.getElementById('confirmLogout');
 
+    const alertSystem = new AlertSystem();
     /* -------------------------------------------
         LOGOUT MODAL CONTROL
     ------------------------------------------- */
@@ -85,4 +87,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadUserName();
+
+
+    async function renderBio() {
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError || !user) return;
+
+
+        const userId = user.id;
+        const userName = user.user_metadata.display_name
+        const userEmail = user.email;
+
+        const { data, error } = await supabaseClient
+            .from('profile')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (error) {
+            alertSystem.show('Error fetching bio', 'error');
+            return;
+        }
+
+        const nullData = "No information available";
+
+        const bioText = data?.about_me || nullData;
+        const name = userName || nullData;
+        const email = userEmail || nullData;
+        const major = data?.major || nullData;
+        const year_level = data?.year_level || nullData;
+        document.getElementById('displayBio').innerHTML = displayBio(bioText);
+        document.getElementById('PersonalInfo').innerHTML = displayInformation(name, email, major, year_level);
+    }
+    renderBio();
 });
