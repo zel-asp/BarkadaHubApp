@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return alertSystem.show('Failed to update profile', 'error');
         }
 
-        avatarPreview.src = avatarUrl;
+        avatarPreview.src = `${avatarUrl}`;
         updateUserAt(fullName);
 
         alertSystem.show('Profile updated successfully', 'success');
