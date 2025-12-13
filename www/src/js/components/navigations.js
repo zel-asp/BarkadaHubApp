@@ -7,7 +7,7 @@ export function mobileNavigations() {
             <span class="text-xs">Home</span>
         </a>
         <a href="./clubs.html" class="mobile-nav-item flex flex-col items-center text-gray-500"
-            data-page="clubs">
+            data-page="clubs" id="clubLink">
             <i class="fas fa-users text-xl mb-1"></i>
             <span class="text-xs">Clubs</span>
         </a>

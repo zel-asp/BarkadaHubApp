@@ -50,27 +50,23 @@
             <div
                 class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden modal-enter animate-fadeIn">
                 <!-- Modal Header -->
-                <div class="bg-linear-to-r from-blue-600 to-purple-600 text-white p-6">
+                <div class="bg-linear-to-r from-white to-primary text-text-black p-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-bold">Computer Science Club</h2>
-                            <p class="text-blue-100 mt-1 text-sm">Complete club information and management</p>
+                            <p class=" mt-1 text-sm">Complete club information and management</p>
                         </div>
                         <button onclick="closeClubModal()"
-                            class="text-white hover:bg-white/20 p-2 rounded-full transition duration-200">
+                            class="text-white hover:bg-white/20 p-2 rounded-full transition duratio n-200">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
 
                     <!-- Modal Tabs -->
-                    <div class="flex mt-4 space-x-1" id="modalTabs">
-                        <button onclick="switchModalTab('info')"
-                            class="modal-tab flex-1 py-3 text-center font-medium border-b-2 border-white text-white tab-active">
+                    <div class="flex mt-4 space-x-1">
+                        <button
+                            class=" flex-1 py-3 text-center font-medium border-b-2 border-white text-white tab-active">
                             <i class="fas fa-info-circle mr-2"></i>Information
-                        </button>
-                        <button onclick="switchModalTab('members')"
-                            class="modal-tab flex-1 py-3 text-center font-medium border-b-2 border-transparent text-blue-100 hover:text-white transition">
-                            <i class="fas fa-users mr-2"></i>Members
                         </button>
                     </div>
                 </div>
@@ -119,69 +115,14 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Members Tab -->
-                    <div id="membersTab" class="modal-tab-content hidden">
-                        <!-- Search Members -->
-                        <div class="mb-6">
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                                <input type="text" placeholder="Search members by name or role..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
-
-                        <!-- Member Count -->
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Club Members</h3>
-                            <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">245 members</span>
-                        </div>
-
-                        <!-- Active Members -->
-                        <div>
-                            <h4
-                                class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wider flex items-center">
-                                <i class="fas fa-user-check text-green-500 mr-2"></i> Members
-                            </h4>
-                            <div class="space-y-3">
-                                <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
-                                    <div
-                                        class="w-10 h-10 bg-linear-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                        YT
-                                    </div>
-                                    <div class="flex-1">
-                                        <h5 class="font-medium text-gray-800">You</h5>
-                                        <p class="text-xs text-gray-500">Member • Joined recently</p>
-                                    </div>
-                                    <span
-                                        class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Online</span>
-                                </div>
-
-                                <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
-                                    <div
-                                        class="w-10 h-10 bg-linear-to-r from-orange-600 to-orange-700 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                        JL
-                                    </div>
-                                    <div class="flex-1">
-                                        <h5 class="font-medium text-gray-800">John Lee</h5>
-                                        <p class="text-xs text-gray-500">Secretary • Sophomore, Data Science</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="border-t border-gray-200 px-2 py-1 bg-gray-50">
-                    <div class="flex justify-between items-center">
-                        <div class="text-sm text-gray-500">
-                            Last updated: November 2023
-                        </div>
+                <div class="border-t border-gray-200 p-2 bg-gray-50">
+                    <div class="flex justify-end items-center">
                         <div class="flex space-x-3">
                             <button onclick="closeClubModal()"
-                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
+                                class="px-4 py-1 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
                                 Close
                             </button>
                         </div>
@@ -191,41 +132,21 @@
         </div>
 
         <div id="app">
-
             <!-- Club Header -->
             <div id="header"></div>
+            <!-- HTML placeholder for club header -->
+            <div id="clubHeaderContainer"></div>
 
-            <div class="club-header text-white">
-                <div class="container mx-auto px-4 py-12">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex space-x-4">
-                            <!-- Club Info Button -->
-                            <button onclick="openClubModal()"
-                                class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg transition">
-                                <i class="fas fa-info-circle mr-2"></i>Club Info
-                            </button>
-
-                            <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Leave Club
-                            </button>
-                        </div>
-                    </div>
-
-                    <h1 class="text-4xl font-bold mb-4">Computer Science Club</h1>
-                    <p class="text-xl text-white/90 mb-6 max-w-3xl">A community for programming enthusiasts, hackers,
-                        and
-                        tech innovators. Weekly workshops, hackathons, and career development sessions.</p>
-
-                    <div class="flex flex-wrap gap-4">
-                <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg members-badge">
-                     <i class="fas fa-users mr-2"></i>
-            </span>
-             <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg category-badge">
-               <i class="fas fa-star mr-2"></i>General
-                   </span>
-               </div>
+            <!-- Club Info Modal -->
+            <div id="clubModal" class="hidden fixed inset-0 bg-black/50 items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 max-w-xl w-full relative">
+                    <h2 class="text-2xl font-bold mb-4">Club Information</h2>
+                    <p id="clubModalContent">Loading...</p>
+                    <button id="closeModalBtn"
+                        class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">&times;</button>
                 </div>
             </div>
+
             <div class="container mx-auto px-4 py-8">
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
@@ -356,9 +277,6 @@
 
         <script type="module" src="../js/app.js"></script>
         <script type="module" src="../js/pages/joinedClub.js"></script>
-        <script type="module" src="../js/render/manageclubs.js"></script>
-        <script type="module" src="../js/render/joinclub.js"></script>
-         <script type="module" src="../js/pages/clubs.js"></script>
     </body>
 
 </html>
