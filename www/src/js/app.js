@@ -7,6 +7,7 @@ import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navig
 
 const alertSystem = new AlertSystem();
 
+
 // Store the last visited page
 function storeCurrentPage() {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
@@ -118,4 +119,58 @@ document.addEventListener('DOMContentLoaded', async function () {
         alertSystem.show("Connection Lost", 'error');
         showOfflinePage();
     });
+
+    // List all modal IDs
+    const modalIds = [
+        'commentModal',
+        'ellipsisMenuModal',
+        'deleteConfirmationModal',
+        'fullImageModal'
+    ];
+
+    // Store which modals were open
+    let openModals = new Set();
+
+    // Function to hide all modals
+    function hideAllModals() {
+        modalIds.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
+        });
+    }
+
+    // Function to record currently open modals
+    function recordOpenModals() {
+        openModals.clear();
+        modalIds.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal && !modal.classList.contains('hidden')) {
+                openModals.add(id);
+            }
+        });
+    }
+
+    // Function to restore previously open modals
+    function restoreModals() {
+        openModals.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('hidden');
+        });
+        openModals.clear();
+    }
+
+    // Listen for offline event
+    window.addEventListener('offline', () => {
+        recordOpenModals();
+        hideAllModals();
+    });
+
+    // Listen for online event
+    window.addEventListener('online', async () => {
+        const isOnline = await checkConnection(); // your existing function
+        if (isOnline) {
+            restoreModals();
+        }
+    });
+
 });

@@ -1,6 +1,10 @@
-export default function uploadedPost(name, date, content, file, media_type, postId = 1, likes = 0, comments = 0) {
+export default function uploadedPost(name, date, content, file, media_type, postId = 1, likes = 0, comments = 0, isLiked = false) {
+    const likeIconClass = isLiked ? 'fas fa-heart text-red-600' : 'fas fa-heart text-gray-400';
+    const likeBtnClass = isLiked ? 'text-red-600' : '';
+    const likeText = isLiked ? 'Unlike' : 'Like';
+
     return `
-        <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
@@ -21,64 +25,48 @@ export default function uploadedPost(name, date, content, file, media_type, post
             <div class="mb-4">
                 <p class="whitespace-pre-line mb-3">${content}</p>
                 ${file ? `
-                    <div class="media-container mt-3 rounded-lg overflow-hidden bg-gray-50 ">
+                    <div class="media-container mt-3 rounded-lg overflow-hidden bg-gray-50">
                         <div class="media-wrapper flex items-center justify-center max-h-96">
                             ${media_type === "video"
                 ? `<video src="${file}" controls class="w-auto max-w-full h-auto max-h-96 object-contain"></video>`
-                : `<img src="${file}" alt="Post Image" 
-                            class="w-auto max-w-full h-auto max-h-96 object-contain" 
-                            onload="this.style.opacity='1'" 
-                            style="opacity: 0; transition: opacity 0.3s;">`
+                : `<img src="${file}" alt="Post Image" class="w-auto max-w-full h-auto max-h-96 object-contain" onload="this.style.opacity='1'" style="opacity: 0; transition: opacity 0.3s;">`
             }
                         </div>
                         ${media_type === "image" ? `
-                            <div
-                                class="media-footer px-3 py-2  border-t border-gray-100 flex justify-end">
-                                <button
-                                    class="text-xs text-gray-500 hover:text-primary transition-colors flex items-center gap-1"  onclick="viewFullImage('${file}')">
+                            <div class="media-footer px-3 py-2 border-t border-gray-100 flex justify-end">
+                                <button class="text-xs text-gray-500 hover:text-primary transition-colors flex items-center gap-1" onclick="viewFullImage('${file}')">
                                     <i class="fas fa-expand-alt text-xs"></i>
                                     <span>View full</span>
                                 </button>
-                            </div>            
-                        ` : ''}
+                            </div>` : ''}
                     </div>
                 ` : ''}
             </div>
 
-            <div
-                class="flex justify-between text-xs text-gray-500 mb-2 sm:mb-3 pb-2 sm:pb-3 border-b border-gray-100">
+            <div class="flex justify-between text-xs text-gray-500 mb-2 sm:mb-3 pb-2 sm:pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-1">
                     <i class="fas fa-heart text-red-400"></i>
-                    <span>${likes}</span>
+                    <span class="likes-count">${likes}</span>
                 </div>
-                <a href="./comments.html" class="flex items-center gap-1">
+                <button type="submit" class="commentBtn flex items-center gap-1" data-post-id="${postId}">
                     <i class="fas fa-comment text-blue-400"></i>
                     <span>${comments}</span>
-                </a>
+                </button>
             </div>
 
             <div class="flex justify-around border-t border-gray-100 pt-2">
-                <button
-                    class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-primary hover:bg-gray-50 py-2 sm:py-2.5 rounded-lg transition-all duration-200 group">
-                    <i class="fas fa-heart text-gray-400 group-hover/like:text-red-500"></i>
-                    <span class="text-xs font-medium">Like</span>
+                <button class="like-btn flex-1 flex items-center justify-center gap-2 ${likeBtnClass} hover:text-primary hover:bg-gray-50 py-2 sm:py-2.5 rounded-lg transition-all duration-200" data-post-id="${postId}">
+                    <i class="${likeIconClass}"></i>
+                    <span class="text-xs font-medium">${likeText}</span>
                 </button>
-                <button
-                    class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 py-2 sm:py-2.5 rounded-lg transition-all duration-200 group">
-                    <i
-                        class="fas fa-comment text-gray-400 group-hover/comment:text-primary"></i>
+                <button type="submit" class="post-action commentBtn flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 py-2 sm:py-2.5 rounded-lg transition-all duration-200" data-post-id="${postId}">
+                    <i class="fas fa-comment text-gray-400"></i>
                     <span class="text-xs font-medium">Comment</span>
-                </button>
-                <button
-                    class="post-action flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-green-600 hover:bg-gray-50 py-2 sm:py-2.5 rounded-lg transition-all duration-200 group">
-                    <i class="fas fa-share text-gray-400"></i> 
-                    <span class="text-xs font-medium">Share</span>
                 </button>
             </div>
         </div>
     `;
 }
-
 
 export function lost_found(img, type, item, description, location, datePosted) {
     return `
