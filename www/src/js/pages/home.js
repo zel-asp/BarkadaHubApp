@@ -5,7 +5,9 @@ import comments, { emptyComments } from '../render/comments.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+    // =======================
     // ELEMENTS
+    // =======================
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
     const charCount = document.getElementById('charCount');
@@ -16,37 +18,78 @@ document.addEventListener('DOMContentLoaded', async () => {
     const removeMedia = document.getElementById('removeMedia');
     const postButton = document.getElementById('postButton');
     const postsContainer = document.getElementById('dynamic-posts');
+    const userAvatar = document.getElementById('userAvatar');
 
+
+
+    // =======================
     // STATE
+    // =======================
     let selectedMedia = null;
     const displayedPostIds = new Set();
     const alertSystem = new AlertSystem();
 
-    /* -------------------------------------------
-    LOAD USER
-    ------------------------------------------- */
+    const { data, error } = await supabaseClient.auth.getUser();
+    const userId = data?.user?.id;
+    if (!userId) {
+        alertSystem.show("You must be logged in.", "error");
+        setTimeout(() => {
+            window.location.href = "../../index.html";
+        }, 1500);
+        return;
+    }
+
+    async function loadProfilePic(userId, userAvatarElement) {
+        let avatar = '../images/defaultAvatar.jpg';
+
+        try {
+            const { data: profile, error } = await supabaseClient
+                .from('profile')
+                .select('avatar_url')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.warn("Failed to fetch profile:", error);
+            }
+
+            if (profile?.avatar_url) avatar = profile.avatar_url;
+        } catch (err) {
+            console.error("Error loading profile avatar:", err);
+        }
+
+        // Set the avatar src
+        userAvatarElement.src = avatar;
+    }
+
+    loadProfilePic(userId, userAvatar);
+
+    // =======================
+    // LOAD CURRENT USER
+    // =======================
     async function loadUser() {
         const { data, error } = await supabaseClient.auth.getUser();
-        if (error || !data?.user) {
-            alertSystem.show("You must be logged in.", 'error');
+        if (error) {
+            alertSystem.show(`Error: ${error}`, 'error');
             setTimeout(() => window.location.href = '../../index.html', 1500);
             return;
         }
+
         const name = data.user.user_metadata?.display_name || "User";
         postContent.placeholder = `What's on your mind, ${name}?`;
     }
 
-    /* -------------------------------------------
-    CHARACTER COUNT
-    ------------------------------------------- */
+    // =======================
+    // CHARACTER COUNT & POST BUTTON STATE
+    // =======================
     postContent.addEventListener('input', () => {
         charCount.textContent = postContent.value.length;
         postButton.disabled = (postContent.value.length === 0 && !selectedMedia);
     });
 
-    /* -------------------------------------------
-    MEDIA UPLOAD HANDLER
-    ------------------------------------------- */
+    // =======================
+    // MEDIA UPLOAD HANDLER
+    // =======================
     function handleMediaUpload(file, type) {
         selectedMedia = { file, type };
         const reader = new FileReader();
@@ -62,13 +105,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         reader.readAsDataURL(file);
     }
 
-    photoUpload.addEventListener('change', () => {
-        if (photoUpload.files[0]) handleMediaUpload(photoUpload.files[0], 'image');
-    });
-
-    videoUpload.addEventListener('change', () => {
-        if (videoUpload.files[0]) handleMediaUpload(videoUpload.files[0], 'video');
-    });
+    photoUpload.addEventListener('change', () => photoUpload.files[0] && handleMediaUpload(photoUpload.files[0], 'image'));
+    videoUpload.addEventListener('change', () => videoUpload.files[0] && handleMediaUpload(videoUpload.files[0], 'video'));
 
     removeMedia.addEventListener('click', () => {
         selectedMedia = null;
@@ -77,10 +115,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         videoUpload.value = '';
         postButton.disabled = (postContent.value.length === 0);
     });
-
-    /* -------------------------------------------
-    ELLIPSIS MENU INIT
-    ------------------------------------------- */
+    // =======================
+    // ELLIPSIS MENU HANDLER
+    // =======================
     function initEllipsisButtons() {
         const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
         const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
@@ -93,9 +130,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!btn.dataset.bound) {
                 btn.dataset.bound = "true";
                 btn.addEventListener('click', () => {
+                    const postId = btn.closest('.post').dataset.postId;
+                    ellipsisMenuModal.dataset.postId = postId; // store current post
                     ellipsisMenuModal.classList.remove('hidden');
                     app.classList.add('opacity-50');
-                    document.body.classList.add('overflow-hidden');
                 });
             }
         });
@@ -103,33 +141,90 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeBtn.onclick = () => {
             ellipsisMenuModal.classList.add('hidden');
             app.classList.remove('opacity-50');
-            document.body.classList.remove('overflow-hidden');
         };
 
         deletePostBtn.onclick = showDeleteConfirmation;
         cancelDeleteBtn.onclick = hideDeleteConfirmation;
     }
 
-    /* -------------------------------------------
-    DELETE CONFIRMATION
-    ------------------------------------------- */
+    // =======================
+    // SHOW DELETE CONFIRMATION
+    // =======================
     function showDeleteConfirmation() {
+        const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
+        const postId = ellipsisMenuModal.dataset.postId;
+        if (!postId) return alertSystem.show('Error: no post selected', 'error');
+
         const modal = document.getElementById('deleteConfirmationModal');
         const card = modal.querySelector('.delete-card');
+
+        modal.dataset.postId = postId;
         modal.classList.remove('hidden');
         setTimeout(() => card.classList.add('scale-100'));
+
+        ellipsisMenuModal.classList.add('hidden');
     }
 
+    // =======================
+    // HIDE DELETE CONFIRMATION
+    // =======================
     function hideDeleteConfirmation() {
         const modal = document.getElementById('deleteConfirmationModal');
         const card = modal.querySelector('.delete-card');
         card.classList.remove('scale-100');
-        setTimeout(() => modal.classList.add('hidden'), 150);
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.getElementById('app').classList.remove('opacity-50');
+        }, 150);
     }
 
-    /* -------------------------------------------
-    CALCULATE RELATIVE TIME
-    ------------------------------------------- */
+    // =======================
+    // CONFIRM DELETE BUTTON
+    // =======================
+    function deletePermanently() {
+        const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            const modal = document.getElementById('deleteConfirmationModal');
+            const postId = modal.dataset.postId;
+            const alertId = alertSystem.show('Deleting...', 'info');
+
+
+            // 1. Fetch post to check ownership
+            const { data: post, error: fetchError } = await supabaseClient
+                .from('posts')
+                .select('user_id')
+                .eq('id', postId)
+                .maybeSingle();
+
+            if (fetchError) return alertSystem.show(`Error fetching post: ${fetchError.message}`, 'error');
+            if (!post) return alertSystem.show("Post not found", 'error');
+            if (post.user_id !== userId) return alertSystem.show("You can't delete this post", 'error');
+
+            // 2. Delete post
+            const { data: deletedPost, error: deleteError } = await supabaseClient
+                .from('posts')
+                .delete()
+                .eq('id', postId);
+
+            if (deleteError) return alertSystem.show(`Failed to delete post: ${deleteError.message}`, 'error');
+
+            // 3. Remove from UI
+            setTimeout(() => {
+                // Remove post from UI
+                const postEl = document.querySelector(`.post[data-post-id="${postId}"]`);
+                if (postEl) postEl.remove();
+
+                hideDeleteConfirmation();
+                alertSystem.show('Post deleted successfully!', 'success');
+                alertSystem.hide(alertId);
+            }, 1000);
+        });
+    }
+
+    // =======================
+    // RELATIVE TIME FORMAT
+    // =======================
     function formatRelativeTime(dateString) {
         const date = new Date(dateString);
         const now = new Date();
@@ -146,53 +241,105 @@ document.addEventListener('DOMContentLoaded', async () => {
         return date.toLocaleString('en-US', { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
     }
 
-    /* -------------------------------------------
-    RENDER POST WITH LIKE STATUS
-    ------------------------------------------- */
+    // =======================
+    // RENDER SINGLE POST
+    // =======================
     async function renderPost(post, position = "beforeend") {
         if (!post.id || displayedPostIds.has(post.id)) return;
 
-        // Check if current user liked this post
-        let isLikedByUser = false;
+        // ------------------------------
+        // Get current user
+        // ------------------------------
         const { data: userData } = await supabaseClient.auth.getUser();
-        if (userData?.user) {
+        const currentUserId = userData?.user?.id;
+        const owner = currentUserId === post.user_id;
+
+        // ------------------------------
+        // Check if user liked this post
+        // ------------------------------
+        let isLikedByUser = false;
+        if (currentUserId) {
             const { data: userLike } = await supabaseClient
                 .from('post_likes')
                 .select('id')
                 .eq('post_id', post.id)
-                .eq('user_id', userData.user.id)
+                .eq('user_id', currentUserId)
                 .maybeSingle();
             isLikedByUser = !!userLike;
         }
 
+        // ------------------------------
+        // Fetch total likes
+        // ------------------------------
+        const { count: totalLikes } = await supabaseClient
+            .from('post_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+        // ------------------------------
+        // Fetch total comments
+        // ------------------------------
+        const { count: commentCount } = await supabaseClient
+            .from('post_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+        // ------------------------------
+        // Fetch latest profile avatar dynamically
+        // ------------------------------
+        let avatar = post.avatar_url || '../images/defaultAvatar.jpg'; // use saved post avatar first
+        try {
+            const { data: profile } = await supabaseClient
+                .from('profile')
+                .select('avatar_url')
+                .eq('id', post.user_id)
+                .single();
+            if (profile?.avatar_url) avatar = profile.avatar_url; // use latest profile avatar
+        } catch (err) {
+            console.warn('Failed to fetch profile avatar for user:', post.user_id, err);
+        }
+
+        // ------------------------------
+        // Format relative time
+        // ------------------------------
         const relativeTime = formatRelativeTime(post.created_at);
+
+        // ------------------------------
+        // Render HTML using uploadedPost
+        // ------------------------------
         const html = uploadedPost(
+            avatar,
+            owner,
             post.user_name,
             relativeTime,
             post.content,
             post.media_url,
             post.media_type,
             post.id,
-            post.likes || 0,
-            post._count?.post_comments || 0,
+            totalLikes,
+            commentCount,
             isLikedByUser
         );
 
+        // Insert into posts container
         postsContainer.insertAdjacentHTML(position, html);
         displayedPostIds.add(post.id);
 
-        // Initialize buttons after DOM is updated
+        // Initialize buttons after DOM update
         setTimeout(() => {
             initEllipsisButtons();
             initLikeButtons();
         }, 100);
     }
 
-    /* -------------------------------------------
-    SUBMIT / CREATE POST
-    ------------------------------------------- */
+
+
+    // =======================
+    // CREATE / SUBMIT POST
+    // =======================
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const { data: userData } = await supabaseClient.auth.getUser();
         const userId = userData?.user?.id;
         const userName = userData?.user.user_metadata.display_name || "User";
@@ -204,6 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let mediaUrl = null;
         let mediaType = null;
 
+        // --- Handle media upload (existing code) ---
         if (selectedMedia) {
             const file = selectedMedia.file;
             const ext = file.name.split('.').pop();
@@ -219,6 +367,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             mediaType = selectedMedia.type;
         }
 
+        // --- FETCH USER AVATAR ---
+        let avatar = '../images/defaultAvatar.jpg';
+        const { data: profile } = await supabaseClient
+            .from('profile')
+            .select('avatar_url')
+            .eq('id', userId)
+            .single();
+
+        if (profile?.avatar_url) avatar = profile.avatar_url;
+
+        // --- Insert post including avatar ---
         const { data: newPost, error } = await supabaseClient
             .from("posts")
             .insert({
@@ -226,7 +385,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 user_name: userName,
                 content: postContent.value,
                 media_url: mediaUrl,
-                media_type: mediaType
+                media_type: mediaType,
+                avatar_url: avatar // <-- Save avatar here
             })
             .select('*, post_comments(*)')
             .single();
@@ -245,9 +405,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         alertSystem.show("Post created successfully!", 'success');
     });
 
-    /* -------------------------------------------
-    GET POSTS WITH LIKE STATUS
-    ------------------------------------------- */
+
+    // =======================
+    // FETCH & RENDER ALL POSTS
+    // =======================
     async function getPosts() {
         const { data, error } = await supabaseClient
             .from('posts')
@@ -261,60 +422,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data) return;
 
-        // Render all posts
+
         for (const post of data) {
             await renderPost(post, "beforeend");
         }
     }
 
-    /* -------------------------------------------
-    FULL IMAGE VIEW
-    ------------------------------------------- */
+    // =======================
+    // FULL IMAGE MODAL
+    // =======================
     window.viewFullImage = (url) => {
         const modal = document.getElementById('fullImageModal');
         document.getElementById('fullImageContent').src = url;
         modal.classList.remove('hidden');
     };
+    document.getElementById('closeFullImage').onclick =
+        () => document.getElementById('fullImageModal').classList.add('hidden');
 
-    /* -------------------------------------------
-    LIKE BUTTONS - FIXED VERSION
-    ------------------------------------------- */
+    // =======================
+    // LIKE BUTTONS HANDLER
+    // =======================
     function initLikeButtons() {
-        console.log('Initializing like buttons, found:', document.querySelectorAll('.like-btn').length, 'buttons');
-
         document.querySelectorAll('.like-btn').forEach(btn => {
-            // Check if this button has already been initialized
             if (!btn.hasAttribute('data-bound-like')) {
                 btn.setAttribute('data-bound-like', 'true');
-                console.log('Binding like button for post:', btn.dataset.postId);
 
-                btn.addEventListener('click', async (e) => {
-                    // Prevent multiple clicks
+                btn.addEventListener('click', async () => {
                     if (btn.classList.contains('processing')) return;
                     btn.classList.add('processing');
 
                     const postId = btn.dataset.postId;
-                    console.log('Like clicked for post:', postId);
-
-                    if (!postId) {
-                        console.error('No post ID found on like button');
-                        btn.classList.remove('processing');
-                        return;
-                    }
-
                     const postEl = document.querySelector(`.post[data-post-id="${postId}"]`);
-                    if (!postEl) {
-                        console.error('Could not find post element with ID:', postId);
-                        btn.classList.remove('processing');
-                        return;
-                    }
-
-                    const likesEl = postEl.querySelector('.likes-count');
+                    const likesEl = postEl?.querySelector('.likes-count');
                     const heartIcon = btn.querySelector('i');
                     const likeTextSpan = btn.querySelector('span');
-                    let currentLikes = parseInt(likesEl.textContent) || 0;
+                    let currentLikes = parseInt(likesEl?.textContent) || 0;
 
-                    // Check if user is logged in
                     const { data: userData } = await supabaseClient.auth.getUser();
                     const userId = userData?.user?.id;
 
@@ -325,81 +468,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     try {
-                        // Check if user already liked this post
-                        const { data: existingLike, error: checkError } = await supabaseClient
+                        const { data: existingLike } = await supabaseClient
                             .from('post_likes')
                             .select('id')
                             .eq('post_id', postId)
                             .eq('user_id', userId)
                             .maybeSingle();
 
-                        if (checkError) {
-                            console.error("Error checking like:", checkError);
+                        if (existingLike) {
+                            alertSystem.show("You already liked this post.", "info");
                             btn.classList.remove('processing');
                             return;
                         }
 
-                        if (existingLike) {
-                            // User already liked - remove the like (undo)
-                            const { error: deleteError } = await supabaseClient
-                                .from('post_likes')
-                                .delete()
-                                .eq('id', existingLike.id);
+                        const { error: insertError } = await supabaseClient
+                            .from('post_likes')
+                            .insert({ post_id: postId, user_id: userId });
 
-                            if (deleteError) {
-                                console.error("Error deleting like:", deleteError);
-                                btn.classList.remove('processing');
-                                return;
-                            }
-
-                            // Update posts table likes count
-                            const { error: updateError } = await supabaseClient
-                                .from('posts')
-                                .update({ likes: currentLikes - 1 })
-                                .eq('id', postId);
-
-                            if (!updateError) {
-                                // Update UI immediately
-                                likesEl.textContent = currentLikes - 1;
-                                heartIcon.className = 'fas fa-heart text-gray-400';
-                                likeTextSpan.textContent = 'Like';
-                                btn.classList.remove('text-red-600');
-                                console.log('Like removed for post:', postId);
-                            } else {
-                                console.error("Error updating post likes:", updateError);
-                            }
-                        } else {
-                            // User hasn't liked - add a like
-                            const { error: insertError } = await supabaseClient
-                                .from('post_likes')
-                                .insert({
-                                    post_id: postId,
-                                    user_id: userId
-                                });
-
-                            if (insertError) {
-                                console.error("Error inserting like:", insertError);
-                                btn.classList.remove('processing');
-                                return;
-                            }
-
-                            // Update posts table likes count
-                            const { error: updateError } = await supabaseClient
-                                .from('posts')
-                                .update({ likes: currentLikes + 1 })
-                                .eq('id', postId);
-
-                            if (!updateError) {
-                                // Update UI immediately
-                                likesEl.textContent = currentLikes + 1;
-                                heartIcon.className = 'fas fa-heart text-red-600';
-                                likeTextSpan.textContent = 'Unlike';
-                                btn.classList.add('text-red-600');
-                                console.log('Like added for post:', postId);
-                            } else {
-                                console.error("Error updating post likes:", updateError);
-                            }
+                        if (insertError) {
+                            console.error("Error inserting like:", insertError);
+                            btn.classList.remove('processing');
+                            return;
                         }
+
+                        // Update UI
+                        likesEl.textContent = currentLikes + 1;
+                        heartIcon.className = 'fas fa-heart text-red-600';
+                        likeTextSpan.textContent = 'Liked';
+                        btn.classList.add('text-red-600', 'opacity-50', 'cursor-not-allowed');
+                        btn.disabled = true;
+
                     } catch (error) {
                         console.error("Unexpected error:", error);
                     } finally {
@@ -410,30 +508,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* -------------------------------------------
-    CHECK AND UPDATE LIKE BUTTON STATES FOR ALL POSTS
-    -------------------------------------------- */
+    // =======================
+    // UPDATE LIKE BUTTON STATES ON LOAD
+    // =======================
     async function updateLikeButtonStates() {
         const { data: userData } = await supabaseClient.auth.getUser();
         const userId = userData?.user?.id;
-
         if (!userId) return;
 
-        // Get all posts user has liked
         const { data: userLikes, error } = await supabaseClient
             .from('post_likes')
             .select('post_id')
             .eq('user_id', userId);
 
-        if (error) {
-            console.error("Error fetching user likes:", error);
-            return;
-        }
+        if (error) return console.error("Error fetching user likes:", error);
 
         const likedPostIds = new Set(userLikes.map(like => like.post_id));
-        console.log('User has liked posts:', Array.from(likedPostIds));
 
-        // Update UI for each post
         document.querySelectorAll('.post').forEach(postEl => {
             const postId = postEl.dataset.postId;
             const likeBtn = postEl.querySelector('.like-btn');
@@ -444,8 +535,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (likedPostIds.has(postId)) {
                 heartIcon.className = 'fas fa-heart text-red-600';
-                likeText.textContent = 'Unlike';
-                likeBtn.classList.add('text-red-600');
+                likeText.textContent = 'Liked';
+                likeBtn.classList.add('text-red-600', 'opacity-50', 'cursor-not-allowed');
+                likeBtn.disabled = true;
             } else {
                 heartIcon.className = 'fas fa-heart text-gray-400';
                 likeText.textContent = 'Like';
@@ -454,20 +546,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* -------------------------------------------
-    COMMENTS MODAL
-    ------------------------------------------- */
+    // =======================
+    // COMMENTS MODAL HANDLER
+    // =======================
     function openComments() {
         const commentModal = document.getElementById('commentModal');
         const commentBackBtn = document.getElementById('commentBackBtn');
         const app = document.getElementById('app');
         const commentForm = document.getElementById('commentForm');
         const commentInput = document.getElementById('commentInput');
+        const charCounter = document.querySelector('#charCounter');
+        const sendBtn = document.getElementById('sendBtn');
+        let commentLength = 0;
 
         let savedScrollY = 0;
         let currentPostId = null;
 
-        // Back button
         commentBackBtn.addEventListener('click', (e) => {
             e.preventDefault();
             commentModal.classList.add('hidden');
@@ -475,7 +569,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.scrollTo(0, savedScrollY);
         });
 
-        // Open modal and load comments
         document.addEventListener('click', async (e) => {
             const button = e.target.closest('.commentBtn');
             if (!button) return;
@@ -484,12 +577,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!currentPostId) return alertSystem.show('No postId found!', 'error');
 
             savedScrollY = window.scrollY;
-
             await loadComments(currentPostId);
 
             commentModal.classList.remove('hidden');
             app.classList.add('hidden');
         });
+
+        commentInput.addEventListener('input', () => {
+            commentLength = commentInput.value.length;
+
+            charCounter.innerHTML = `${commentLength}/250`
+            sendBtn.disabled = commentLength === 0;
+        })
+
 
         commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -529,14 +629,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             commentInput.value = '';
-
             await loadComments(currentPostId);
         });
     }
 
-    /* -------------------------------------------
-    GET ALL COMMENTS IN SPECIFIC POST
-    ------------------------------------------- */
+    // =======================
+    // LOAD COMMENTS FOR A POST
+    // =======================
     async function loadComments(postId) {
         const commentsContainer = document.getElementById('comments');
 
@@ -558,9 +657,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             commentsContainer.innerHTML = emptyComments();
         } else {
             commentsData.forEach(comment => {
+                const commentDate = formatRelativeTime(comment.created_at);
+
                 commentsContainer.insertAdjacentHTML(
                     'beforeend',
-                    comments(comment.user_name, comment.comment, comment.avatar)
+                    comments(comment.user_name, comment.comment, comment.avatar, commentDate)
                 );
             });
         }
@@ -568,15 +669,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         commentsContainer.scrollTop = commentsContainer.scrollHeight;
     }
 
-    // Close full image modal
-    document.getElementById('closeFullImage').onclick =
-        () => document.getElementById('fullImageModal').classList.add('hidden');
-
-    // INIT
+    // =======================
+    // INIT FUNCTIONS
+    // =======================
     await loadUser();
     await getPosts();
+    deletePermanently();
     openComments();
-
-    // Update like button states after a short delay to ensure DOM is ready
     setTimeout(updateLikeButtonStates, 500);
 });

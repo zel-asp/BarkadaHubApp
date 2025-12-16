@@ -5,36 +5,10 @@ import { joinedClubHeaderTemplate } from '../render/clubs.js'
 const alertSystem = new AlertSystem();
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const clubModal = document.getElementById('clubModal');
     const postContent = document.getElementById('postContent');
     const charCount = document.getElementById('charCount');
     const clubHeaderContainer = document.getElementById('clubHeaderContainer');
     const closeModalBtn = document.getElementById('closeModalBtn');
-
-    /* -------------------------------------------
-        MODAL FUNCTIONS
-    ------------------------------------------- */
-    window.openClubModal = () => {
-        clubModal?.classList.remove('hidden');
-        clubModal?.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closeClubModal = () => {
-        clubModal?.classList.add('hidden');
-        clubModal?.classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    };
-
-    clubModal?.addEventListener('click', e => {
-        if (e.target === clubModal) closeClubModal();
-    });
-
-    closeModalBtn?.addEventListener('click', closeClubModal);
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeClubModal();
-    });
 
     /* -------------------------------------------
         CHARACTER COUNTER

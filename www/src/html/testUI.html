@@ -1,75 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
+async function renderPost(post, position = "beforeend") {
+if (!post.id || displayedPostIds.has(post.id)) return;
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BarkadaHub - Videos</title>
-        <link rel="stylesheet" href="../../dist/output.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    </head>
+// Get the latest avatar from profile
+let avatar = '../images/defaultAvatar.jpg';
+const { data: profile } = await supabaseClient
+.from('profile')
+.select('avatar_url')
+.eq('id', post.user_id)
+.single();
+if (profile?.avatar_url) avatar = profile.avatar_url;
 
-    <body class="bg-gray-50 min-h-screen">
-        <div class="container mx-auto px-4 py-8 max-w-4xl">
-            <!-- Header -->
-            <header class="mb-5">
-                <div class="flex gap-1 items-center justify-start">
-                    <i class="fa fa-arrow-left text-gray-400 text-xl hover:bg-gray-100 hover:rounded-full p-2"></i>
-                    <h1 class="text-3xl font-bold text-gray-900">Comments</h1>
-                </div>
-            </header>
+const owner = (userId === post.user_id);
+const relativeTime = formatRelativeTime(post.created_at);
 
-            <!-- Main Content -->
-            <main class="relative">
-                <!-- Comments Section -->
-                <div class="mb-20 md:mb-24" id="commentsContainer">
-                    <!-- Empty State -->
-                    <div id="emptyState" class="text-center py-12">
-                        <div class="inline-block p-6 rounded-full bg-gray-100 mb-4">
-                            <i class="far fa-comments text-gray-400 text-4xl"></i>
-                        </div>
-                        <h3 class="text-xl font-medium text-gray-700 mb-2">No comments yet</h3>
-                        <p class="text-gray-500 max-w-md mx-auto">Be the first to share your thoughts on this post. Your
-                            comment will appear here.</p>
-                    </div>
+const html = uploadedPost(
+avatar,
+owner,
+post.user_name,
+relativeTime,
+post.content,
+post.media_url,
+post.media_type,
+post.id,
+post.likes_count,
+post.comment_count,
+post.is_liked_by_user
+);
 
-                    <!-- Comments List (initially empty) -->
-                    <div id="commentsList" class="space-y-6"></div>
-                </div>
-            </main>
-        </div>
+postsContainer.insertAdjacentHTML(position, html);
+displayedPostIds.add(post.id);
 
-        <!-- Fixed Add Comment Section - Always at bottom -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-            <div class="container mx-auto px-4 py-4 max-w-4xl">
-                <div class="flex gap-4">
-                    <div class="flex-0 hidden sm:block">
-                        <div
-                            class="w-11 h-11 rounded-full bg-linear-to-r from-blue-500 to-cyan-500 overflow-hidden shadow">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                                alt="You" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3">
-                            <textarea placeholder="What are your thoughts on this post?"
-                                class="w-full border border-gray-300 rounded-xl p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                                rows="1" id="main-comment-input"></textarea>
+setTimeout(() => {
+initEllipsisButtons();
+initLikeButtons();
+}, 100);
+}
 
-                            <!-- Send Button -->
-                            <button id="sendBtn"
-                                class="w-12 h-12 rounded-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
-                                title="Send message">
-                                <i class="fas fa-paper-plane text-white"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-</html>
+async function renderPost(post, position = "beforeend") {
+if (!post.id || displayedPostIds.has(post.id)) return;
 
-</body>
+// Get current user
+const { data: userData } = await supabaseClient.auth.getUser();
+const owner = userData.user.id === post.user_id;
+let isLikedByUser = false;
 
-</html>
+if (userData?.user) {
+const { data: userLike } = await supabaseClient
+.from('post_likes')
+.select('id')
+.eq('post_id', post.id)
+.eq('user_id', userData.user.id)
+.maybeSingle();
+isLikedByUser = !!userLike;
+}
+
+// Count total likes
+const { count: totalLikes } = await supabaseClient
+.from('post_likes')
+.select('*', { count: 'exact', head: true })
+.eq('post_id', post.id);
+
+// Count total comments
+const { count: commentCount } = await supabaseClient
+.from('post_comments')
+.select('*', { count: 'exact', head: true })
+.eq('post_id', post.id);
+
+const relativeTime = formatRelativeTime(post.created_at);
+const html = uploadedPost(
+post.avatar_url,
+owner,
+post.user_name,
+relativeTime,
+post.content,
+post.media_url,
+post.media_type,
+post.id,
+totalLikes,
+commentCount,
+isLikedByUser
+);
+
+postsContainer.insertAdjacentHTML(position, html);
+displayedPostIds.add(post.id);
+
+// Initialize buttons after DOM is updated
+setTimeout(() => {
+initEllipsisButtons();
+initLikeButtons();
+}, 100);
+}

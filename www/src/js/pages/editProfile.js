@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         /* Upload Avatar if New */
+        /* Upload Avatar if New */
         if (avatarFile) {
             const fileExt = avatarFile.name.split('.').pop();
             const filePath = `${userId}/avatar.${fileExt}`;
@@ -133,7 +134,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('avatars')
                 .getPublicUrl(filePath);
 
-            avatarUrl = urlData.publicUrl;
+            // Add cache-buster
+            avatarUrl = urlData.publicUrl + `?t=${Date.now()}`;
         }
 
         /* Upsert Profile Row */

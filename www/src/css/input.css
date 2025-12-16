@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 /* Define your custom colors as CSS variables */
+html {
+    scroll-behavior: smooth;
+}
+
+
 :root {
     --main-font: 'Poppins', sans-serif;
     --color-primary: #71C9CE;

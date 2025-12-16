@@ -95,3 +95,23 @@
                                         </button>
                                     </div>
                                 </div>
+
+
+                                            let avatar = '../images/defaultAvatar.jpg';
+            const { data: profile } = await supabaseClient
+                .from('profile')
+                .select('avatar_url')
+                .eq('id', userId)
+                .single();
+
+            if (profile?.avatar_url) avatar = profile.avatar_url;
+
+            const { error: insertError } = await supabaseClient
+                .from('post_comments')
+                .insert({
+                    post_id: currentPostId,
+                    user_id: userId,
+                    user_name: userName,
+                    comment: commentText,
+                    avatar: avatar
+                });

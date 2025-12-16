@@ -11,7 +11,7 @@
 
     <body class="bg-gray-50 min-h-screen">
         <!-- for alerts -->
-        <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+        <div id="alertContainer" class="fixed top-5 right-5 z-100 max-w-md"></div>
 
         <!-- Main App (shown after login) -->
         <div id="app">
@@ -32,11 +32,10 @@
                                     <div class="flex gap-2 sm:gap-3 mb-3 sm:mb-4">
                                         <div
                                             class="avatar w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-linear-to-br from-gray-100 to-gray-200 overflow-hidden shrink-0">
-                                            <img src="../images/image.png" alt="User Avatar"
-                                                class="w-full h-full object-cover">
+                                            <img alt="User Avatar" class="w-full h-full object-cover" id="userAvatar">
                                         </div>
                                         <textarea id="postContent" name="postContent" placeholder="What's on your mind?"
-                                            class="flex-1 border border-gray-200 sm:border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base transition-all duration-200"
+                                            class="flex-1 border border-gray-200 sm:border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base transition-all  duration-200"
                                             minlength="0" maxlength="500" rows="3"></textarea>
                                     </div>
 
@@ -149,47 +148,85 @@
             </div>
         </div>
 
-        <div id="commentModal" class="hidden">
+        <div id="commentModal" class="hidden bg-primary min-h-screen">
             <div class="container mx-auto px-4 py-8 max-w-4xl">
                 <!-- Header -->
                 <header class="mb-5">
-                    <div class="flex gap-1 items-center justify-start">
+                    <div class="flex gap-1 items-center justify-start cursor-pointer" id="commentBackBtn">
                         <button type="button"
-                            class="fa fa-arrow-left text-gray-400 text-xl hover:bg-gray-100 hover:rounded-full p-2"
-                            id="commentBackBtn"></button>
-                        <h1 class="text-3xl font-bold text-gray-900">Comments</h1>
+                            class="fa fa-arrow-left text-white text-xl hover:bg-black/5 hover:rounded-full p-2"></button>
+                        <h1 class="text-3xl font-bold text-white">Comments</h1>
                     </div>
                 </header>
 
                 <!-- Main Content -->
                 <main class="relative">
                     <div id="comments"></div>
+
+                    <div class="h-18"></div>
                 </main>
 
-                <!-- Fixed Add Comment Section - Always at bottom -->
-                <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+                <!-- Fixed Add Comment Section - Modern Design -->
+                <div class="fixed bottom-0 left-0 right-0 bg-black/5 backdrop-blur-3xl shadow-2xl">
                     <div class="container mx-auto px-4 py-4 max-w-4xl">
-                        <div class="flex gap-4">
-                            <div class="flex-1">
-                                <form id="commentForm">
-                                    <div class="flex items-center gap-3">
-                                        <textarea placeholder="What are your thoughts on this post?"
-                                            class="w-full border border-gray-300 rounded-xl p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                                            rows="1" id="commentInput"></textarea>
+                        <div class="relative">
+                            <form id="commentForm" class="relative group">
+                                <div class="flex items-center gap-4">
+                                    <!-- Comment Input Container -->
+                                    <div class="flex-1 relative">
+                                        <div
+                                            class="absolute -inset-0.5 bg-linear-to-r from-primary/30 via-purple-500/30 to-pink-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
+                                        </div>
+                                        <div
+                                            class="relative bg-white rounded-2xl overflow-hidden transition-all duration-300 group-focus-within:border-primary/50 group-focus-within:bg-gray-800/90">
+                                            <!-- Comment Input -->
+                                            <textarea placeholder="What are your thoughts on this post?"
+                                                class="w-full bg-transparent border-0 rounded-2xl p-4 pr-12 resize-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-sm transition-all min-h-[60px] max-h-[120px] scrollbar-thin"
+                                                rows="1" id="commentInput" minlength="1" maxlength="250"></textarea>
 
-                                        <!-- Send Button -->
-                                        <button type="submit" id="sendBtn"
-                                            class="w-12 h-12 rounded-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
-                                            title="Send message">
-                                            <i class="fas fa-paper-plane text-white"></i>
-                                        </button>
+                                            <!-- Character Counter -->
+                                            <div class="absolute bottom-2 right-3 hidden group-focus-within:block">
+                                                <span class="text-xs text-gray-400" id="charCounter">0/250</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </form>
-                            </div>
+
+                                    <!-- Send Button with Animation -->
+                                    <button type="submit" id="sendBtn"
+                                        class="relative group/btn disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                                        title="Post comment" disabled>
+                                        <!-- Outer Ring Animation -->
+                                        <div
+                                            class="absolute -inset-2 bg-linear-to-r from-primary via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/btn:opacity-100 blur transition-opacity duration-500">
+                                        </div>
+
+                                        <!-- Main Button -->
+                                        <div
+                                            class="relative w-12 h-12 rounded-full bg-blue-800 flex items-center justify-center shadow-lg group-hover/btn:shadow-xl group-hover/btn:scale-105 transition-all duration-300">
+                                            <!-- Paper Plane Icon -->
+                                            <i
+                                                class="fas fa-paper-plane text-white text-lg transform group-hover/btn:-translate-y-0.5 transition-transform"></i>
+
+                                            <!-- Send Animation -->
+                                            <div
+                                                class="absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-0 group-hover/btn:opacity-100">
+                                            </div>
+                                        </div>
+
+                                        <!-- Tooltip -->
+                                        <div
+                                            class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+                                            Post comment
+                                            <div
+                                                class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45">
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 

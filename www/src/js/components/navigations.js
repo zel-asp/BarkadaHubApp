@@ -1,6 +1,6 @@
 export function mobileNavigations() {
     return `
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around py-2 z-30 mt-5">
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg flex justify-around py-2 z-30 mt-5">
         <a href="./home.html" class="mobile-nav-item active flex flex-col items-center text-primary"
             data-page="home">
             <i class="fas fa-home text-xl mb-1"></i>
