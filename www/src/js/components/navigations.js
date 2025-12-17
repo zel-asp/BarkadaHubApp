@@ -30,7 +30,6 @@ export function mobileNavigations() {
     `;
 };
 
-
 export function rightSideBar() {
     return `
     <div class="lg:col-span-1 hidden lg:block">
