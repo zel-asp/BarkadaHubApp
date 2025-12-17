@@ -1,5 +1,5 @@
 import { checkConnection } from './functions.js';
-import HeaderComponent from "./components/header.js";
+import HeaderComponent, { info } from "./components/header.js";
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
 import offline from './render/offline.js';
@@ -56,6 +56,12 @@ function hideOfflinePage() {
 
     offlinePage.classList.add('hidden');
     appBody.classList.remove('hidden');
+}
+
+function showInfo() {
+    const infoLink = document.getElementById('infoLink');
+
+    infoLink.innerHTML = info();
 }
 
 //render te page
@@ -172,5 +178,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             restoreModals();
         }
     });
+
+    showInfo();
 
 });
