@@ -58,3 +58,15 @@ export default function HeaderComponent() {
 </header>
 `;
 }
+
+export function info() {
+    return `
+    <a href="./developers.html" class="fixed bottom-20 right-5 z-50 p-3 rounded-full shadow-lg 
+    bg-primary  
+    text-white text-lg flex items-center justify-center 
+    hover:scale-110 hover:shadow-2xl transition-transform duration-300 
+    active:scale-95 animate-bounce-slow" aria-label="Go back to top">
+        <i class="fas fa-info-circle"></i>
+    </a>
+`
+}
