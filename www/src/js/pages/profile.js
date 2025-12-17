@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('profile')
             .select('*')
             .eq('id', userId)
-            .maybeSingle();
+            .single();
 
         if (error) {
             document.getElementById('userAvatar').src = '../images/defaultAvatar.jpg';
