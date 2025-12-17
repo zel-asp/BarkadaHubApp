@@ -35,15 +35,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('club_members')
                 .select('club_id, clubs(*)')
                 .eq('user_id', userId)
-                .single(); // assuming one club per user
+                .maybeSingle();
 
-            if (error) throw error;
-
+            if (error) {
+                throw error;
+            }
             return joinedClubData?.clubs || null;
 
         } catch (err) {
             console.error('Error fetching joined club:', err);
             alertSystem.show('Failed to load your club.', 'error');
+            window.location.href = './clubs.html';
             return null;
         }
     }
@@ -77,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const membersCount = await getClubMembersCount(club.id);
 
         clubHeaderContainer.innerHTML =
-            joinedClubHeaderTemplate(club.club_name, club.description, membersCount, club.category);
+            joinedClubHeaderTemplate(club.club_image, club.club_name, club.description, membersCount, club.category);
 
         // Leave club logic
         const leaveBtn = document.getElementById('leaveClubBtn');
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 setTimeout(() => {
                     window.location.href = './clubs.html';
-                }, 800); // small delay to show success message
+                }, 800);
 
             } catch (err) {
                 console.error(err);

@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .from('club_members')
             .select('club_id')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         const joinedClubId = joinedClubData?.club_id || null;
 

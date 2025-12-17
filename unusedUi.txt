@@ -96,22 +96,6 @@
                                     </div>
                                 </div>
 
-
-                                            let avatar = '../images/defaultAvatar.jpg';
-            const { data: profile } = await supabaseClient
-                .from('profile')
-                .select('avatar_url')
-                .eq('id', userId)
-                .single();
-
-            if (profile?.avatar_url) avatar = profile.avatar_url;
-
-            const { error: insertError } = await supabaseClient
-                .from('post_comments')
-                .insert({
-                    post_id: currentPostId,
-                    user_id: userId,
-                    user_name: userName,
-                    comment: commentText,
-                    avatar: avatar
-                });
+                                        <textarea id="postContent" name="postContent" placeholder="What's on your mind?"
+                                            class="flex-1 border border-gray-200 sm:border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-1 focus:ring-gray-200 focus:bg-gray-50 text-sm sm:text-base transition-all  duration-200"
+                                            minlength="0" maxlength="500" rows="3"></textarea>

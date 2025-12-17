@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('profile')
             .select('*')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         if (error) {
             document.getElementById('userAvatar').src = '../images/defaultAvatar.jpg';
@@ -117,9 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = userEmail || nullData;
         const major = data?.major || nullData;
         const year_level = data?.year_level || nullData;
-        document.getElementById('userAvatar').src = data.avatar_url ?? '../images/defaultAvatar.jpg';
+        document.getElementById('userAvatar').src =
+            data?.avatar_url || '../images/defaultAvatar.jpg';
         document.getElementById('displayBio').innerHTML = displayBio(bioText);
-        document.getElementById('location').innerHTML = data.location;
+        document.getElementById('location').innerHTML = data?.location || '';
         document.getElementById('PersonalInfo').innerHTML = displayInformation(name, email, major, year_level);
     }
     renderBio();

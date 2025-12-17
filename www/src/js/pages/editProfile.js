@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         .from('profile')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
     if (profileError && profileError.code !== 'PGRST116') {
         console.error(profileError);

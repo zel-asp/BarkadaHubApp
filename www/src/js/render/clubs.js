@@ -5,7 +5,7 @@ export default function clubs(image, name, icon, location, description, id, cate
                 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
 
             <div class="relative h-40 sm:h-44 bg-linear-to-r from-orange-500 to-red-600 overflow-hidden">
-                <img src="${image}" alt="${name}" class="w-full h-full object-cover opacity-90" />
+                <img src="${image}" alt="${name} image" class="w-full h-full object-cover opacity-90" />
                 <div class="absolute top-3 right-3">
                     <span
                         class="bg-white/90 backdrop-blur-sm text-xs font-semibold
@@ -48,16 +48,23 @@ export default function clubs(image, name, icon, location, description, id, cate
 }
 
 // render/joinedClubHeader.js
-export function joinedClubHeaderTemplate(name, description, members = 0, category) {
+export function joinedClubHeaderTemplate(imageUrl, name, description, members = 0, category) {
     return `
-        <div class="club-header text-white relative overflow-hidden min-h-[100svh]">
+        <div class="club-header text-white relative overflow-hidden min-h-svh">
+                    <img 
+                src="${imageUrl}" 
+                alt="${name} background" 
+                class="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+            />
+
             <!-- Background gradient overlay -->
             <div class="absolute inset-0 bg-linear-to-br from-blue-900/50 via-purple-900/40 to-indigo-900/40"></div>
             
-            <div class="relative z-10 min-h-[100svh] flex flex-col px-4 py-6 sm:px-6 lg:px-8">
+            <div class="relative z-10 min-h-svh flex flex-col px-4 py-6 sm:px-6 lg:px-8">
                 <!-- Header actions - Top bar -->
                 <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <button onclick="history.back()" 
+                    <button onclick="window.location.href='./clubs.html'"  
                             class="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-white/90 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-200 active:scale-95 group"
                             aria-label="Go back">
                         <i class="fas fa-arrow-left text-base sm:text-lg group-hover:-translate-x-1 transition-transform"></i>
@@ -139,6 +146,15 @@ export function joinedClubHeaderTemplate(name, description, members = 0, categor
                     </a>
                 </div>
             </div>
+            <a href="#top" 
+            class="fixed bottom-5 right-5 z-50 p-3 rounded-full shadow-lg 
+                    bg-linear-to-br from-blue-500 to-purple-500 
+                    text-white text-lg flex items-center justify-center 
+                    hover:scale-110 hover:shadow-2xl transition-transform duration-300 
+                    active:scale-95 animate-bounce-slow"
+            aria-label="Go back to top">
+                <i class="fas fa-arrow-up"></i>
+            </a>
         </div>
     `;
 }

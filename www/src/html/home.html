@@ -35,7 +35,7 @@
                                             <img alt="User Avatar" class="w-full h-full object-cover" id="userAvatar">
                                         </div>
                                         <textarea id="postContent" name="postContent" placeholder="What's on your mind?"
-                                            class="flex-1 border border-gray-200 sm:border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base transition-all  duration-200"
+                                            class="flex-1 border border-gray-200 sm:border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-1 focus:ring-gray-200 focus:bg-gray-50 text-sm sm:text-base transition-all  duration-200"
                                             minlength="0" maxlength="500" rows="3"></textarea>
                                     </div>
 
@@ -108,18 +108,19 @@
                                 <div
                                     class="bg-white rounded-xl shadow-sm p-4 sm:p-5 mb-4 sm:mb-6 border border-gray-100 animate-fadeIn">
                                     <div class="flex justify-between items-center mb-3 sm:mb-4">
-                                        <div class="flex items-center gap-2 sm:gap-3">
-                                            <div
-                                                class="avatar w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-linear-to-br from-blue-100 to-blue-200 overflow-hidden">
-                                                <img src="https://i.pravatar.cc/150?img=1" alt="Developer Avatar"
-                                                    class="w-full h-full object-cover">
+                                        <a href="./developers.html">
+                                            <div class="flex items-center gap-2 sm:gap-3">
+                                                <div
+                                                    class="avatar w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-linear-to-br from-blue-100 to-blue-200 overflow-hidden">
+                                                    <img src="../images/image.png" alt="Developer Avatar"
+                                                        class="w-full h-full object-cover">
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-semibold text-sm sm:text-base">Developer Team</h4>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 class="font-semibold text-sm sm:text-base">Developer Team</h4>
-                                                <span class="text-xs text-gray-500">Just now · <i
-                                                        class="fas fa-users text-xs"></i></span>
-                                            </div>
-                                        </div>
+                                        </a>
+
                                     </div>
 
                                     <div class="mb-3 sm:mb-4">
@@ -141,6 +142,8 @@
 
                             <div id="mobileNav"></div>
                         </div>
+
+                        <div class="h-5"></div>
                     </div>
 
                     <div id="rightSideBar"></div>
@@ -178,11 +181,12 @@
                                             class="absolute -inset-0.5 bg-linear-to-r from-primary/30 via-purple-500/30 to-pink-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
                                         </div>
                                         <div
-                                            class="relative bg-white rounded-2xl overflow-hidden transition-all duration-300 group-focus-within:border-primary/50 group-focus-within:bg-gray-800/90">
+                                            class="relative bg-white rounded-2xl overflow-hidden transition-all duration-300">
                                             <!-- Comment Input -->
-                                            <textarea placeholder="What are your thoughts on this post?"
-                                                class="w-full bg-transparent border-0 rounded-2xl p-4 pr-12 resize-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-sm transition-all min-h-[60px] max-h-[120px] scrollbar-thin"
-                                                rows="1" id="commentInput" minlength="1" maxlength="250"></textarea>
+                                            <textarea id="commentInput"
+                                                placeholder="What are your thoughts on this post?" minlength="1"
+                                                maxlength="250" rows="1"
+                                                class="w-full bg-transparent rounded-2xl p-4 pr-12 resize-none text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-0 transition-all min-h-[90px] focus:bg-gray-200"></textarea>
 
                                             <!-- Character Counter -->
                                             <div class="absolute bottom-2 right-3 hidden group-focus-within:block">

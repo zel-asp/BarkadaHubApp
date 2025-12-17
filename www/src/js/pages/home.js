@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('profile')
                 .select('avatar_url')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
             if (error) {
                 console.warn("Failed to fetch profile:", error);
@@ -293,7 +293,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('profile')
                 .select('avatar_url')
                 .eq('id', post.user_id)
-                .single();
+                .maybeSingle();
+
             if (profile?.avatar_url) avatar = profile.avatar_url; // use latest profile avatar
         } catch (err) {
             console.warn('Failed to fetch profile avatar for user:', post.user_id, err);
@@ -373,7 +374,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .from('profile')
             .select('avatar_url')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         if (profile?.avatar_url) avatar = profile.avatar_url;
 
@@ -389,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 avatar_url: avatar // <-- Save avatar here
             })
             .select('*, post_comments(*)')
-            .single();
+            .maybeSingle();
 
         alertSystem.hide(loadingId);
         if (error) return alertSystem.show("Failed to publish post!", 'error');
@@ -609,7 +610,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('profile')
                 .select('avatar_url')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
             if (profile?.avatar_url) avatar = profile.avatar_url;
 

@@ -7,45 +7,13 @@
         <title>Computer Science Club - BarkadaHub</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-            .club-header {
-                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                    url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
-                background-size: cover;
-                background-position: center;
-            }
-
-            /* Modal Animation */
-            .modal-enter {
-                animation: modalEnter 0.3s ease-out;
-            }
-
-            @keyframes modalEnter {
-                from {
-                    opacity: 0;
-                    transform: scale(0.95) translateY(-10px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: scale(1) translateY(0);
-                }
-            }
-
-            .tab-active {
-                border-bottom: 3px solid #3b82f6;
-                color: #3b82f6;
-            }
-        </style>
     </head>
-
 
     <body class="bg-gray-100 min-h-screen">
         <div id="alertContainer" class="fixed top-5 right-5 z-50 max-w-md"></div>
 
         <div id="app">
-            <!-- Club Header -->
-            <div id="header"></div>
+
             <!-- HTML placeholder for club header -->
             <div id="clubHeaderContainer" class="min-h-screen"></div>
 
@@ -171,8 +139,6 @@
                     </div>
                 </div>
             </div>
-
-            <div id="mobileNav"></div>
         </div>
 
         <div id="offlinePage" class="hidden"></div>
