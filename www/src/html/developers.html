@@ -317,9 +317,8 @@
                         <p class="text-gray-600 text-sm mt-1">UI, Security & Querying</p>
                         <p class="text-sm text-gray-500 mt-2">Implements entire project</p>
                     </div>
-
-
                 </div>
+
             </section>
 
             <!-- Footer Summary -->
@@ -330,29 +329,13 @@
         </div>
         <div id="mobileNav"></div>
 
-
         <div id="offlinePage" class="hidden">
         </div>
         <div class="h-10"></div>
 
         <script type="module" src="../js/app.js"></script>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const cards = document.querySelectorAll('.card-hover');
-
-                // Add staggered animation
-                cards.forEach((card, index) => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-
-                    setTimeout(() => {
-                        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, 100 * index);
-                });
-            });
+        <script src="../js/pages/developers.js">
         </script>
     </body>
 
