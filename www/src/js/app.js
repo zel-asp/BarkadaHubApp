@@ -7,7 +7,6 @@ import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navig
 
 const alertSystem = new AlertSystem();
 
-
 // Store the last visited page
 function storeCurrentPage() {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
@@ -27,6 +26,7 @@ function showOfflinePage() {
 
     // rtry button 
     const retryBtn = document.getElementById('retryBtn');
+    if (!retryBtn) return;
     retryBtn.addEventListener('click', async () => {
         const originalContent = retryBtn.innerHTML;
 
@@ -61,15 +61,21 @@ function hideOfflinePage() {
 function showInfo() {
     const infoLink = document.getElementById('infoLink');
 
+    if (!infoLink) return;
     infoLink.innerHTML = info();
 }
 
 //render te page
 async function loadPageComponents() {
-    const { data, error } = await supabaseClient.auth.getUser();
-    if (error || !data?.user) {
+
+    const isAuthPage = document.body.dataset.page === 'auth';
+    if (isAuthPage) return;
+
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (!data?.session) {
         alertSystem.show("You must be logged in.", 'error');
-        setTimeout(() => window.location.href = '../../index.html', 1500);
+        setTimeout(() => window.location.replace('../../index.html'), 1500);
         return;
     }
 
@@ -83,23 +89,26 @@ async function loadPageComponents() {
     if (rightSideNav) rightSideNav.innerHTML = rightSideBar();
     if (leftSideNav) leftSideNav.innerHTML = leftSideBar();
 
+    // active nav
     const file = window.location.pathname.split("/").pop();
     const currentPage = file.split(".")[0];
 
     document.querySelectorAll(".mobile-nav-item").forEach(item => {
-        const page = item.getAttribute("data-page");
-        if (page === currentPage) {
-            item.classList.remove("text-gray-500");
-            item.classList.add("text-primary");
-        } else {
-            item.classList.remove("text-primary");
-            item.classList.add("text-gray-500");
-        }
+        const page = item.dataset.page;
+        item.classList.toggle("text-primary", page === currentPage);
+        item.classList.toggle("text-gray-500", page !== currentPage);
     });
 }
 
+
 //initialize all
 document.addEventListener('DOMContentLoaded', async function () {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (!session && document.body.dataset.page !== 'auth') {
+            window.location.replace('../../index.html');
+        }
+    });
+
     storeCurrentPage();
 
     const isOnline = await checkConnection();
@@ -111,19 +120,21 @@ document.addEventListener('DOMContentLoaded', async function () {
         await loadPageComponents();
     }
 
-    // Listen for connection changes
+    window.addEventListener('offline', () => {
+        alertSystem.show("Connection Lost", 'error');
+        recordOpenModals();
+        hideAllModals();
+        showOfflinePage();
+    });
+
     window.addEventListener('online', async () => {
         alertSystem.show('Connection restored', 'success');
         const isOnline = await checkConnection();
         if (isOnline) {
             hideOfflinePage();
+            restoreModals();
             await loadPageComponents();
         }
-    });
-
-    window.addEventListener('offline', () => {
-        alertSystem.show("Connection Lost", 'error');
-        showOfflinePage();
     });
 
     // List all modal IDs
@@ -164,20 +175,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
         openModals.clear();
     }
-
-    // Listen for offline event
-    window.addEventListener('offline', () => {
-        recordOpenModals();
-        hideAllModals();
-    });
-
-    // Listen for online event
-    window.addEventListener('online', async () => {
-        const isOnline = await checkConnection(); // your existing function
-        if (isOnline) {
-            restoreModals();
-        }
-    });
 
     showInfo();
 
