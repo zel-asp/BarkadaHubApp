@@ -37,29 +37,35 @@ document.addEventListener('DOMContentLoaded', () => {
     ------------------------------------------- */
 
     confirmLogout.addEventListener('click', async () => {
-        confirmLogout.innerHTML = `
+        if (confirmLogout) {
+            confirmLogout.addEventListener('click', async () => {
+                confirmLogout.innerHTML = `
             <i class="fas fa-spinner fa-spin mr-2"></i> Logging out...
         `;
-        confirmLogout.disabled = true;
+                confirmLogout.disabled = true;
 
-        try {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) throw error;
+                try {
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) throw error;
 
-            setTimeout(() => {
-                window.location.href = '../../index.html';
-            }, 1000);
+                    setTimeout(() => {
+                        window.location.replace('../../index.html');
+                    }, 1000);
 
-        } catch (err) {
-            console.error(err);
-            alert('Logout failed: ' + err.message);
+                } catch (err) {
+                    console.error(err);
 
-            // reset button
-            confirmLogout.innerHTML = 'Yes, Logout';
-            confirmLogout.disabled = false;
+                    alertSystem?.show?.('Logout failed. Please try again.', 'error');
 
-            closeModal();
+                    // reset button
+                    confirmLogout.innerHTML = 'Yes, Logout';
+                    confirmLogout.disabled = false;
+
+                    closeModal?.();
+                }
+            });
         }
+
     });
 
     /* -------------------------------------------

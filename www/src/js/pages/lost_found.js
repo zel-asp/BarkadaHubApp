@@ -9,12 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     const userId = userData?.user?.id;
 
-    if (userError || !userId) {
-        alertSystem.show("You must be logged in.", 'error');
-        setTimeout(() => window.location.href = '../../index.html', 1500);
-        return;
-    }
-
     // ELEMENTS
     const openUploadFormBtn = document.getElementById('openUploadForm');
     const uploadModal = document.getElementById('uploadModal');

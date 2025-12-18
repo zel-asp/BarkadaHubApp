@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!userId) {
         alertSystem.show("You must be logged in.", "error");
         setTimeout(() => {
-            window.location.href = "../../index.html";
+            window.location.replace = "../../index.html";
         }, 1500);
         return;
     }
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await supabaseClient.auth.getUser();
         if (error) {
             alertSystem.show(`Error: ${error}`, 'error');
-            setTimeout(() => window.location.href = '../../index.html', 1500);
+            setTimeout(() => window.location.replace = '../../index.html', 1500);
             return;
         }
 
