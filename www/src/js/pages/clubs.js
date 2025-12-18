@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error || !data?.user) {
                 alertSystem.show("You must be logged in.", "error");
                 setTimeout(() => {
-                    window.location.replace = "../../index.html";
+                    window.location.href = "../../index.html";
                 }, 1500);
                 return false;
             }
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (joinedClubId) {
                     // Already joined → go to club
-                    window.location.replace = `./joinedClub.html?clubId=${clubId}`;
+                    window.location.href = `./joinedClub.html?clubId=${clubId}`;
                     return;
                 }
 
