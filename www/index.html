@@ -10,169 +10,181 @@
     </head>
 
     <body
-        class="bg-[linear-gradient(135deg,#E3FDFD_0%,#71C9CE_50%,#A6E3E9_100%)] min-h-screen flex items-center justify-center p-4">
+        class="bg-[linear-gradient(135deg,#E3FDFD_0%,#71C9CE_50%,#A6E3E9_100%)] min-h-screen flex items-center justify-center p-4"
+        data-page="auth">
+        <div id="offlinePage" class="hidden min"></div>
 
         <!-- Main Content -->
-        <div class="text-center text-black relative z-10">
-            <div class="flex flex-col justify-center items-center transition-all duration-700 transform hover:scale-105"
-                id="brand">
-                <div class="relative mb-4">
-                    <div class="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
-                    <img src="src/images/image.png" alt="App Logo" class="w-20 md:w-28 relative z-10 drop-shadow-lg">
+        <div id="app">
+            <div class="text-center text-black relative z-10">
+                <div class="flex flex-col justify-center items-center transition-all duration-700 transform hover:scale-105"
+                    id="brand">
+                    <div class="relative mb-4">
+                        <div class="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
+                        <img src="src/images/image.png" alt="App Logo"
+                            class="w-20 md:w-28 relative z-10 drop-shadow-lg">
+                    </div>
+                    <h1
+                        class="text-2xl md:text-3xl font-bold mb-4 bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                        Welcome to BarkadaHub!
+                    </h1>
                 </div>
-                <h1
-                    class="text-2xl md:text-3xl font-bold mb-4 bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                    Welcome to BarkadaHub!
-                </h1>
-            </div>
-            <p class="text-base mb-8 font-medium text-gray-700 max-w-md mx-auto leading-relaxed" id="slogan">
-                Connect with your campus community and share unforgettable experiences together
-            </p>
-            <button id="openModal"
-                class="group bg-white/90 backdrop-blur-sm text-gray-800 px-8 py-4 rounded-2xl font-bold text-base shadow-2xl cursor-pointer hover:bg-white hover:scale-105 hover:shadow-2xl transition-all duration-300 border border-white/20">
-                <span class="group-hover:translate-x-1 transition-transform duration-200 inline-block bg-linear-to-r 
+                <p class="text-base mb-8 font-medium text-gray-700 max-w-md mx-auto leading-relaxed" id="slogan">
+                    Connect with your campus community and share unforgettable experiences together
+                </p>
+                <button id="openModal"
+                    class="group bg-white/90 backdrop-blur-sm text-gray-800 px-8 py-4 rounded-2xl font-bold text-base shadow-2xl cursor-pointer hover:bg-white hover:scale-105 hover:shadow-2xl transition-all duration-300 border border-white/20">
+                    <span class="group-hover:translate-x-1 transition-transform duration-200 inline-block bg-linear-to-r 
                         from-indigo-600
                         to-(--color-primary)
                         bg-clip-text text-transparent">
-                    Get Started <i class=" fas fa-arrow-right ml-2"></i>
-                </span>
-            </button>
-        </div>
+                        Get Started <i class=" fas fa-arrow-right ml-2"></i>
+                    </span>
+                </button>
+            </div>
 
-        <!-- Auth Modal -->
-        <div id="authModal"
-            class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-            <div class="w-full max-w-md mx-4 transform transition-all duration-500">
-                <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+            <!-- Auth Modal -->
+            <div id="authModal"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+                <div class="w-full max-w-md mx-4 transform transition-all duration-500">
+                    <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
 
-                <!-- Login Form -->
-                <div id="loginContainer"
-                    class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500 w-full max-w-md p-8 modal-content">
-                    <div class="relative flex items-center mb-6">
-                        <h2
-                            class="text-xl font-bold mx-auto bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                            Welcome Back</h2>
-                        <button
-                            class="close-modal absolute right-0 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200">
-                            <i class="fas fa-times text-gray-500 text-sm"></i>
-                        </button>
+                    <!-- Login Form -->
+                    <div id="loginContainer"
+                        class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500 w-full max-w-md p-8 modal-content">
+                        <div class="relative flex items-center mb-6">
+                            <h2
+                                class="text-xl font-bold mx-auto bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                Welcome Back</h2>
+                            <button
+                                class="close-modal absolute right-0 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200">
+                                <i class="fas fa-times text-gray-500 text-sm"></i>
+                            </button>
+                        </div>
+                        <form class="space-y-5" id="loginForm">
+                            <div class="space-y-2">
+                                <label for="loginEmail" class="block text-sm font-semibold text-gray-700">Email
+                                    Address</label>
+                                <div class="relative">
+                                    <input type="email" id="loginEmail" placeholder="Enter your email"
+                                        autocomplete="email"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class=" fas fa-envelope absolute right-3 top-3.5 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="loginPassword"
+                                    class="block text-sm font-semibold text-gray-700">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="loginPassword" placeholder="Enter your password"
+                                        autocomplete="current-password"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class="fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm"
+                                        id="loginLockIcon"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="remember"
+                                        class="h-4 w-4 focus:ring-blue-400 border-gray-300 rounded transition duration-200"
+                                        required>
+                                    <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                                </div>
+                                <a href=""
+                                    class="text-sm text-blue-500 cursor-pointer hover:text-blue-600 font-medium transition-colors">Forgot
+                                    Password?</a>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-primary text-white py-3.5 px-4 rounded-xl hover:bg-blue-500 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer">
+                                Log In
+                            </button>
+                            <p class="text-center text-sm text-gray-600 pt-2">
+                                Don't have an account? <span id="loginSwitchLink"
+                                    class="font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">Create
+                                    one now</span>
+                            </p>
+                        </form>
                     </div>
-                    <form class="space-y-5" id="loginForm">
-                        <div class="space-y-2">
-                            <label for="loginEmail" class="block text-sm font-semibold text-gray-700">Email
-                                Address</label>
-                            <div class="relative">
-                                <input type="email" id="loginEmail" placeholder="Enter your email" autocomplete="email"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class=" fas fa-envelope absolute right-3 top-3.5 text-gray-400 text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="loginPassword"
-                                class="block text-sm font-semibold text-gray-700">Password</label>
-                            <div class="relative">
-                                <input type="password" id="loginPassword" placeholder="Enter your password"
-                                    autocomplete="current-password"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class="fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm"
-                                    id="loginLockIcon"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex items-center">
-                                <input type="checkbox" id="remember"
-                                    class="h-4 w-4 focus:ring-blue-400 border-gray-300 rounded transition duration-200"
-                                    required>
-                                <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
-                            </div>
-                            <a href=""
-                                class="text-sm text-blue-500 cursor-pointer hover:text-blue-600 font-medium transition-colors">Forgot
-                                Password?</a>
-                        </div>
-                        <button type="submit"
-                            class="w-full bg-primary text-white py-3.5 px-4 rounded-xl hover:bg-blue-500 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer">
-                            Log In
-                        </button>
-                        <p class="text-center text-sm text-gray-600 pt-2">
-                            Don't have an account? <span id="loginSwitchLink"
-                                class="font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">Create
-                                one now</span>
-                        </p>
-                    </form>
-                </div>
 
-                <!-- Signup Form -->
-                <div id="signupContainer"
-                    class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500 w-full max-w-md p-8 modal-content hidden">
-                    <div class="relative flex items-center mb-6">
-                        <h2
-                            class="text-xl font-bold mx-auto bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                            Join Our Community</h2>
-                        <button
-                            class="close-modal absolute right-0 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200">
-                            <i class="fas fa-times text-gray-500 text-sm"></i>
-                        </button>
+                    <!-- Signup Form -->
+                    <div id="signupContainer"
+                        class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500 w-full max-w-md p-8 modal-content hidden">
+                        <div class="relative flex items-center mb-6">
+                            <h2
+                                class="text-xl font-bold mx-auto bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                Join Our Community</h2>
+                            <button
+                                class="close-modal absolute right-0 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200">
+                                <i class="fas fa-times text-gray-500 text-sm"></i>
+                            </button>
+                        </div>
+                        <form class="space-y-5" id="signupForm">
+                            <div class="space-y-2">
+                                <label for="signupName" class="block text-sm font-semibold text-gray-700">Full
+                                    Name</label>
+                                <div class="relative">
+                                    <input type="text" id="signupName" placeholder="Enter your full name"
+                                        autocomplete="name"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class="fas fa-user absolute right-3 top-3.5 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="signupEmail" class="block text-sm font-semibold text-gray-700">Email
+                                    Address</label>
+                                <div class="relative">
+                                    <input type="email" id="signupEmail" placeholder="Enter your email"
+                                        autocomplete="email"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class="fas fa-envelope absolute right-3 top-3.5 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="signupPassword"
+                                    class="block text-sm font-semibold text-gray-700">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="signupPassword" placeholder="Create a password"
+                                        autocomplete="new-password"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class="fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm lockIcon"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="signupConfirmPassword"
+                                    class="block text-sm font-semibold text-gray-700">Confirm
+                                    Password</label>
+                                <div class="relative">
+                                    <input type="password" id="signupConfirmPassword"
+                                        placeholder="Re-enter your password" autocomplete="new-password"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
+                                        min="1" max="50" required>
+                                    <i class=" fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm lockIcon"></i>
+                                </div>
+                            </div>
+                            <button type="submit" id="signupBtn"
+                                class="w-full bg-primary text-white py-3.5 px-4 rounded-xl  transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                Sign Up
+                            </button>
+                            <p class="text-center text-sm text-gray-600 pt-2">
+                                Already have an account? <span id="signupSwitchLink"
+                                    class="font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">Sign
+                                    in here</span>
+                            </p>
+                        </form>
                     </div>
-                    <form class="space-y-5" id="signupForm">
-                        <div class="space-y-2">
-                            <label for="signupName" class="block text-sm font-semibold text-gray-700">Full Name</label>
-                            <div class="relative">
-                                <input type="text" id="signupName" placeholder="Enter your full name"
-                                    autocomplete="name"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class="fas fa-user absolute right-3 top-3.5 text-gray-400 text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="signupEmail" class="block text-sm font-semibold text-gray-700">Email
-                                Address</label>
-                            <div class="relative">
-                                <input type="email" id="signupEmail" placeholder="Enter your email" autocomplete="email"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class="fas fa-envelope absolute right-3 top-3.5 text-gray-400 text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="signupPassword"
-                                class="block text-sm font-semibold text-gray-700">Password</label>
-                            <div class="relative">
-                                <input type="password" id="signupPassword" placeholder="Create a password"
-                                    autocomplete="new-password"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class="fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm lockIcon"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="signupConfirmPassword" class="block text-sm font-semibold text-gray-700">Confirm
-                                Password</label>
-                            <div class="relative">
-                                <input type="password" id="signupConfirmPassword" placeholder="Re-enter your password"
-                                    autocomplete="new-password"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    min="1" max="50" required>
-                                <i class=" fas fa-lock absolute right-3 top-3.5 text-gray-400 text-sm lockIcon"></i>
-                            </div>
-                        </div>
-                        <button type="submit" id="signupBtn"
-                            class="w-full bg-primary text-white py-3.5 px-4 rounded-xl  transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                            Sign Up
-                        </button>
-                        <p class="text-center text-sm text-gray-600 pt-2">
-                            Already have an account? <span id="signupSwitchLink"
-                                class="font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">Sign
-                                in here</span>
-                        </p>
-                    </form>
                 </div>
             </div>
         </div>
 
+
+
         <!-- Auth JS -->
+        <script type="module" src="./src/js/app.js"></script>
         <script type="module" src="src/js/auth/index.js"></script>
         <script type="module" src="src/js/auth/signup.js"></script>
         <script type="module" src="src/js/auth/login.js"></script>
