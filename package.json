@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tailwindcss -i www/src/css/input.css -o www/dist/output.css --watch",
     "build": "npx tailwindcss -i www/src/css/input.css -o www/dist/output.css --minify",
-    "bundle": "npx esbuild bundle-entry.js --bundle --minify --outfile=www/src/js/bundle.js",
-    "bundle-obf": "javascript-obfuscator www/src/js/bundle.js --output www/src/js/bundle.obf.js --compact true --control-flow-flattening true",
-    "bundle-watch": "npx esbuild bundle-entry.js --bundle --outfile=www/src/js/bundle.js --watch"
+    "bundle": "npx esbuild bundle-entry.js --bundle --minify --format=iife --global-name=BarkadaHub --outfile=www/dist/app.bundle.js",
+    "bundle-obf": "javascript-obfuscator www/dist/app.bundle.js --output www/dist/app.bundle.obf.js --compact true --control-flow-flattening true"
   },
   "keywords": [],
   "author": "",
