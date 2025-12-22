@@ -436,9 +436,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const modal = document.getElementById('fullImageModal');
         document.getElementById('fullImageContent').src = url;
         modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     };
-    document.getElementById('closeFullImage').onclick =
-        () => document.getElementById('fullImageModal').classList.add('hidden');
+    document.getElementById('closeFullImage').onclick = () => {
+        document.getElementById('fullImageModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
 
     // =======================
     // LIKE BUTTONS HANDLER
