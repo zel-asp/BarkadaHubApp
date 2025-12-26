@@ -298,13 +298,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (profile?.avatar_url) avatar = profile.avatar_url; // use latest profile avatar
         } catch (err) {
-            console.warn('Failed to fetch profile avatar for user:', post.user_id, err);
+            console.warn(' Failed to fetch profile avatar for user:', post.user_id, err);
         }
 
         // ------------------------------
         // Format relative time
         // ------------------------------
         const relativeTime = formatRelativeTime(post.created_at);
+
+        const friendStatus = await getFriendStatus(currentUserId, post.user_id);
 
         // Then call uploadedPost
         const html = uploadedPost(
@@ -321,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             isLikedByUser,
             post.file_path,
             post.user_id,
+            friendStatus
         );
 
 
@@ -334,6 +337,175 @@ document.addEventListener('DOMContentLoaded', async () => {
             initLikeButtons();
         }, 100);
     }
+
+    async function getFriendStatus(currentUserId, postUserId) {
+        if (currentUserId === postUserId) return null;
+
+        const { data, error } = await supabaseClient
+            .from('friends-request')
+            .select('sender_id, receiver_id, status')
+            .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${postUserId}),and(sender_id.eq.${postUserId},receiver_id.eq.${currentUserId})`);
+
+        if (error) {
+            console.error('Error fetching friend status:', error);
+            return null;
+        }
+
+        if (!data || data.length === 0) return null;
+
+        // Decide which row applies to current user
+        // If current user sent the request
+        const sentRequest = data.find(r => r.sender_id === currentUserId);
+        if (sentRequest) return sentRequest.status;
+
+        // If current user received the request
+        const receivedRequest = data.find(r => r.receiver_id === currentUserId);
+        if (receivedRequest) return receivedRequest.status === 'pending' ? 'accept' : receivedRequest.status;
+
+        return null;
+    }
+
+    function initFollowButtons() {
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.follow-btn');
+            if (!btn) return;
+
+            if (btn.dataset.requestSent === 'true') return;
+
+            const receiverId = btn.dataset.userPostId;
+            const status = btn.dataset.status;
+
+            try {
+                const { data: userData } = await supabaseClient.auth.getUser();
+                const senderId = userData?.user?.id;
+                if (!senderId) throw new Error('User not logged in');
+
+                const { data: existing, error: fetchError } = await supabaseClient
+                    .from('friends-request')
+                    .select('id, status, sender_id, receiver_id')
+                    .or(
+                        `and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}), and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`
+                    );
+
+                if (fetchError) throw fetchError;
+
+                // 🚨 MORE THAN ONE ROW = DATA ERROR
+                if (existing && existing.status === 'pending') {
+                    alertSystem.show('You already followed this user', 'info');
+                    return;
+                }
+
+                // ===============================
+                // INSERT REQUEST
+                // ===============================
+                if ((status === 'null' || status === 'undefined') && existing.length === 0) {
+                    const { error } = await supabaseClient
+                        .from('friends-request')
+                        .insert({
+                            sender_id: senderId,
+                            receiver_id: receiverId,
+                            status: 'pending'
+                        });
+
+                    if (error) throw error;
+
+                    btn.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i><span>Requested</span>`;
+                    btn.disabled = true;
+                    btn.classList.remove('bg-primary', 'hover:bg-blue-500');
+                    btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                    btn.dataset.status = 'pending';
+                    btn.dataset.requestSent = 'true';
+
+                    return;
+                }
+
+                // ===============================
+                // ACCEPT REQUEST
+                // ===============================
+                if (status === 'accept' && existing.length === 1) {
+                    const { error } = await supabaseClient
+                        .from('friends-request')
+                        .update({
+                            status: 'friends',
+                            responded_at: new Date().toISOString()
+                        })
+                        .eq('id', existing[0].id);
+
+                    if (error) throw error;
+
+                    btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
+                    btn.disabled = true;
+                    btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    btn.classList.add('bg-gray-400');
+                    btn.dataset.status = 'friends';
+                }
+
+            } catch (err) {
+                console.error('Error handling friend request:', err);
+            }
+        });
+    }
+
+    // =======================
+    // REALTIME: FRIEND REQUESTS
+    // =======================
+    function initFriendRealtime(currentUserId) {
+        supabaseClient
+            .channel('friends-request-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'friends-request'
+                },
+                (payload) => {
+                    const row = payload.new || payload.old;
+                    if (!row) return;
+
+                    // Only react if current user is involved
+                    if (row.sender_id !== currentUserId && row.receiver_id !== currentUserId) return;
+
+                    updateFollowButtonsRealtime(row);
+                }
+            )
+            .subscribe();
+    }
+
+    if (userId) {
+        initFriendRealtime(userId);
+    }
+
+    function updateFollowButtonsRealtime(row) {
+        // INSERT → receiver sees ACCEPT
+        if (row.status === 'pending') {
+            document.querySelectorAll(
+                `.follow-btn[data-user-post-id="${row.sender_id}"]`
+            ).forEach(btn => {
+                btn.innerHTML = `<i class="fas fa-user-check mr-1"></i><span>Accept</span>`;
+                btn.disabled = false;
+                btn.className = btn.className.replace(/bg-\S+/g, '');
+                btn.classList.add('bg-green-500', 'hover:bg-green-600');
+                btn.dataset.status = 'accept';
+            });
+            return;
+        }
+
+        // UPDATE → both see FRIENDS
+        if (row.status === 'friends') {
+            document.querySelectorAll(
+                `.follow-btn[data-user-post-id="${row.sender_id}"],
+             .follow-btn[data-user-post-id="${row.receiver_id}"]`
+            ).forEach(btn => {
+                btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
+                btn.disabled = true;
+                btn.className = btn.className.replace(/bg-\S+/g, '');
+                btn.classList.add('bg-gray-400');
+                btn.dataset.status = 'friends';
+            });
+        }
+    }
+
 
     // =======================
     // CREATE / SUBMIT POST
@@ -680,6 +852,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadUser();
     deletePermanently();
     openComments();
+    initFollowButtons();
     setTimeout(updateLikeButtonStates, 500);
 
     // Option B: Realtime via Supabase

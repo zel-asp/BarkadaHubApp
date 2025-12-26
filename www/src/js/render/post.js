@@ -1,7 +1,53 @@
-export default function uploadedPost(avatar = hi, postOwner = false, name, date, content, file, media_type, postId = 1, likes = 0, comments = 0, isLiked = false, filePath = null, userId) {
+export default function uploadedPost(avatar = hi, postOwner = false, name, date, content, file, media_type, postId = 1, likes = 0, comments = 0, isLiked = false, filePath = null, userId, friendStatus = null) {
     const likeIconClass = isLiked ? 'fas fa-heart text-red-600' : 'fas fa-heart text-gray-400';
     const likeBtnClass = isLiked ? 'text-red-600' : '';
     const likeText = isLiked ? 'Liked' : 'Like';
+
+    let followButtonHTML = '';
+
+    if (!postOwner) {
+        switch (friendStatus) {
+            case null:
+            case undefined:
+                followButtonHTML = `
+            <button class="follow-btn group px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 bg-primary text-white hover:bg-blue-500 hover:text-white"
+                data-user="${name}" data-user-post-id="${userId}" data-status="null">
+                <i class="fas fa-user-plus mr-1"></i>
+                <span>Follow</span>
+            </button>`;
+                break;
+
+            case 'pending':
+                followButtonHTML = `
+            <button class="follow-btn group px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 bg-yellow-500 text-white hover:bg-yellow-600"
+                data-user="${name}" data-user-post-id="${userId}" data-status="pending" disabled>
+                <i class="fas fa-hourglass-half mr-1"></i>
+                <span>Requested</span>
+            </button>`;
+                break;
+
+            case 'accept':
+                followButtonHTML = `
+            <button class="follow-btn group px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 bg-green-500 text-white hover:bg-green-600"
+                data-user="${name}" data-user-post-id="${userId}" data-status="accept">
+                <i class="fas fa-user-check mr-1"></i>
+                <span>Accept</span>
+            </button>`;
+                break;
+
+            case 'friends':
+                followButtonHTML = `
+            <button class="follow-btn group px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 bg-gray-400 text-white"
+                data-user="${name}" data-user-post-id="${userId}" data-status="friends" disabled>
+                <i class="fas fa-user-friends mr-1"></i>
+                <span>Friends</span>
+            </button>`;
+                break;
+
+            default:
+                followButtonHTML = '';
+        }
+    }
 
     return `
     <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}">
@@ -18,12 +64,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
                 </div>
             </a>
             <div class="flex items-center gap-2">
-                ${!postOwner ? `
-                <button class="follow-btn group px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 bg-primary text-white hover:bg-blue-500 hover:text-white" data-user="${name}" data-user-post-id="${userId}">
-                    <i class="fas fa-user-plus mr-1"></i>
-                    <span>Follow</span>
-                </button>
-                ` : ''}
+                ${followButtonHTML}
                 ${postOwner ?
             `<button class="ellipsis-btn group" data-post-id="${postId}">
                     <div
