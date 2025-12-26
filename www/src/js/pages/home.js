@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userAvatar = document.getElementById('userAvatar');
 
 
-
     // =======================
     // STATE
     // =======================
@@ -31,13 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
-    if (!userId) {
-        alertSystem.show("You must be logged in.", "error");
-        setTimeout(() => {
-            window.location.replace = "../../index.html";
-        }, 1500);
-        return;
-    }
 
     async function loadProfilePic(userId, userAvatarElement) {
         let avatar = '../images/defaultAvatar.jpg';
@@ -182,13 +174,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // CONFIRM DELETE BUTTON
     // =======================
     function deletePermanently() {
-        const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
-
         document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
             const modal = document.getElementById('deleteConfirmationModal');
             const postId = modal.dataset.postId;
-            const alertId = alertSystem.show('Deleting...', 'info');
+            const postEl = document.querySelector(`.post[data-post-id="${postId}"]`);
 
+            if (!postEl) return alertSystem.show("Post not found", "error");
+
+            const filePathForStorage = postEl.dataset.filePath;
+            const alertId = alertSystem.show('Deleting...', 'info');
 
             // 1. Fetch post to check ownership
             const { data: post, error: fetchError } = await supabaseClient
@@ -201,7 +195,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!post) return alertSystem.show("Post not found", 'error');
             if (post.user_id !== userId) return alertSystem.show("You can't delete this post", 'error');
 
-            // 2. Delete post
+            // 2. Delete file from storage
+            const { data, error } = await supabaseClient
+                .storage
+                .from('post-media')
+                .remove([filePathForStorage]);
+
+            if (error) console.error('Delete failed:', error);
+            else console.log('File deleted:', data);
+
+
+            if (error) return alertSystem.show(`Failed to delete file: ${error.message}`, 'error');
+
+            // 3. Delete post from DB
             const { data: deletedPost, error: deleteError } = await supabaseClient
                 .from('posts')
                 .delete()
@@ -209,16 +215,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (deleteError) return alertSystem.show(`Failed to delete post: ${deleteError.message}`, 'error');
 
-            // 3. Remove from UI
-            setTimeout(() => {
-                // Remove post from UI
-                const postEl = document.querySelector(`.post[data-post-id="${postId}"]`);
-                if (postEl) postEl.remove();
-
-                hideDeleteConfirmation();
-                alertSystem.show('Post deleted successfully!', 'success');
-                alertSystem.hide(alertId);
-            }, 1000);
+            // 4. Remove from UI
+            postEl.remove();
+            hideDeleteConfirmation();
+            alertSystem.show('Post deleted successfully!', 'success');
+            alertSystem.hide(alertId);
         });
     }
 
@@ -305,9 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ------------------------------
         const relativeTime = formatRelativeTime(post.created_at);
 
-        // ------------------------------
-        // Render HTML using uploadedPost
-        // ------------------------------
+        // Then call uploadedPost
         const html = uploadedPost(
             avatar,
             owner,
@@ -319,8 +318,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             post.id,
             totalLikes,
             commentCount,
-            isLikedByUser
+            isLikedByUser,
+            post.file_path,
+            post.user_id,
         );
+
 
         // Insert into posts container
         postsContainer.insertAdjacentHTML(position, html);
@@ -332,8 +334,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             initLikeButtons();
         }, 100);
     }
-
-
 
     // =======================
     // CREATE / SUBMIT POST
@@ -351,13 +351,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let mediaUrl = null;
         let mediaType = null;
-
+        let filePath = null;
         // --- Handle media upload (existing code) ---
         if (selectedMedia) {
             const file = selectedMedia.file;
             const ext = file.name.split('.').pop();
             const fileName = `${Date.now()}.${ext}`;
-            const filePath = `${userId}/${fileName}`;
+            filePath = `${userId}/${fileName}`;
             const { error: uploadError } = await supabaseClient.storage.from("post-media").upload(filePath, file);
             if (uploadError) {
                 alertSystem.hide(loadingId);
@@ -387,15 +387,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 content: postContent.value,
                 media_url: mediaUrl,
                 media_type: mediaType,
-                avatar_url: avatar // <-- Save avatar here
+                avatar_url: avatar,
+                file_path: filePath
             })
             .select('*, post_comments(*)')
             .maybeSingle();
 
         alertSystem.hide(loadingId);
         if (error) return alertSystem.show("Failed to publish post!", 'error');
-
-        renderPost(newPost, "afterbegin");
 
         postForm.reset();
         selectedMedia = null;
@@ -633,6 +632,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             commentInput.value = '';
+            charCounter.innerHTML = '0/250';
+            sendBtn.disabled = true;
             await loadComments(currentPostId);
         });
     }
@@ -677,8 +678,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     // INIT FUNCTIONS
     // =======================
     await loadUser();
-    await getPosts();
     deletePermanently();
     openComments();
     setTimeout(updateLikeButtonStates, 500);
+
+    // Option B: Realtime via Supabase
+    supabaseClient
+        .channel('public:posts')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'posts' },
+            (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    // New post
+                    if (!displayedPostIds.has(payload.new.id)) {
+                        renderPost(payload.new, 'afterbegin');
+                    }
+                } else if (payload.eventType === 'DELETE') {
+                    // Deleted post
+                    const postEl = document.querySelector(`.post[data-post-id="${payload.old.id}"]`);
+                    if (postEl) {
+                        postEl.remove();
+                        displayedPostIds.delete(payload.old.id);
+                    }
+                }
+            }
+        )
+        .subscribe();
+
+    await getPosts();
+
 });

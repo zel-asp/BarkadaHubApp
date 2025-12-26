@@ -1,5 +1,7 @@
 import { timeout, checkConnection } from "../functions.js";
 import AlertSystem from '../render/Alerts.js';
+import supabaseClient from '../supabase.js';
+
 
 // Initialize alert system
 const alertSystem = new AlertSystem();
@@ -82,9 +84,19 @@ function addButtonLoadingEffect(button, asyncCallback) {
     });
 }
 
+async function getSession() {
+    const { data: { session }, } = await supabaseClient.auth.getSession();
+
+    if (session) {
+        window.location.href = './src/html/profile.html';
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Check internet connection
     await initConnectionCheck();
+    getSession();
 
     // Modal elements
     const modal = document.getElementById('authModal');

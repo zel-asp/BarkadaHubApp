@@ -1,6 +1,6 @@
 export function createVideoItem(video, avatar, username, userId, caption, postId, likes = 0, comments = 0) {
     return `
-        <div class="video-barkadahub-container h-screen w-full snap-start">
+        <div class="video-barkadahub-container h-auto w-full snap-start">
             <div class="video-barkadahub-item">
                 <div class="w-screen h-screen bg-black flex items-center justify-center">
                     <video class="w-full h-full object-contain" loop playsinline>
@@ -26,7 +26,7 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                             Follow
                         </button>
                     </div>
-                    <p class="text-white text-sm mb-2 text-wrap">${caption}</p>
+                    <p class="text-white text-sm mb-2 text-justify break-all">${caption}</p>
                 </div>
 
                 <!-- Sidebar Actions -->

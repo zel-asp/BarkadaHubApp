@@ -169,6 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ------------------------------------------------------
         UPLOAD VIDEO FORM LOGIC
     ------------------------------------------------------ */
+    /* ------------------------------------------------------
+        UPLOAD VIDEO FORM LOGIC (FIXED)
+    ------------------------------------------------------ */
     createVideoForm?.addEventListener('submit', async e => {
         e.preventDefault();
 
@@ -180,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Get current user info
         const { data: userData, error: userError } = await supabaseClient.auth.getUser();
         if (userError || !userData?.user) {
             alertSystem.show('User not authenticated', 'error');
@@ -194,47 +196,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             let videoUrl = null;
+            let filePath = null;
 
             if (file) {
                 const ext = file.name.split('.').pop();
-                const fileName = `${userId}.${ext}`;
-                const filePath = `${userId}/${fileName}`;
+                const fileName = `${crypto.randomUUID()}.${ext}`;
+                filePath = `${userId}/${fileName}`;
 
-                // Upload video
+                /* Upload video */
                 const { error: uploadError } = await supabaseClient.storage
                     .from('videos')
-                    .upload(filePath, file, { upsert: true });
-                if (uploadError) throw new Error(uploadError.message);
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
 
-                // Create signed URL
-                const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
+                if (uploadError) throw uploadError;
+
+                /* Get PUBLIC URL (never expires) */
+                const { data } = supabaseClient.storage
                     .from('videos')
-                    .createSignedUrl(filePath, 60 * 60); // 1 hour
-                if (signedUrlError) throw new Error(signedUrlError.message);
+                    .getPublicUrl(filePath);
 
-                videoUrl = signedUrlData.signedUrl;
+                videoUrl = data.publicUrl;
             }
 
-            // Insert video record
+            /* Insert DB record */
             const { error: insertError } = await supabaseClient
                 .from('videos')
                 .insert([{
                     video_url: videoUrl,
-                    caption: caption,
+                    file_path: filePath,
+                    caption,
                     auth_name: userName,
                     auth_id: userId
                 }]);
-            if (insertError) throw new Error(insertError.message);
+
+            if (insertError) throw insertError;
 
             alertSystem.show('Video uploaded successfully!', 'success');
             resetVideoModal();
-            render(); // Refresh video list after upload
+            render();
+
         } catch (err) {
+            console.error(err);
             alertSystem.show(`Error: ${err.message}`, 'error');
         } finally {
             restoreBtn();
         }
     });
+
 
     /* ------------------------------------------------------
         VIDEO RENDERING LOGIC
