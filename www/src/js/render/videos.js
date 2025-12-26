@@ -1,55 +1,75 @@
-export function createVideoItem(video, avatar, username, userId, caption, postId, likes = 0, comments = 0) {
+export function createVideoItem(video, avatar, username, caption, postId, likes = 0, postOwner = true, filepath) {
     return `
-        <div class="video-barkadahub-container h-auto w-full snap-start">
-            <div class="video-barkadahub-item">
-                <div class="w-screen h-screen bg-black flex items-center justify-center">
+        <div class="video-barkadahub-container h-screen w-full snap-start">
+            <div class="video-barkadahub-item relative" data-id="${postId}" >
+                <!-- Video Container -->
+                <div class="w-screen h-full bg-black flex items-center justify-center relative">
                     <video class="w-full h-full object-contain" loop playsinline>
                         <source src="${video}" type="video/mp4">
                     </video>
+                    
+                    <!-- Subtle linear overlay at bottom for better text readability -->
+                    <div class="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-black/70 via-black/30 to-transparent pointer-events-none"></div>
                 </div>
 
-                <!-- Video Overlay -->
-                <div class="absolute inset-0 video-barkadahub-overlay"></div>
-
-                <!-- Video Info -->
-                <div class="absolute bottom-10 left-0 right-0 p-6 z-30">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                            <img src="${avatar}" alt="${username}" class="w-full h-full object-cover">
+                <!-- Content Overlay - Positioned higher to avoid dynamic header -->
+                <div class="absolute inset-0 z-20 flex flex-col justify-end pb-10">
+                    <!-- User Profile & Caption -->
+                    <div class="px-6 mb-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <!-- Avatar with glass effect -->
+                            <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 backdrop-blur-sm bg-white/10 shadow-lg">
+                                <img src="${avatar}" alt="${username}" class="w-full h-full object-cover">
+                            </div>
+                            
+                            <!-- User Info -->
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="font-bold text-white text-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">${username}</h3>
+                                    <span class="text-white/80 text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                                        @${username.toLowerCase().replace(/\s+/g, '')}
+                                    </span>
+                                </div>
+                                <p class="text-white/95 text-md leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-justify break-all">${caption}</p>
+                            </div>
                         </div>
-                        <div class="text-white">
-                            <h3 class="font-bold text-lg">${username}</h3>
-                            <p class="text-sm opacity-90">@${username.toLowerCase().replace(/\s+/g, '')}</p>
-                        </div>
-                        <button
-                            class="ml-4 bg-none text-white border border-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-white hover:text-black transition-all duration-200" data-id='${userId}'>
-                            Follow
-                        </button>
                     </div>
-                    <p class="text-white text-sm mb-2 text-justify break-all">${caption}</p>
                 </div>
 
-                <!-- Sidebar Actions -->
-                <div class="absolute right-4 bottom-32 z-30 flex flex-col items-center gap-6">
-                    <div class="action-button likeBtn" data-id='${postId}'>
-                        <div class="action-icon">
-                            <i class="fas fa-heart text-xl"></i>
+                <!-- Action Buttons - Sidebar positioned higher -->
+                <div class="absolute right-6 bottom-45 z-30 flex flex-col items-center gap-7">
+                    <!-- Like button with enhanced glass effect -->
+                    <div class="action-button likeBtn group" data-id='${postId}'>
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="relative">
+                                <!-- Glass effect background -->
+                                <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
+                                <!-- Outer glow -->
+                                <div class="absolute -inset-1 bg-red-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <!-- Icon container -->
+                                <div class="relative w-14 h-14 rounded-full bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
+                                    <i class="fas fa-heart text-xl text-white drop-shadow-lg"></i>
+                                </div>
+                            </div>
+                            <span class="action-count text-white font-bold text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">${likes}</span>
                         </div>
-                        <span class="action-count">${likes}</span>
                     </div>
 
-                    <div class="action-button openCommentBtn" data-id='${postId}'>
-                        <div class="action-icon">
-                            <i class="fas fa-comment text-xl"></i>
+                    ${postOwner ? `
+                        <!-- Ellipsis menu for owner with glass effect -->
+                        <div class="action-button openEllipsisMenuBtn group" data-id='${postId}' data-filepath = "${filepath}">
+                            <div class="relative">
+                                <!-- Glass effect background -->
+                                <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
+                                <!-- Outer glow -->
+                                <div class="absolute -inset-1 bg-gray-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <!-- Icon container -->
+                                <div class="relative w-12 h-12 rounded-full bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
+                                    <i class="fas fa-ellipsis-h text-lg text-white drop-shadow-lg"></i>
+                                </div>
+                            </div>
                         </div>
-                        <span class="action-count">${comments}</span>
-                    </div>
-
-                    <div class="action-button openEllipsisMenuBtn" data-id='${postId}'>
-                        <div class="action-icon">
-                            <i class="fas fa-ellipsis-h text-xl"></i>
-                        </div>
-                    </div>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -62,11 +82,7 @@ export function createEmptyVideoState() {
         <div class="flex flex-col items-center justify-center h-screen text-white">
             <i class="fas fa-video-slash text-6xl mb-4 opacity-50"></i>
             <h3 class="text-xl font-bold mb-2">No Videos Yet</h3>
-            <p class="text-gray-400 mb-6">Be the first to share a video!</p>
-            <button id="emptyStateCreateBtn" 
-                class="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-xl font-medium transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i>Upload First Video
-            </button>
+            <p class="text-gray-500 mb-6 font-bold">Be the first to share a video!</p>
         </div>
     `;
 }
