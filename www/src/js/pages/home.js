@@ -392,24 +392,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // If there are existing requests
                 if (existingRequests && existingRequests.length > 0) {
-                    const existingRequest = existingRequests[0];
+                    const existingRequest = existingRequests[0]; // Get the first (and should be only) request
 
-                    // Check if user already sent a request
-                    if (existingRequest.sender_id === senderId && existingRequest.status === 'pending') {
-                        alertSystem.show('You already sent a follow request to this user', 'info');
-                        btn.disabled = true;
-                        btn.dataset.requestSent = 'true';
-                        return;
+                    // Check if user already sent a request (is sender)
+                    if (existingRequest.sender_id === senderId) {
+                        if (existingRequest.status === 'pending') {
+                            alertSystem.show('You already sent a follow request to this user', 'info');
+                            return;
+                        }
+                        if (existingRequest.status === 'friends') {
+                            alertSystem.show('You are already friends with this user', 'info');
+                            return;
+                        }
                     }
 
-                    // Check if user already friends
-                    if (existingRequest.status === 'friends') {
-                        alertSystem.show('You are already friends with this user', 'info');
-                        return;
-                    }
-
-                    // Accept pending request (current user is receiver)
+                    // Check if user received a request (is receiver) and it's pending
                     if (existingRequest.receiver_id === senderId && existingRequest.status === 'pending') {
+                        // ACCEPT THE REQUEST
                         const { error: updateError } = await supabaseClient
                             .from('friends-request')
                             .update({
@@ -420,6 +419,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (updateError) throw updateError;
 
+                        const { error: friendsError } = await supabaseClient
+                            .from('friends')
+                            .insert({
+                                user_id: existingRequest.sender_id,
+                                friends_id: existingRequest.receiver_id,
+                                friendReq_id: existingRequest.id
+                            });
+
+                        if (friendsError) throw friendsError;
+
                         // Update UI immediately
                         btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                         btn.disabled = true;
@@ -429,6 +438,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         btn.dataset.requestSent = 'true';
 
                         alertSystem.show('Friend request accepted!', 'success');
+                        return;
+                    }
+
+                    // If they're already friends
+                    if (existingRequest.status === 'friends') {
+                        alertSystem.show('You are already friends with this user', 'info');
                         return;
                     }
                 }
@@ -524,7 +539,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
     }
-
 
     // =======================
     // CREATE / SUBMIT POST
