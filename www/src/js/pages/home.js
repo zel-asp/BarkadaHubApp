@@ -373,33 +373,71 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (btn.dataset.requestSent === 'true') return;
 
             const receiverId = btn.dataset.userPostId;
-            const status = btn.dataset.status;
+            const currentStatus = btn.dataset.status;
 
             try {
                 const { data: userData } = await supabaseClient.auth.getUser();
                 const senderId = userData?.user?.id;
                 if (!senderId) throw new Error('User not logged in');
 
-                const { data: existing, error: fetchError } = await supabaseClient
+                // Fetch existing friend requests
+                const { data: existingRequests, error: fetchError } = await supabaseClient
                     .from('friends-request')
                     .select('id, status, sender_id, receiver_id')
                     .or(
-                        `and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}), and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`
+                        `and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`
                     );
 
                 if (fetchError) throw fetchError;
 
-                // 🚨 MORE THAN ONE ROW = DATA ERROR
-                if (existing && existing.status === 'pending') {
-                    alertSystem.show('You already followed this user', 'info');
-                    return;
+                // If there are existing requests
+                if (existingRequests && existingRequests.length > 0) {
+                    const existingRequest = existingRequests[0];
+
+                    // Check if user already sent a request
+                    if (existingRequest.sender_id === senderId && existingRequest.status === 'pending') {
+                        alertSystem.show('You already sent a follow request to this user', 'info');
+                        btn.disabled = true;
+                        btn.dataset.requestSent = 'true';
+                        return;
+                    }
+
+                    // Check if user already friends
+                    if (existingRequest.status === 'friends') {
+                        alertSystem.show('You are already friends with this user', 'info');
+                        return;
+                    }
+
+                    // Accept pending request (current user is receiver)
+                    if (existingRequest.receiver_id === senderId && existingRequest.status === 'pending') {
+                        const { error: updateError } = await supabaseClient
+                            .from('friends-request')
+                            .update({
+                                status: 'friends',
+                                responded_at: new Date().toISOString()
+                            })
+                            .eq('id', existingRequest.id);
+
+                        if (updateError) throw updateError;
+
+                        // Update UI immediately
+                        btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
+                        btn.disabled = true;
+                        btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                        btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        btn.dataset.status = 'friends';
+                        btn.dataset.requestSent = 'true';
+
+                        alertSystem.show('Friend request accepted!', 'success');
+                        return;
+                    }
                 }
 
-                // ===============================
-                // INSERT REQUEST
-                // ===============================
-                if ((status === 'null' || status === 'undefined') && existing.length === 0) {
-                    const { error } = await supabaseClient
+                // No existing request or status is null/undefined - Send new request
+                if ((!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
+                    (!existingRequests || existingRequests.length === 0)) {
+
+                    const { error: insertError } = await supabaseClient
                         .from('friends-request')
                         .insert({
                             sender_id: senderId,
@@ -407,41 +445,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                             status: 'pending'
                         });
 
-                    if (error) throw error;
+                    if (insertError) throw insertError;
 
+                    // Update UI immediately
                     btn.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i><span>Requested</span>`;
                     btn.disabled = true;
                     btn.classList.remove('bg-primary', 'hover:bg-blue-500');
-                    btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                    btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'cursor-not-allowed');
                     btn.dataset.status = 'pending';
                     btn.dataset.requestSent = 'true';
 
-                    return;
-                }
-
-                // ===============================
-                // ACCEPT REQUEST
-                // ===============================
-                if (status === 'accept' && existing.length === 1) {
-                    const { error } = await supabaseClient
-                        .from('friends-request')
-                        .update({
-                            status: 'friends',
-                            responded_at: new Date().toISOString()
-                        })
-                        .eq('id', existing[0].id);
-
-                    if (error) throw error;
-
-                    btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
-                    btn.disabled = true;
-                    btn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    btn.classList.add('bg-gray-400');
-                    btn.dataset.status = 'friends';
+                    alertSystem.show('Follow request sent!', 'success');
                 }
 
             } catch (err) {
                 console.error('Error handling friend request:', err);
+                alertSystem.show('An error occurred. Please try again.', 'error');
             }
         });
     }
@@ -495,7 +514,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (row.status === 'friends') {
             document.querySelectorAll(
                 `.follow-btn[data-user-post-id="${row.sender_id}"],
-             .follow-btn[data-user-post-id="${row.receiver_id}"]`
+            .follow-btn[data-user-post-id="${row.receiver_id}"]`
             ).forEach(btn => {
                 btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                 btn.disabled = true;
