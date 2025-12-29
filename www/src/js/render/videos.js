@@ -1,4 +1,28 @@
-export function createVideoItem(video, avatar, username, caption, postId, likes = 0, postOwner = true, filepath) {
+export function createVideoItem(video, avatar, username, userId, caption, postId, likes = 0, postOwner = true, friendStatus = null) {
+
+    let friendsIcon = '';
+    let followButton = '';
+
+    if (!postOwner) {
+        switch (friendStatus) {
+            case null:
+            case undefined:
+                friendsIcon = `<i class="fas fa-user-plus text-sm text-white drop-shadow-lg"></i>`;
+                break;
+            case 'pending':
+                friendsIcon = `<i class="fas fa-user-minus text-sm text-white drop-shadow-lg"></i>`;
+                break;
+            case 'accept':
+                friendsIcon = `<i class="fas fa-user-check text-sm text-white drop-shadow-lg"></i>`;
+                break;
+            case 'friends':
+                friendsIcon = `<i class="fas fa-user-friends text-sm text-white drop-shadow-lg"></i>`;
+                break;
+            default:
+                friendsIcon = '';
+        }
+    }
+
     return `
         <div class="video-barkadahub-container h-screen w-full snap-start">
             <div class="video-barkadahub-item relative" data-id="${postId}" >
@@ -30,34 +54,35 @@ export function createVideoItem(video, avatar, username, caption, postId, likes 
                                         @${username.toLowerCase().replace(/\s+/g, '')}
                                     </span>
                                 </div>
-                                <p class="text-white/95 text-md leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-justify break-all">${caption}</p>
+                                <p class="text-white/95 text-md leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-justify break-all w-60 ">${caption}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons - Sidebar positioned higher -->
-                <div class="absolute right-6 bottom-45 z-30 flex flex-col items-center gap-7">
-                    <!-- Like button with enhanced glass effect -->
-                    <div class="action-button likeBtn group" data-id='${postId}'>
-                        <div class="flex flex-col items-center gap-2">
-                            <div class="relative">
-                                <!-- Glass effect background -->
-                                <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
-                                <!-- Outer glow -->
-                                <div class="absolute -inset-1 bg-red-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <!-- Icon container -->
-                                <div class="relative w-14 h-14 rounded-full bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
-                                    <i class="fas fa-heart text-xl text-white drop-shadow-lg"></i>
+                <div class="absolute right-6 bottom-20 z-30 flex flex-col items-center gap-7">
+                    <!-- Like button with circle badge -->
+                    <div class="action-button likeBtn group" data-id="${postId}" data-liked="false">                        
+                        <div class="relative">
+                            <!-- Glass effect background -->
+                            <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
+                            <!-- Outer glow -->
+                            <div class="absolute -inset-1 bg-red-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <!-- Main button -->
+                            <div class="relative w-12 h-12 rounded-full bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
+                                <i class="fas fa-heart text-xl text-white drop-shadow-lg"></i>
+                                <!-- Count badge -->
+                                <div class="absolute -top-1 -right-1 min-w-[22px] h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center px-1 shadow-lg">
+                                    <span class="text-white font-bold text-[10px]">${likes}</span>
                                 </div>
                             </div>
-                            <span class="action-count text-white font-bold text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm">${likes}</span>
                         </div>
                     </div>
 
                     ${postOwner ? `
                         <!-- Ellipsis menu for owner with glass effect -->
-                        <div class="action-button openEllipsisMenuBtn group" data-id='${postId}' data-filepath = "${filepath}">
+                        <div class="action-button openEllipsisMenuBtn group" data-id='${postId}'>
                             <div class="relative">
                                 <!-- Glass effect background -->
                                 <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
@@ -68,13 +93,29 @@ export function createVideoItem(video, avatar, username, caption, postId, likes 
                                     <i class="fas fa-ellipsis-h text-lg text-white drop-shadow-lg"></i>
                                 </div>
                             </div>
-                        </div>
-                    ` : ''}
+                        </div>` :
+            `<div class="action-button followBtn group" data-user="${username}" data-user-post-id="${userId}" data-status="${friendStatus || 'null'}">
+                <div class="relative">
+                    <!-- Glass effect background -->
+                    <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
+                    <!-- Outer glow -->
+                    <div class="absolute -inset-1 bg-blue-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <!-- Container with centered icon -->
+                    <div class="relative w-12 h-12 rounded-full 
+                                bg-linear-to-br from-white/20 to-white/5 
+                                backdrop-blur-sm border border-white/30 
+                                flex items-center justify-center 
+                                shadow-xl group-hover:scale-105 transition-transform duration-300">
+                        ${friendsIcon}
+                    </div>
+                </div>
+            </div>`}
                 </div>
             </div>
         </div>
     `;
 }
+
 
 // Empty state
 export function createEmptyVideoState() {
