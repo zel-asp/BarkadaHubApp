@@ -135,13 +135,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             day: 'numeric',
             year: 'numeric'
         });
+
+
         const postHtml = lost_found(
             fileUrl,
             item.item_type,
             item.item_name,
             item.description,
             item.location,
-            datePosted
+            datePosted,
+            item.auth_id === userId,
+            item.auth_id,
+            item.file_name,
+            item.id
         );
 
         if (prepend) {
@@ -153,14 +159,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayedItemIds.add(item.id);
     }
 
-    /* ------------------------------
-    SUPABASE REALTIME
-    ------------------------------ */
-    supabaseClient
-        .channel('lost_found')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lost_found' }, payload => {
-            renderLostFoundSingle(payload.new, true);
-        })
+
+    document.addEventListener('click', async (e) => {
+        const deleteBtn = e.target.closest('.delete-btn');
+        if (!deleteBtn) return;
+
+        const postId = deleteBtn.dataset.postId;
+
+        const card = deleteBtn.closest('[data-post-id]');
+        const filePath = card?.dataset.filePath;
+
+        if (!postId) {
+            alertSystem.show('This post is not found', 'error');
+            return;
+        }
+
+        // deleting UI effect
+        const originalHTML = deleteBtn.innerHTML;
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Deleting...`;
+
+        try {
+            await destroy(postId, filePath);
+            card.remove();
+        } catch (err) {
+            alertSystem.show(err.message, 'error');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = originalHTML;
+        }
+    });
+
+
+    async function destroy(postId, filePath) {
+
+        if (filePath) {
+            const { error: storageError } = await supabaseClient
+                .storage
+                .from('lost_found')
+                .remove([filePath]);
+
+            if (storageError) {
+                throw new Error('Storage delete failed: ' + storageError.message);
+            }
+        }
+
+        const { error: deleteError } = await supabaseClient
+            .from('lost_found')
+            .delete()
+            .eq('id', postId);
+
+        if (deleteError) {
+            throw new Error('Post delete failed: ' + deleteError.message);
+        }
+
+        alertSystem.show('Post deleted successfully', 'success');
+    }
+
 
     /* ------------------------------
     INITIAL LOAD

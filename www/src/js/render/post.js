@@ -52,7 +52,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
     return `
     <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}">
         <div class="flex justify-between items-center mb-4">
-            <a href="./viewProfile.html">
+            <a href="./viewProfile.html" data-user-id = "${userId}">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
                         <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover">
@@ -131,9 +131,9 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
 }
 
 
-export function lost_found(img, type, item, description, location, datePosted) {
+export function lost_found(img, type, item, description, location, datePosted, postOwner = false, userId = 1, filePath = null, postId = 1) {
     return `
-<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" >
     <div class="h-56 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50 p-2 relative group">
         <div class="w-full h-full rounded-lg overflow-hidden border-2 border-blue-100/50">
             <img src="${img}" alt="${item}"
@@ -163,10 +163,28 @@ export function lost_found(img, type, item, description, location, datePosted) {
             </span>
         </div>
 
-        <button
-            class="claim-btn w-full bg-primary text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]">
-            ${type === 'lost' ? 'I Found This' : 'This is Mine'}
-        </button>
+        ${postOwner
+            ? `
+            <!-- Owner buttons -->
+            <div class="flex gap-3">
+                <button
+                    class="delete-btn flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]" data-post-id= "${postId}" data-file-path="${filePath}">
+                    Delete
+                </button>
+            </div>
+            `
+            : `
+            <!-- Regular user button - Message for all posts -->
+            <a href="./directMessage.html">
+                <button
+                    class="message-btn w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                    data-user-id=${userId}>
+                    <i class="fas fa-comment"></i>
+                    Message
+                </button>
+            </a>
+            `
+        }
     </div>
 </div>
 `
