@@ -1,4 +1,4 @@
-export function createVideoItem(video, avatar, username, userId, caption, postId, likes = 0, postOwner = true, friendStatus = null) {
+export function createVideoItem(video, avatar, username, userId, caption, postId, likes = 0, postOwner = true, friendStatus = null, userLiked = false) {
 
     let friendsIcon = '';
     let followButton = '';
@@ -63,7 +63,7 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                 <!-- Action Buttons - Sidebar positioned higher -->
                 <div class="absolute right-6 bottom-20 z-30 flex flex-col items-center gap-7">
                     <!-- Like button with circle badge -->
-                    <div class="action-button likeBtn group" data-id="${postId}" data-liked="false">                        
+                    <div class="action-button likeBtn group ${userLiked ? 'liked' : ''}" data-video-id="${postId}" data-liked="${userLiked}">                        
                         <div class="relative">
                             <!-- Glass effect background -->
                             <div class="absolute inset-0 bg-black/30 backdrop-blur-md rounded-full transform scale-110"></div>
@@ -71,7 +71,7 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                             <div class="absolute -inset-1 bg-red-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             <!-- Main button -->
                             <div class="relative w-12 h-12 rounded-full bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
-                                <i class="fas fa-heart text-xl text-white drop-shadow-lg"></i>
+                                <i class="${userLiked ? 'fas' : 'far'} fa-heart text-xl drop-shadow-lg ${userLiked ? 'text-red-500' : 'text-white'}"></i>
                                 <!-- Count badge -->
                                 <div class="absolute -top-1 -right-1 min-w-[22px] h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center px-1 shadow-lg">
                                     <span class="text-white font-bold text-[10px]">${likes}</span>

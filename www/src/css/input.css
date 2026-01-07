@@ -543,3 +543,14 @@ input{
     font-weight: 600;
     margin: 0.25rem;
 }
+
+/* Like button styling */
+.likeBtn.liked i {
+    color: #ef4444 !important;
+    transition: all 0.3s ease;
+}
+
+.likeBtn.liked:hover i {
+    color: #dc2626 !important;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}

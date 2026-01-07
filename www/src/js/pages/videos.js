@@ -515,6 +515,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /* ------------------------------------------------------
+        LIKE VIDEO
+    ------------------------------------------------------ */
+    async function likeVideo(videoId, userId) {
+        const { error } = await supabaseClient
+            .from('video_likes')
+            .insert({ video_id: videoId, user_id: userId });
+
+        if (error) throw error;
+    }
+
+    async function unlikeVideo(videoId, userId) {
+        const { error } = await supabaseClient
+            .from('video_likes')
+            .delete()
+            .eq('video_id', videoId)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+    }
+
+    async function checkUserLiked(videoId, userId) {
+        if (!userId) return false;
+
+        const { data, error } = await supabaseClient
+            .from('video_likes')
+            .select('id')
+            .eq('video_id', videoId)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (error) {
+            console.error('Error checking like status:', error);
+            return false;
+        }
+
+        return !!data;
+    }
+
+    function initLikeButtons() {
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.likeBtn');
+            if (!btn) return;
+
+            const videoId = btn.dataset.videoId;
+            const { data: userData } = await supabaseClient.auth.getUser();
+            const userId = userData?.user?.id;
+
+            if (!userId) {
+                alertSystem.show('Please log in to like videos', 'error');
+                return;
+            }
+
+            try {
+                // Already liked?
+                if (btn.classList.contains('liked')) {
+                    alertSystem.show('Already liked this video!', 'info');
+                    return;
+                }
+
+                // Like the video
+                await likeVideo(videoId, userId);
+                btn.classList.add('liked');
+
+                // Increment like count in DOM immediately
+                const likeCount = btn.querySelector('.likeCount');
+                if (likeCount) {
+                    const current = Number(likeCount.textContent) || 0;
+                    likeCount.textContent = current + 1;
+                }
+
+            } catch (err) {
+                console.error('Error liking video:', err);
+                alertSystem.show('Failed to like video', 'error');
+            }
+        });
+    }
+
+    /* ------------------------------------------------------
         RENDER VIDEOS
     ------------------------------------------------------ */
     async function render() {
@@ -536,15 +614,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Get friend status for each video
-        const videosWithFriendStatus = await Promise.all(
+        // Get friend status and like data for each video
+        const videosWithData = await Promise.all(
             videos.map(async video => {
                 const friendStatus = await getFriendStatus(userId, video.auth_id);
-                return { ...video, friendStatus };
+                
+                // Fetch like count
+                const { count: likeCount } = await supabaseClient
+                    .from('video_likes')
+                    .select('id', { count: 'exact' })
+                    .eq('video_id', video.id);
+
+                // Check if current user liked this video
+                const userLiked = await checkUserLiked(video.id, userId);
+
+                return {
+                    ...video,
+                    friendStatus,
+                    likeCount: Number(likeCount) || 0,
+                    userLiked
+                };
             })
         );
 
-        videoContainer.innerHTML = videosWithFriendStatus.map(video => {
+        videoContainer.innerHTML = videosWithData.map(video => {
             const postOwner = userId === video.auth_id;
 
             return createVideoItem(
@@ -554,9 +647,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 video.auth_id,
                 video.caption,
                 video.id,
-                video.post_likes?.[0]?.count || 0,
+                video.likeCount,
                 postOwner,
-                video.friendStatus
+                video.friendStatus,
+                video.userLiked
             );
         }).join('');
 
@@ -573,6 +667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     openEllipsisMenuBtn();
     initFollowButtons();
+    initLikeButtons();
     await render();
 
     // Realtime for new videos
@@ -581,6 +676,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'videos' },
+            (payload) => {
+                render();
+            }
+        )
+        .subscribe();
+
+    // Realtime for video likes
+    supabaseClient
+        .channel('video-likes-realtime')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'video_likes' },
             (payload) => {
                 render();
             }
