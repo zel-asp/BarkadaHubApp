@@ -52,7 +52,6 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
     return `
     <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}">
         <div class="flex justify-between items-center mb-4">
-            <a href="./viewProfile.html" data-user-id = "${userId}">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
                         <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover">
@@ -62,7 +61,6 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
                         <span class="text-xs text-gray-500">${date} · <i class="fa fa-user"></i></span>
                     </div>
                 </div>
-            </a>
             <div class="flex items-center gap-2">
                 ${followButtonHTML}
                 ${postOwner ?
