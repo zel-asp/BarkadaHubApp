@@ -559,6 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!btn) return;
 
             const videoId = btn.dataset.videoId;
+            const isLiked = btn.dataset.liked === 'true';
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
 
@@ -568,30 +569,45 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             try {
-                // Already liked?
-                if (btn.classList.contains('liked')) {
-                    alertSystem.show('Already liked this video!', 'info');
-                    return;
-                }
+                const likeIcon = btn.querySelector('i.fa-heart');
+                const likeCountSpan = btn.querySelector('.likeCount');
+                let currentLikes = Number(likeCountSpan.textContent) || 0;
 
-                // Like the video
-                await likeVideo(videoId, userId);
-                btn.classList.add('liked');
+                if (isLiked) {
+                    // Unlike the video
+                    await unlikeVideo(videoId, userId);
 
-                // Increment like count in DOM immediately
-                const likeCount = btn.querySelector('.likeCount');
-                if (likeCount) {
-                    const current = Number(likeCount.textContent) || 0;
-                    likeCount.textContent = current + 1;
+                    // Update UI immediately
+                    btn.dataset.liked = 'false';
+                    btn.classList.remove('liked');
+                    likeIcon.classList.remove('fas', 'text-red-500');
+                    likeIcon.classList.add('far');
+
+                    // Update count
+                    currentLikes = Math.max(0, currentLikes - 1);
+                    likeCountSpan.textContent = currentLikes;
+
+                } else {
+                    // Like the video
+                    await likeVideo(videoId, userId);
+
+                    // Update UI immediately
+                    btn.dataset.liked = 'true';
+                    btn.classList.add('liked');
+                    likeIcon.classList.remove('far');
+                    likeIcon.classList.add('fas', 'text-red-500');
+
+                    // Update count
+                    currentLikes += 1;
+                    likeCountSpan.textContent = currentLikes;
                 }
 
             } catch (err) {
-                console.error('Error liking video:', err);
-                alertSystem.show('Failed to like video', 'error');
+                console.error('Error toggling like:', err);
+                alertSystem.show('Failed to update like', 'error');
             }
         });
     }
-
     /* ------------------------------------------------------
         RENDER VIDEOS
     ------------------------------------------------------ */
@@ -618,7 +634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const videosWithData = await Promise.all(
             videos.map(async video => {
                 const friendStatus = await getFriendStatus(userId, video.auth_id);
-                
+
                 // Fetch like count
                 const { count: likeCount } = await supabaseClient
                     .from('video_likes')
@@ -650,7 +666,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 video.likeCount,
                 postOwner,
                 video.friendStatus,
-                video.userLiked
+                video.userLiked  // This should now be true/false
             );
         }).join('');
 
