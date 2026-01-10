@@ -92,6 +92,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCharCount();
 
     /* -------------------------------------------
+        FUNCTION TO UPDATE FRIEND AVATAR IN MESSAGES
+    ------------------------------------------- */
+    async function updateFriendAvatarInMessages(userId, newAvatarUrl, newName) {
+        try {
+            console.log('Updating friend avatar in messages for user:', userId);
+
+            // Update messages where this user is the friend
+            const { error: updateError } = await supabaseClient
+                .from('message')
+                .update({
+                    friend_avatar: newAvatarUrl,
+                    friend_name: newName || undefined // Only update name if provided
+                })
+                .eq('friends_id', userId); // Where this user is the friend
+
+            if (updateError) {
+                console.error('Error updating friend avatar in messages:', updateError);
+                return false;
+            }
+
+            console.log('Successfully updated friend avatar in messages');
+            return true;
+        } catch (error) {
+            console.error('Failed to update friend avatar in messages:', error);
+            return false;
+        }
+    }
+
+    /* -------------------------------------------
         SAVE PROFILE
     ------------------------------------------- */
     form?.addEventListener('submit', async e => {
@@ -114,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             data: { display_name: fullName }
         });
 
-        /* Upload Avatar if New */
         /* Upload Avatar if New */
         if (avatarFile) {
             const fileExt = avatarFile.name.split('.').pop();
@@ -155,9 +183,55 @@ document.addEventListener('DOMContentLoaded', async () => {
             return alertSystem.show('Failed to update profile', 'error');
         }
 
+        // ✅ Update friend avatar in messages table
+        await updateFriendAvatarInMessages(userId, avatarUrl, fullName);
+
+        // Update preview
         avatarPreview.src = `${avatarUrl}`;
         updateUserAt(fullName);
 
         alertSystem.show('Profile updated successfully', 'success');
     }
+
+    /* -------------------------------------------
+        REALTIME UPDATES (Optional - for when others update)
+    ------------------------------------------- */
+    // This is optional - it will update the UI when other users update their profile
+    supabaseClient
+        .channel('profile-updates')
+        .on(
+            'postgres_changes',
+            {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'profile'
+            },
+            async (payload) => {
+                // If this update is for a user who is our friend
+                if (payload.new.id !== userId) {
+                    console.log('Friend updated profile:', payload.new.name);
+
+                    // Check if this user is in our messages
+                    const { data: existingMessage } = await supabaseClient
+                        .from('message')
+                        .select('id')
+                        .eq('user_id', userId)
+                        .eq('friends_id', payload.new.id)
+                        .maybeSingle();
+
+                    if (existingMessage) {
+                        // Update the friend's avatar in our messages
+                        await supabaseClient
+                            .from('message')
+                            .update({
+                                friend_avatar: payload.new.avatar_url,
+                                friend_name: payload.new.name
+                            })
+                            .eq('user_id', userId)
+                            .eq('friends_id', payload.new.id);
+                    }
+                }
+            }
+        )
+        .subscribe();
 });

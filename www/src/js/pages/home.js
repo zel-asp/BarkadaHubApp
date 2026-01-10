@@ -376,60 +376,210 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentStatus = btn.dataset.status;
 
             try {
-                const { data: userData } = await supabaseClient.auth.getUser();
+                /* -----------------------------------------
+                   AUTH USER
+                ----------------------------------------- */
+                const { data: userData, error: authError } = await supabaseClient.auth.getUser();
+                if (authError) throw authError;
+
                 const senderId = userData?.user?.id;
                 if (!senderId) throw new Error('User not logged in');
 
-                // Fetch existing friend requests
+                /* -----------------------------------------
+                   CHECK EXISTING REQUEST
+                ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
                     .from('friends-request')
                     .select('id, status, sender_id, receiver_id')
-                    .or(
-                        `and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`
-                    );
+                    .or(`and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`);
 
                 if (fetchError) throw fetchError;
 
-                // If there are existing requests
                 if (existingRequests && existingRequests.length > 0) {
-                    const existingRequest = existingRequests[0]; // Get the first (and should be only) request
+                    const req = existingRequests[0];
 
-                    // Check if user already sent a request (is sender)
-                    if (existingRequest.sender_id === senderId) {
-                        if (existingRequest.status === 'pending') {
-                            alertSystem.show('You already sent a follow request to this user', 'info');
+                    // Sender already sent request
+                    if (req.sender_id === senderId) {
+                        if (req.status === 'pending') {
+                            alertSystem.show('You already sent a follow request', 'info');
                             return;
                         }
-                        if (existingRequest.status === 'friends') {
-                            alertSystem.show('You are already friends with this user', 'info');
+                        if (req.status === 'friends') {
+                            alertSystem.show('You are already friends', 'info');
                             return;
                         }
                     }
 
-                    // Check if user received a request (is receiver) and it's pending
-                    if (existingRequest.receiver_id === senderId && existingRequest.status === 'pending') {
-                        // ACCEPT THE REQUEST
+                    /* -----------------------------------------
+                       ACCEPT REQUEST
+                    ----------------------------------------- */
+                    if (req.receiver_id === senderId && req.status === 'pending') {
+                        // Update request
                         const { error: updateError } = await supabaseClient
                             .from('friends-request')
                             .update({
                                 status: 'friends',
                                 responded_at: new Date().toISOString()
                             })
-                            .eq('id', existingRequest.id);
+                            .eq('id', req.id);
 
                         if (updateError) throw updateError;
 
+                        /* -----------------------------------------
+                           FETCH BOTH PROFILES CORRECTLY
+                        ----------------------------------------- */
+                        // First, let's check what's in the profile table
+                        console.log('Fetching profiles for:', {
+                            sender_id: req.sender_id,
+                            receiver_id: req.receiver_id
+                        });
+
+                        // Try to fetch both profiles using 'id' column (most common)
+                        const { data: profiles, error: profileError } = await supabaseClient
+                            .from('profile')
+                            .select('id, name, avatar_url')
+                            .in('id', [req.sender_id, req.receiver_id]);
+
+                        console.log('Profiles found:', profiles);
+
+                        if (profileError) {
+                            console.error('Profile fetch error:', profileError);
+                            // Continue with default values
+                        }
+
+                        let senderProfile = {
+                            id: req.sender_id,
+                            name: 'User',
+                            avatar_url: '../images/defaultAvatar.jpg'
+                        };
+                        let receiverProfile = {
+                            id: req.receiver_id,
+                            name: 'User',
+                            avatar_url: '../images/defaultAvatar.jpg'
+                        };
+
+                        // If profiles were found, assign them
+                        if (profiles && profiles.length > 0) {
+                            profiles.forEach(profile => {
+                                if (profile.id === req.sender_id) {
+                                    senderProfile = {
+                                        id: profile.id,
+                                        name: profile.name || 'User',
+                                        avatar_url: profile.avatar_url || '../images/defaultAvatar.jpg'
+                                    };
+                                }
+                                if (profile.id === req.receiver_id) {
+                                    receiverProfile = {
+                                        id: profile.id,
+                                        name: profile.name || 'User',
+                                        avatar_url: profile.avatar_url || '../images/defaultAvatar.jpg'
+                                    };
+                                }
+                            });
+                        }
+
+                        // If names are still 'User', try to get from auth metadata
+                        if (senderProfile.name === 'User') {
+                            try {
+                                // Try to get from posts or other tables
+                                const { data: userPost } = await supabaseClient
+                                    .from('posts')
+                                    .select('user_name')
+                                    .eq('user_id', req.sender_id)
+                                    .limit(1)
+                                    .maybeSingle();
+
+                                if (userPost?.user_name) {
+                                    senderProfile.name = userPost.user_name;
+                                }
+                            } catch (err) {
+                                console.warn('Could not get sender name from posts:', err);
+                            }
+                        }
+
+                        if (receiverProfile.name === 'User') {
+                            try {
+                                // Try to get from posts or other tables
+                                const { data: userPost } = await supabaseClient
+                                    .from('posts')
+                                    .select('user_name')
+                                    .eq('user_id', req.receiver_id)
+                                    .limit(1)
+                                    .maybeSingle();
+
+                                if (userPost?.user_name) {
+                                    receiverProfile.name = userPost.user_name;
+                                }
+                            } catch (err) {
+                                console.warn('Could not get receiver name from posts:', err);
+                            }
+                        }
+
+                        console.log('Final profiles to insert:', {
+                            senderProfile,
+                            receiverProfile
+                        });
+
+                        /* -----------------------------------------
+                           INSERT FRIENDS (BIDIRECTIONAL)
+                        ----------------------------------------- */
                         const { error: friendsError } = await supabaseClient
                             .from('friends')
-                            .insert({
-                                user_id: existingRequest.sender_id,
-                                friends_id: existingRequest.receiver_id,
-                                friendReq_id: existingRequest.id
-                            });
+                            .insert([
+                                {
+                                    user_id: req.sender_id,
+                                    friends_id: req.receiver_id,
+                                    friendReq_id: req.id
+                                },
+                                {
+                                    user_id: req.receiver_id,
+                                    friends_id: req.sender_id,
+                                    friendReq_id: req.id
+                                }
+                            ]);
 
                         if (friendsError) throw friendsError;
 
-                        // Update UI immediately
+                        /* -----------------------------------------
+                           INSERT MESSAGES (WITH NAME & AVATAR)
+                        ----------------------------------------- */
+                        try {
+                            const { error: messageError } = await supabaseClient
+                                .from('message')
+                                .insert([
+                                    {
+                                        user_id: req.sender_id,
+                                        friends_id: req.receiver_id,
+                                        friend_name: receiverProfile.name,
+                                        friend_avatar: receiverProfile.avatar_url
+                                    },
+                                    {
+                                        user_id: req.receiver_id,
+                                        friends_id: req.sender_id,
+                                        friend_name: senderProfile.name,
+                                        friend_avatar: senderProfile.avatar_url
+                                    }
+                                ]);
+
+                            if (messageError) {
+                                console.error('Message insert error:', messageError);
+                                // Check if it's a duplicate error
+                                if (messageError.code === '23505') { // Unique violation
+                                    console.log('Message entries already exist, skipping...');
+                                } else {
+                                    throw messageError;
+                                }
+                            } else {
+                                console.log('Message entries created successfully');
+                            }
+                        } catch (messageErr) {
+                            console.error('Failed to create message entries:', messageErr);
+                            // Don't block the friend acceptance if message fails
+                        }
+
+                        /* -----------------------------------------
+                           UI UPDATE
+                        ----------------------------------------- */
                         btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                         btn.disabled = true;
                         btn.classList.remove('bg-green-500', 'hover:bg-green-600');
@@ -441,17 +591,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return;
                     }
 
-                    // If they're already friends
-                    if (existingRequest.status === 'friends') {
-                        alertSystem.show('You are already friends with this user', 'info');
+                    if (req.status === 'friends') {
+                        alertSystem.show('You are already friends', 'info');
                         return;
                     }
                 }
 
-                // No existing request or status is null/undefined - Send new request
-                if ((!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
-                    (!existingRequests || existingRequests.length === 0)) {
-
+                /* -----------------------------------------
+                   SEND NEW REQUEST
+                ----------------------------------------- */
+                if (
+                    (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
+                    (!existingRequests || existingRequests.length === 0)
+                ) {
                     const { error: insertError } = await supabaseClient
                         .from('friends-request')
                         .insert({
@@ -462,7 +614,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (insertError) throw insertError;
 
-                    // Update UI immediately
                     btn.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i><span>Requested</span>`;
                     btn.disabled = true;
                     btn.classList.remove('bg-primary', 'hover:bg-blue-500');
@@ -479,7 +630,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
     // =======================
     // REALTIME: FRIEND REQUESTS
     // =======================
@@ -609,7 +759,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         alertSystem.show("Post created successfully!", 'success');
     });
-
 
     // =======================
     // FETCH & RENDER ALL POSTS
