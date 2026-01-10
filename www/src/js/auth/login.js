@@ -1,7 +1,7 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
     const loginEmailInput = document.getElementById('loginEmail');
@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
 
         try {
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: loginEmail,
                 password: loginPassword
@@ -94,7 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+
+            const { data: userData } = await supabaseClient.auth.getUser();
+            const userId = userData?.user?.id;
+            const userName = userData?.user.user_metadata.display_name || "User";
+
+            const { error: upsertError } = await supabaseClient
+                .from('profile')
+                .upsert({
+                    id: userId,
+                    name: userName
+                });
+            if (upsertError) {
+                return alertSystem.show('Failed to update profile', 'error');
+            }
+
             alertSystem.show('Login successful', 'success', 1500);
+
 
             setTimeout(() => {
                 window.location.href = 'src/html/profile.html';
