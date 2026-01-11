@@ -39,6 +39,15 @@ body{
     font-family: var(--main-font);
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari */
+}
+
 .modal {
     transition: all 0.3s ease;
 }
