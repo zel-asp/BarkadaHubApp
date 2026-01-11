@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 /* -----------------------------------------
-                   AUTH USER
+                AUTH USER
                 ----------------------------------------- */
                 const { data: userData, error: authError } = await supabaseClient.auth.getUser();
                 if (authError) throw authError;
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!senderId) throw new Error('User not logged in');
 
                 /* -----------------------------------------
-                   CHECK EXISTING REQUEST
+                CHECK EXISTING REQUEST
                 ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
                     .from('friends-request')
@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     /* -----------------------------------------
-                       ACCEPT REQUEST
+                    ACCEPT REQUEST
                     ----------------------------------------- */
                     if (req.receiver_id === senderId && req.status === 'pending') {
                         // Update request
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (updateError) throw updateError;
 
                         /* -----------------------------------------
-                           FETCH BOTH PROFILES CORRECTLY
+                        FETCH BOTH PROFILES CORRECTLY
                         ----------------------------------------- */
                         // First, let's check what's in the profile table
                         console.log('Fetching profiles for:', {
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         /* -----------------------------------------
-                           INSERT FRIENDS (BIDIRECTIONAL)
+                        INSERT FRIENDS (BIDIRECTIONAL)
                         ----------------------------------------- */
                         const { error: friendsError } = await supabaseClient
                             .from('friends')
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (friendsError) throw friendsError;
 
                         /* -----------------------------------------
-                           INSERT MESSAGES (WITH NAME & AVATAR)
+                        INSERT MESSAGES (WITH NAME & AVATAR)
                         ----------------------------------------- */
                         try {
                             const { error: messageError } = await supabaseClient
@@ -551,13 +551,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         user_id: req.sender_id,
                                         friends_id: req.receiver_id,
                                         friend_name: receiverProfile.name,
-                                        friend_avatar: receiverProfile.avatar_url
+                                        friend_avatar: receiverProfile.avatar_url,
+                                        relation: 'friend'
                                     },
                                     {
                                         user_id: req.receiver_id,
                                         friends_id: req.sender_id,
                                         friend_name: senderProfile.name,
-                                        friend_avatar: senderProfile.avatar_url
+                                        friend_avatar: senderProfile.avatar_url,
+                                        relation: 'friend'
                                     }
                                 ]);
 

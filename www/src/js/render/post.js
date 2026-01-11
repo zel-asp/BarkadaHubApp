@@ -129,7 +129,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
 }
 
 
-export function lost_found(img, type, item, description, location, datePosted, postOwner = false, userId = 1, filePath = null, postId = 1) {
+export function lost_found(img, type, item, description, location, datePosted, postOwner = false, userId = 1, filePath = null, postId = 1, messageAdded = false) {
     return `
 <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" >
     <div class="h-56 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50 p-2 relative group">
@@ -166,23 +166,29 @@ export function lost_found(img, type, item, description, location, datePosted, p
             <!-- Owner buttons -->
             <div class="flex gap-3">
                 <button
-                    class="delete-btn flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]" data-post-id= "${postId}" data-file-path="${filePath}">
+                    class="delete-btn flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]"
+                    data-post-id="${postId}"
+                    data-file-path="${filePath}">
                     Delete
                 </button>
             </div>
             `
             : `
-            <!-- Regular user button - Message for all posts -->
-            <a href="./directMessage.html">
+            <!-- Regular user button -->
+            <a href="messages.html">
                 <button
-                    class="message-btn w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
-                    data-user-id=${userId}>
-                    <i class="fas fa-comment"></i>
-                    Message
+                    class="message-btn w-full ${messageAdded ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} 
+                    text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] 
+                    flex items-center justify-center gap-2"
+                    data-user-id="${userId}"
+                    data-message-added="${messageAdded}">
+                    <i class="fas ${messageAdded ? 'fa-comments' : 'fa-comment'}"></i>
+                    ${messageAdded ? 'Go to Message' : 'Message'}
                 </button>
             </a>
-            `
+        `
         }
+
     </div>
 </div>
 `

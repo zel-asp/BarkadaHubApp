@@ -336,13 +336,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                // Join club
                 try {
                     const { data, error } = await supabaseClient
                         .from('club_members')
                         .insert([{ club_id: clubId, user_id: user.id }])
                         .select();
 
+                    // Fetch club info
+                    const { data: clubData, error: clubError } = await supabaseClient
+                        .from('clubs')
+                        .select('club_name, club_image')
+                        .eq('id', clubId)
+                        .single();
+
+                    if (clubError) throw clubError;
+
+                    // Insert into message table
+                    const { error: messageError } = await supabaseClient
+                        .from('message')
+                        .insert({
+                            user_id: user.id,
+                            friends_id: clubId,
+                            friend_name: clubData.club_name,
+                            friend_avatar: clubData.club_image,
+                            relation: 'club'
+                        });
+
+                    if (messageError) throw messageError;
                     if (error) throw error;
 
                     // Refresh clubs to reflect Enter button & disable others

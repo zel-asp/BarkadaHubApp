@@ -136,6 +136,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             year: 'numeric'
         });
 
+        let messageAdded = false;
+
+        if (item.auth_id !== userId) {
+            const { data: existingMessage } = await supabaseClient
+                .from('message')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('friends_id', item.auth_id)
+                .maybeSingle();
+
+            messageAdded = !!existingMessage;
+        }
+
 
         const postHtml = lost_found(
             fileUrl,
@@ -147,7 +160,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.auth_id === userId,
             item.auth_id,
             item.file_name,
-            item.id
+            item.id,
+            messageAdded
         );
 
         if (prepend) {
@@ -215,6 +229,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         alertSystem.show('Post deleted successfully', 'success');
     }
 
+    document.addEventListener('click', async (e) => {
+        const msgBtn = e.target.closest('.message-btn');
+        if (!msgBtn) return;
+
+        const friendId = msgBtn.dataset.userId;
+        const messageAdded = msgBtn.dataset.messageAdded === 'true';
+
+        // If already has message → just go
+        if (messageAdded) {
+            window.location.href = `./directMessage.html?user=${friendId}`;
+            return;
+        }
+
+        // First time message
+        e.preventDefault();
+
+        try {
+            await addToMessageTable(friendId);
+
+            msgBtn.dataset.messageAdded = 'true';
+            msgBtn.innerHTML = `
+            <i class="fas fa-comments"></i>
+            Go to Message
+        `;
+            msgBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            msgBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+
+            window.location.href = `./directMessage.html?user=${friendId}`;
+
+        } catch (err) {
+            console.error(err.message);
+        }
+    });
+
+
+    async function addToMessageTable(friendId) {
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const myUserId = userData.user.id;
+
+        const { data: profile } = await supabaseClient
+            .from('profile')
+            .select('name, avatar_url')
+            .eq('id', friendId)
+            .maybeSingle();
+
+        let friendName = 'User';
+        let friendAvatar = '../images/defaultAvatar.jpg';
+
+        if (profile) {
+            friendName = profile.name || friendName;
+            friendAvatar = profile.avatar_url || friendAvatar;
+        } else {
+            const { data: postData } = await supabaseClient
+                .from('lost_found')
+                .select('item_name')
+                .eq('auth_id', friendId)
+                .limit(1)
+                .maybeSingle();
+        }
+
+        // Insert into message table
+        const { error } = await supabaseClient
+            .from('message')
+            .insert({
+                user_id: myUserId,
+                friends_id: friendId,
+                friend_name: friendName,
+                friend_avatar: friendAvatar,
+                relation: 'other'
+            });
+
+        // Ignore duplicate inbox entry
+        if (error && error.code !== '23505') {
+            console.error(error);
+            throw new Error('Failed to create message entry');
+        }
+    }
 
     /* ------------------------------
     INITIAL LOAD
