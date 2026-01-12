@@ -28,12 +28,12 @@ export default function HeaderComponent() {
                 <div class="relative cursor-pointer">
                     <a href="./notification.html" class="block relative">
                         <i class="fas fa-bell text-primary text-xl"></i>
-                        <span
+                        <span id="notificationBadge"
                             class="absolute -top-2 -right-1
                                 text-[10px] rounded-full w-4 h-4
                                 flex items-center justify-center
-                                font-extrabold text-white bg-red-500">
-                            3
+                                font-extrabold text-white bg-red-500" hidden>
+                            
                         </span>
                     </a>
                 </div>
