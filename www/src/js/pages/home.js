@@ -982,6 +982,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     avatar: avatar
                 });
 
+            console.log('Commenting on postId:', currentPostId, typeof currentPostId);
+
             if (insertError) {
                 console.error(insertError);
                 return alertSystem.show('Failed to post comment.', 'error');
