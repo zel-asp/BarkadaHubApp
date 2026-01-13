@@ -163,7 +163,7 @@ export function joinedClubHeaderTemplate(imageUrl, name, description, members = 
             <!-- Main CTA Button - Enhanced with glow effect -->
             <div class="relative">
                 <div class="absolute -inset-4 bg-linear-to-r from-blue-500/30 via-indigo-500/30 to-blue-500/30 blur-2xl opacity-60 animate-pulse"></div>
-                <a href="#clubMessages" id="goToMessagesBtnAlt"
+                <a href="./messages.html" id="goToMessagesBtnAlt"
                     class="relative inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl bg-linear-to-r from-blue-600 via-indigo-500 to-blue-600 hover:from-blue-700 hover:via-indigo-600 hover:to-blue-700 text-white font-semibold tracking-wide transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl hover:shadow-3xl hover:shadow-blue-500/40 border border-white/30 group animate-linear-x bg-size[200%_auto] backdrop-blur-sm"
                     style="background-size: 200% auto;">
                     <div class="relative">
