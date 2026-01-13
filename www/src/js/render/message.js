@@ -79,6 +79,16 @@ export default function messageItem({
     `;
 }
 
+export function createEmptyMessageState() {
+    return `
+        <div class="flex flex-col items-center justify-center h-screen text-white">
+            <i class="fas fa-comment-alt text-6xl mb-4 opacity-50"></i>
+            <h3 class="text-xl font-bold mb-2">No Messages Yet</h3>
+            <p class="text-gray-500 mb-6 font-bold">Start a conversation!</p>
+        </div>
+    `;
+}
+
 function clubAvatar(onlineCount) {
     return `
         <div class="relative w-14 h-14 rounded-xl overflow-hidden border-2 border-white shadow-md">

@@ -1,7 +1,7 @@
 import supabaseClient from '../supabase.js';
 import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
-import messageItem from '../render/message.js';
+import messageItem, { createEmptyMessageState } from '../render/message.js';
 
 document.addEventListener("DOMContentLoaded", () => {
     const backIcon = document.getElementById("backIcon");
@@ -17,18 +17,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const clubMessage = document.getElementById('club-message');
     const friendsMessage = document.getElementById('friends-message');
+    const messageContainer = document.getElementById('messagesContainer');
 
-    clubMessage.innerHTML = messageItem({
-        relation: 'club',
-        name: 'IT Club',
-        members: 45,
-        badgeText: 'Club',
-        timestamp: 'Active',
-        onlineCount: 12
-    });
+    async function render() {
+        const { data: message } = await supabaseClient
+            .from('message')
+            .select('*')
+            .eq('relation', 'friend')
 
+        if (!message || message.length < 1) {
+            friendsMessage.innerHTML = createEmptyMessageState();
+        }
 
+        message.map(mes => {
+            friendsMessage.innerHTML = messageItem({
+                relation: mes.relation,
+                name: mes.friend_name,
+                avatar: mes.friend_avatar,
+                timestamp: mes.created_at,
+            });
+        })
 
+    }
 
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE

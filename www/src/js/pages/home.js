@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentUserId === postUserId) return null;
 
         const { data, error } = await supabaseClient
-            .from('friends-request')
+            .from('friends_request')
             .select('sender_id, receiver_id, status')
             .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${postUserId}),and(sender_id.eq.${postUserId},receiver_id.eq.${currentUserId})`);
 
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 CHECK EXISTING REQUEST
                 ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
-                    .from('friends-request')
+                    .from('friends_request')
                     .select('id, status, sender_id, receiver_id')
                     .or(`and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`);
 
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (req.receiver_id === senderId && req.status === 'pending') {
                         // Update request
                         const { error: updateError } = await supabaseClient
-                            .from('friends-request')
+                            .from('friends_request')
                             .update({
                                 status: 'friends',
                                 responded_at: new Date().toISOString()
@@ -538,6 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 }
                             ]);
 
+
                         if (friendsError) throw friendsError;
 
                         /* -----------------------------------------
@@ -552,14 +553,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         friends_id: req.receiver_id,
                                         friend_name: receiverProfile.name,
                                         friend_avatar: receiverProfile.avatar_url,
-                                        relation: 'friend'
+                                        relation: 'friend',
+                                        friendRequest_id: req.id
                                     },
                                     {
                                         user_id: req.receiver_id,
                                         friends_id: req.sender_id,
                                         friend_name: senderProfile.name,
                                         friend_avatar: senderProfile.avatar_url,
-                                        relation: 'friend'
+                                        relation: 'friend',
+                                        friendRequest_id: req.id
                                     }
                                 ]);
 
@@ -607,7 +610,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     (!existingRequests || existingRequests.length === 0)
                 ) {
                     const { error: insertError } = await supabaseClient
-                        .from('friends-request')
+                        .from('friends_request')
                         .insert({
                             sender_id: senderId,
                             receiver_id: receiverId,
@@ -643,7 +646,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {
                     event: '*',
                     schema: 'public',
-                    table: 'friends-request'
+                    table: 'friends_request'
                 },
                 (payload) => {
                     const row = payload.new || payload.old;

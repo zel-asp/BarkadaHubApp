@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 video_url: videoUrl,
                 file_path: filePath,
                 caption,
-                auth_id: userData.user.id,
+                user_id: userData.user.id,
                 auth_name: userData.user.user_metadata?.display_name || 'Anonymous'
             }]);
 
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentUserId === videoUserId) return null;
 
         const { data, error } = await supabaseClient
-            .from('friends-request')
+            .from('friends_request')
             .select('sender_id, receiver_id, status')
             .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${videoUserId}),and(sender_id.eq.${videoUserId},receiver_id.eq.${currentUserId})`);
 
@@ -208,16 +208,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const receiverId = btn.dataset.userPostId;
             const currentStatus = btn.dataset.status;
-            const username = btn.dataset.user;
 
             try {
-                const { data: userData } = await supabaseClient.auth.getUser();
+                /* -----------------------------------------
+                AUTH USER
+                ----------------------------------------- */
+                const { data: userData, error: authError } = await supabaseClient.auth.getUser();
+                if (authError) throw authError;
+
                 const senderId = userData?.user?.id;
                 if (!senderId) throw new Error('User not logged in');
 
-                // Fetch existing friend requests
+                /* -----------------------------------------
+                CHECK EXISTING REQUEST
+                ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
-                    .from('friends-request')
+                    .from('friends_request')
                     .select('id, status, sender_id, receiver_id')
                     .or(
                         `and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`
@@ -225,27 +231,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (fetchError) throw fetchError;
 
-                // If there are existing requests
+                /* -----------------------------------------
+                IF REQUEST EXISTS
+                ----------------------------------------- */
                 if (existingRequests && existingRequests.length > 0) {
                     const existingRequest = existingRequests[0];
 
-                    // Check if user already sent a request (is sender)
+                    // Sender already sent request
                     if (existingRequest.sender_id === senderId) {
                         if (existingRequest.status === 'pending') {
-                            alertSystem.show('You already sent a follow request to this user', 'info');
+                            alertSystem.show('You already sent a follow request', 'info');
                             return;
                         }
                         if (existingRequest.status === 'friends') {
-                            alertSystem.show('You are already friends with this user', 'info');
+                            alertSystem.show('You are already friends', 'info');
                             return;
                         }
                     }
 
-                    // Check if user received a request (is receiver) and it's pending
-                    if (existingRequest.receiver_id === senderId && existingRequest.status === 'pending') {
-                        // ACCEPT THE REQUEST
+                    /* -----------------------------------------
+                    ACCEPT REQUEST
+                    ----------------------------------------- */
+                    if (
+                        existingRequest.receiver_id === senderId &&
+                        existingRequest.status === 'pending'
+                    ) {
+                        // Update request status
                         const { error: updateError } = await supabaseClient
-                            .from('friends-request')
+                            .from('friends_request')
                             .update({
                                 status: 'friends',
                                 responded_at: new Date().toISOString()
@@ -254,35 +267,101 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (updateError) throw updateError;
 
+                        /* -----------------------------------------
+                        INSERT FRIENDS (BIDIRECTIONAL)
+                        ----------------------------------------- */
                         const { error: friendsError } = await supabaseClient
                             .from('friends')
-                            .insert({
-                                user_id: existingRequest.sender_id,
-                                friends_id: existingRequest.receiver_id,
-                                friendReq_id: existingRequest.id
-                            });
+                            .insert([
+                                {
+                                    user_id: existingRequest.sender_id,
+                                    friends_id: existingRequest.receiver_id,
+                                    friendReq_id: existingRequest.id
+                                },
+                                {
+                                    user_id: existingRequest.receiver_id,
+                                    friends_id: existingRequest.sender_id,
+                                    friendReq_id: existingRequest.id
+                                }
+                            ]);
 
                         if (friendsError) throw friendsError;
 
-                        // Update UI immediately
+                        /* -----------------------------------------
+                        FETCH BOTH PROFILES
+                        ----------------------------------------- */
+                        const { data: profiles, error: profileError } = await supabaseClient
+                            .from('profile')
+                            .select('id, name, avatar_url')
+                            .in('id', [
+                                existingRequest.sender_id,
+                                existingRequest.receiver_id
+                            ]);
+
+                        if (profileError) throw profileError;
+
+                        /* -----------------------------------------
+                        BUILD PROFILE MAP
+                        ----------------------------------------- */
+                        const profileMap = {};
+                        profiles.forEach(p => {
+                            profileMap[p.id] = {
+                                name: p.name || 'User',
+                                avatar: p.avatar_url || '../images/defaultAvatar.jpg'
+                            };
+                        });
+
+                        /* -----------------------------------------
+                        INSERT MESSAGES (BIDIRECTIONAL)
+                        ----------------------------------------- */
+                        const { error: messageError } = await supabaseClient
+                            .from('message')
+                            .insert([
+                                {
+                                    user_id: existingRequest.sender_id,
+                                    friends_id: existingRequest.receiver_id,
+                                    friend_name: profileMap[existingRequest.receiver_id].name,
+                                    friend_avatar: profileMap[existingRequest.receiver_id].avatar,
+                                    relation: 'friend',
+                                    friendRequest_id: existingRequest.id
+                                },
+                                {
+                                    user_id: existingRequest.receiver_id,
+                                    friends_id: existingRequest.sender_id,
+                                    friend_name: profileMap[existingRequest.sender_id].name,
+                                    friend_avatar: profileMap[existingRequest.sender_id].avatar,
+                                    relation: 'friend',
+                                    friendRequest_id: existingRequest.id
+                                }
+                            ]);
+
+                        if (messageError && messageError.code !== '23505') {
+                            throw messageError;
+                        }
+
+                        /* -----------------------------------------
+                        UI UPDATE
+                        ----------------------------------------- */
                         updateFollowButtonUI(btn, 'friends');
                         alertSystem.show('Friend request accepted!', 'success');
                         return;
                     }
 
-                    // If they're already friends
                     if (existingRequest.status === 'friends') {
-                        alertSystem.show('You are already friends with this user', 'info');
+                        alertSystem.show('You are already friends', 'info');
                         return;
                     }
                 }
 
-                // No existing request or status is null/undefined - Send new request
-                if ((!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
-                    (!existingRequests || existingRequests.length === 0)) {
-
+                /* -----------------------------------------
+                SEND NEW REQUEST
+                ----------------------------------------- */
+                if (
+                    (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
+                    (!existingRequests || existingRequests.length === 0)
+                ) {
                     const { error: insertError } = await supabaseClient
-                        .from('friends-request')
+                        .from('friends_request')
                         .insert({
                             sender_id: senderId,
                             receiver_id: receiverId,
@@ -291,7 +370,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (insertError) throw insertError;
 
-                    // Update UI immediately
                     updateFollowButtonUI(btn, 'pending');
                     alertSystem.show('Follow request sent!', 'success');
                 }
@@ -302,6 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
 
     function updateFollowButtonUI(btn, status) {
         const container = btn.querySelector('.relative > div:last-child');
@@ -339,7 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {
                     event: '*',
                     schema: 'public',
-                    table: 'friends-request'
+                    table: 'friends_request'
                 },
                 (payload) => {
                     const row = payload.new || payload.old;
@@ -390,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             selectedPostId = btn.dataset.id;
 
-            // ✅ reset button state every time
+
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete permanently';
 
@@ -520,8 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function likeVideo(videoId, userId) {
         const { error } = await supabaseClient
             .from('video_likes')
-            .insert({ video_id: videoId, user_id: userId });
-
+            .insert({ video_id: Number(videoId), user_id: userId });
         if (error) throw error;
     }
 
@@ -529,9 +607,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { error } = await supabaseClient
             .from('video_likes')
             .delete()
-            .eq('video_id', videoId)
+            .eq('video_id', Number(videoId))
             .eq('user_id', userId);
-
         if (error) throw error;
     }
 
@@ -541,7 +618,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await supabaseClient
             .from('video_likes')
             .select('id')
-            .eq('video_id', videoId)
+            .eq('video_id', Number(videoId))
             .eq('user_id', userId)
             .maybeSingle();
 
@@ -558,7 +635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const btn = e.target.closest('.likeBtn');
             if (!btn) return;
 
-            const videoId = btn.dataset.videoId;
+            const videoId = parseInt(btn.dataset.videoId, 10);
             const isLiked = btn.dataset.liked === 'true';
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
@@ -633,7 +710,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Get friend status and like data for each video
         const videosWithData = await Promise.all(
             videos.map(async video => {
-                const friendStatus = await getFriendStatus(userId, video.auth_id);
+                const friendStatus = await getFriendStatus(userId, video.user_id);
 
                 // Fetch like count
                 const { count: likeCount } = await supabaseClient
@@ -654,13 +731,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
         videoContainer.innerHTML = videosWithData.map(video => {
-            const postOwner = userId === video.auth_id;
+            const postOwner = userId === video.user_id;
 
             return createVideoItem(
                 video.video_url,
                 video.avatar_url || '../images/image.png',
                 video.auth_name,
-                video.auth_id,
+                video.user_id,
                 video.caption,
                 video.id,
                 video.likeCount,
