@@ -1,7 +1,6 @@
 import supabaseClient from '../supabase.js';
-import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
-import messageItem, { createEmptyMessageState } from '../render/message.js';
+import messageItem, { createEmptyMessageState, directMessage } from '../render/message.js';
 
 document.addEventListener("DOMContentLoaded", () => {
     const backIcon = document.getElementById("backIcon");
@@ -19,10 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const friendsMessage = document.getElementById('friends-message');
     const lostMessage = document.getElementById('lost-message');
     const messageContainer = document.getElementById('messagesContainer');
+    const app = document.getElementById('app');
 
     async function render() {
         /* -----------------------------------------
-           AUTH USER
+        AUTH USER
         ----------------------------------------- */
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError) {
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!userId) return;
 
         /* -----------------------------------------
-           FETCH ALL MESSAGES FOR USER
+        FETCH ALL USER MESSAGES
         ----------------------------------------- */
         const { data: messages, error } = await supabaseClient
             .from('message')
@@ -53,20 +53,50 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /* -----------------------------------------
-           SPLIT MESSAGES BY RELATION
+        SPLIT BY RELATION
         ----------------------------------------- */
         const friendMessages = messages.filter(m => m.relation === 'friend');
         const clubMessages = messages.filter(m => m.relation === 'club');
-        const lostFoundMessages = messages.filter(m => m.relation === 'other');
+        const lostFoundMessages = messages.filter(m => m.relation === 'lost & found');
 
         /* -----------------------------------------
-           HELPER: FORMAT TIMESTAMP
+        CLUB MEMBER COUNTS
         ----------------------------------------- */
-        const formatTime = (dateStr) =>
-            new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const membersCountMap = {};
+
+        const clubIds = [
+            ...new Set(
+                clubMessages
+                    .map(m => m.friends_id)
+                    .filter(Boolean)
+            )
+        ];
+
+        for (const clubId of clubIds) {
+            const { count, error: countError } = await supabaseClient
+                .from('club_members')
+                .select('user_id', { count: 'exact', head: true })
+                .eq('club_id', clubId);
+
+            if (countError) {
+                console.error('Club count error:', countError);
+                membersCountMap[clubId] = 0;
+            } else {
+                membersCountMap[clubId] = count || 0;
+            }
+        }
 
         /* -----------------------------------------
-           RENDER MESSAGES
+        HELPER
+        ----------------------------------------- */
+        const formatTime = date =>
+            new Date(date).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+        /* -----------------------------------------
+        RENDER FRIENDS
         ----------------------------------------- */
         friendsMessage.innerHTML = friendMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -74,31 +104,88 @@ document.addEventListener("DOMContentLoaded", () => {
             avatar: mes.friend_avatar,
             timestamp: formatTime(mes.created_at),
             badgeText: mes.relation,
-            subtitle: 'Tap to chat'
-        })).join('')
+            subtitle: 'Tap to chat',
+            conversationId: mes.conversation_id,
+            firendId: mes.friends_id
+        })).join('');
 
-
+        /* -----------------------------------------
+        RENDER CLUBS
+        ----------------------------------------- */
         clubMessage.innerHTML = clubMessages.map(mes => messageItem({
             relation: mes.relation,
             name: mes.friend_name,
             avatar: mes.friend_avatar,
             timestamp: formatTime(mes.created_at),
             badgeText: mes.relation,
-            subtitle: 'Tap to chat'
+            members: membersCountMap[mes.friends_id] || 0,
+            subtitle: 'Tap to chat',
+            conversationId: mes.conversation_id,
+            firendId: mes.friends_id
         })).join('');
 
-
+        /* -----------------------------------------
+        RENDER LOST & FOUND
+        ----------------------------------------- */
         lostMessage.innerHTML = lostFoundMessages.map(mes => messageItem({
             relation: mes.relation,
             name: mes.friend_name,
             avatar: mes.friend_avatar,
             timestamp: formatTime(mes.created_at),
             badgeText: mes.relation,
-            subtitle: 'Tap to chat'
+            subtitle: mes.latest_message || 'Tap to chat',
+            conversationId: mes.conversation_id,
+            firendId: mes.friends_id
         })).join('');
     }
-
     render();
+
+    document.addEventListener('click', async (e) => {
+        const selectedChat = e.target.closest('.selectedMessage');
+        if (!selectedChat) return;
+
+        const conversationId = selectedChat.dataset.conversationId;
+        const friendName = selectedChat.dataset.name;
+        const friendAvatar = selectedChat.dataset.avatar;
+        const relation = selectedChat.dataset.relation;
+
+        const directMessageContainer = document.getElementById('directMessage');
+        const directMessageModal = document.getElementById('directMessageModal');
+
+        app.classList.add('hidden');
+        directMessageModal.classList.remove('hidden');
+
+        const { data, error } = await supabaseClient
+            .from('chat_messages')
+            .select('*')
+            .eq('conversation_id', conversationId);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        // EMPTY CHAT
+        if (!data || data.length === 0) {
+            directMessageContainer.innerHTML =
+                directMessage(friendName, friendAvatar, relation);
+            return;
+        }
+
+        // WITH MESSAGES
+        const renderedMessages = data.map(msg => {
+            return `
+            <div class="text-sm text-gray-700">
+                ${msg.message}
+            </div>
+        `;
+        });
+
+        directMessageContainer.innerHTML =
+            directMessage(friendName, friendAvatar, relation, renderedMessages);
+    });
+
+
 
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
@@ -111,9 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewContainer = document.getElementById('previewContainer');
     const messagesContainer = document.getElementById('messagesContainer');
 
-    let currentMediaFile = null;   // Currently selected media file
-    let currentMediaType = null;   // 'image' or 'video'
-
+    let currentMediaFile = null;
+    let currentMediaType = null;
 
     /* -------------------------------------------
         CAMERA BUTTON HANDLER

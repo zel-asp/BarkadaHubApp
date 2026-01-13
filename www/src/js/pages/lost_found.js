@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         alertSystem.show("Report submitted successfully!", 'success');
         closeModal();
-        renderLostFoundSingle(insertedData[0], true); // Show immediately
+        renderLostFoundSingle(insertedData[0], true);
     });
 
     /* ------------------------------
@@ -146,9 +146,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('friends_id', item.auth_id)
                 .maybeSingle();
 
+            // ✅ Fix: true only if a message actually exists
             messageAdded = !!existingMessage;
         }
-
 
         const postHtml = lost_found(
             fileUrl,
@@ -164,12 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             messageAdded
         );
 
-        if (prepend) {
-            lostFoundContainer.insertAdjacentHTML("afterbegin", postHtml);
-        } else {
-            lostFoundContainer.insertAdjacentHTML("beforeend", postHtml);
-        }
-
+        lostFoundContainer.insertAdjacentHTML(prepend ? "afterbegin" : "beforeend", postHtml);
         displayedItemIds.add(item.id);
     }
 
@@ -234,11 +229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!msgBtn) return;
 
         const friendId = msgBtn.dataset.userId;
+        const postId = msgBtn.dataset.postId;
         const messageAdded = msgBtn.dataset.messageAdded === 'true';
 
         // If already has message → just go
         if (messageAdded) {
-            window.location.href = `./directMessage.html?user=${friendId}`;
+            window.location.href = `./messages.html`;
             return;
         }
 
@@ -246,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
 
         try {
-            await addToMessageTable(friendId);
+            await addToMessageTable(friendId, postId);
 
             msgBtn.dataset.messageAdded = 'true';
             msgBtn.innerHTML = `
@@ -256,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             msgBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             msgBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
 
-            window.location.href = `./directMessage.html?user=${friendId}`;
+            window.location.href = `./messages.html`;
 
         } catch (err) {
             console.error(err.message);
@@ -264,48 +260,99 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
 
-    async function addToMessageTable(friendId) {
-        const { data: userData } = await supabaseClient.auth.getUser();
-        const myUserId = userData.user.id;
-
-        const { data: profile } = await supabaseClient
-            .from('profile')
-            .select('name, avatar_url')
-            .eq('id', friendId)
-            .maybeSingle();
-
-        let friendName = 'User';
-        let friendAvatar = '../images/defaultAvatar.jpg';
-
-        if (profile) {
-            friendName = profile.name || friendName;
-            friendAvatar = profile.avatar_url || friendAvatar;
-        } else {
-            const { data: postData } = await supabaseClient
-                .from('lost_found')
-                .select('item_name')
-                .eq('auth_id', friendId)
-                .limit(1)
-                .maybeSingle();
+    async function addToMessageTable(friendId, postId) {
+        /* -----------------------------------------
+        AUTH USER
+        ----------------------------------------- */
+        const { data: userData, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !userData?.user) {
+            console.error('Auth error:', authError);
+            return;
         }
 
-        // Insert into message table
-        const { error } = await supabaseClient
-            .from('message')
-            .insert({
+        const myUserId = userData.user.id;
+        const myName = userData.user.user_metadata?.display_name || 'User';
+
+        /* -----------------------------------------
+        FETCH BOTH PROFILES IN ONE QUERY
+        ----------------------------------------- */
+        const { data: profiles, error: profileError } = await supabaseClient
+            .from('profile')
+            .select('id, name, avatar_url')
+            .in('id', [myUserId, friendId]);
+
+        if (profileError) {
+            console.warn('Profile fetch issue, using defaults');
+        }
+
+        const friendProfile = profiles?.find(p => p.id === friendId);
+        const myProfile = profiles?.find(p => p.id === myUserId);
+
+        const friendName = friendProfile?.name || 'User';
+        const friendAvatar = friendProfile?.avatar_url || '../images/defaultAvatar.jpg';
+        const myAvatar = myProfile?.avatar_url || '../images/defaultAvatar.jpg';
+
+        /* -----------------------------------------
+        GET LOST & FOUND POST
+        ----------------------------------------- */
+        const { data: lostFound, error: lostError } = await supabaseClient
+            .from('lost_found')
+            .select('item_name')
+            .eq('id', postId)
+            .maybeSingle();
+
+        if (lostError || !lostFound) {
+            console.error('Lost & Found post not found');
+            return;
+        }
+
+        const itemName = lostFound.item_name || 'an item';
+
+        const { data: conversation, error: convError } = await supabaseClient
+            .from('conversations')
+            .insert({ type: 'friend' })
+            .select('id')
+            .single();
+
+        if (convError) throw convError;
+        const conversationId = conversation.id;
+
+        /* -----------------------------------------
+        PREPARE MESSAGES
+        ----------------------------------------- */
+        const messages = [
+            {
                 user_id: myUserId,
                 friends_id: friendId,
                 friend_name: friendName,
                 friend_avatar: friendAvatar,
-                relation: 'other'
-            });
+                relation: 'lost & found',
+                latest_message: `Message about item '${itemName}'`,
+                conversation_id: conversationId
+            },
+            {
+                user_id: friendId,
+                friends_id: myUserId,
+                friend_name: myName,
+                friend_avatar: myAvatar,
+                relation: 'lost & found',
+                latest_message: `You have a message about item '${itemName}'`,
+                conversation_id: conversationId
+            }
+        ];
 
-        // Ignore duplicate inbox entry
-        if (error && error.code !== '23505') {
-            console.error(error);
-            throw new Error('Failed to create message entry');
+        /* -----------------------------------------
+        INSERT BOTH ROWS AT ONCE
+        ----------------------------------------- */
+        const { error: insertError } = await supabaseClient
+            .from('message')
+            .insert(messages);
+
+        if (insertError && insertError.code !== '23505') {
+            console.error('Message insert error:', insertError);
         }
     }
+
 
     /* ------------------------------
     INITIAL LOAD

@@ -541,6 +541,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (friendsError) throw friendsError;
 
+                        const { data: conversation, error: convError } = await supabaseClient
+                            .from('conversations')
+                            .insert({ type: 'friend' })
+                            .select('id')
+                            .single();
+
+                        if (convError) throw convError;
+
+                        const conversationId = conversation.id;
+
                         /* -----------------------------------------
                         INSERT MESSAGES (WITH NAME & AVATAR)
                         ----------------------------------------- */
@@ -554,7 +564,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         friend_name: receiverProfile.name,
                                         friend_avatar: receiverProfile.avatar_url,
                                         relation: 'friend',
-                                        friendRequest_id: req.id
+                                        friendRequest_id: req.id,
+                                        conversation_id: conversationId
                                     },
                                     {
                                         user_id: req.receiver_id,
@@ -562,7 +573,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         friend_name: senderProfile.name,
                                         friend_avatar: senderProfile.avatar_url,
                                         relation: 'friend',
-                                        friendRequest_id: req.id
+                                        friendRequest_id: req.id,
+                                        conversation_id: conversationId
                                     }
                                 ]);
 

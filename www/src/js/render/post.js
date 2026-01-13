@@ -50,7 +50,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
     }
 
     return `
-    <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}">
+    <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}" id='${postId}'>
         <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
@@ -181,7 +181,8 @@ export function lost_found(img, type, item, description, location, datePosted, p
                     text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] 
                     flex items-center justify-center gap-2"
                     data-user-id="${userId}"
-                    data-message-added="${messageAdded}">
+                    data-message-added="${messageAdded}"
+                    data-post-id="${postId}">
                     <i class="fas ${messageAdded ? 'fa-comments' : 'fa-comment'}"></i>
                     ${messageAdded ? 'Go to Message' : 'Message'}
                 </button>
