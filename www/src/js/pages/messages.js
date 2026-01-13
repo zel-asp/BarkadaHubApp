@@ -17,28 +17,88 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const clubMessage = document.getElementById('club-message');
     const friendsMessage = document.getElementById('friends-message');
+    const lostMessage = document.getElementById('lost-message');
     const messageContainer = document.getElementById('messagesContainer');
 
     async function render() {
-        const { data: message } = await supabaseClient
-            .from('message')
-            .select('*')
-            .eq('relation', 'friend')
-
-        if (!message || message.length < 1) {
-            friendsMessage.innerHTML = createEmptyMessageState();
+        /* -----------------------------------------
+           AUTH USER
+        ----------------------------------------- */
+        const { data: userData, error: authError } = await supabaseClient.auth.getUser();
+        if (authError) {
+            console.error(authError);
+            return;
         }
 
-        message.map(mes => {
-            friendsMessage.innerHTML = messageItem({
-                relation: mes.relation,
-                name: mes.friend_name,
-                avatar: mes.friend_avatar,
-                timestamp: mes.created_at,
-            });
-        })
+        const userId = userData?.user?.id;
+        if (!userId) return;
 
+        /* -----------------------------------------
+           FETCH ALL MESSAGES FOR USER
+        ----------------------------------------- */
+        const { data: messages, error } = await supabaseClient
+            .from('message')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        if (!messages || messages.length === 0) {
+            messageContainer.innerHTML = createEmptyMessageState();
+            return;
+        }
+
+        /* -----------------------------------------
+           SPLIT MESSAGES BY RELATION
+        ----------------------------------------- */
+        const friendMessages = messages.filter(m => m.relation === 'friend');
+        const clubMessages = messages.filter(m => m.relation === 'club');
+        const lostFoundMessages = messages.filter(m => m.relation === 'other');
+
+        /* -----------------------------------------
+           HELPER: FORMAT TIMESTAMP
+        ----------------------------------------- */
+        const formatTime = (dateStr) =>
+            new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        /* -----------------------------------------
+           RENDER MESSAGES
+        ----------------------------------------- */
+        friendsMessage.innerHTML = friendMessages.map(mes => messageItem({
+            relation: mes.relation,
+            name: mes.friend_name,
+            avatar: mes.friend_avatar,
+            timestamp: formatTime(mes.created_at),
+            badgeText: mes.relation,
+            subtitle: 'Tap to chat'
+        })).join('')
+
+
+        clubMessage.innerHTML = clubMessages.map(mes => messageItem({
+            relation: mes.relation,
+            name: mes.friend_name,
+            avatar: mes.friend_avatar,
+            timestamp: formatTime(mes.created_at),
+            badgeText: mes.relation,
+            subtitle: 'Tap to chat'
+        })).join('');
+
+
+        lostMessage.innerHTML = lostFoundMessages.map(mes => messageItem({
+            relation: mes.relation,
+            name: mes.friend_name,
+            avatar: mes.friend_avatar,
+            timestamp: formatTime(mes.created_at),
+            badgeText: mes.relation,
+            subtitle: 'Tap to chat'
+        })).join('');
     }
+
+    render();
 
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
