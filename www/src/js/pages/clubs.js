@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
     /* =====================================================
-       AUTHENTICATION
+    AUTHENTICATION
     ===================================================== */
     const { data: authData, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !authData?.user) {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userId = authData.user.id;
 
     /* =====================================================
-       ADMIN CHECK
+    ADMIN CHECK
     ===================================================== */
     const createClubBtn = document.getElementById("createClubBtn");
     const adminIds = [
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* =====================================================
-       MODAL
+    MODAL
     ===================================================== */
     const openModal = () => {
         if (!elements.modal) return;
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* =====================================================
-       IMAGE HANDLING
+    IMAGE HANDLING
     ===================================================== */
     const openFileDialog = () => elements.inputFile?.click();
     const resetImagePreview = () => {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* =====================================================
-       FORM SUBMISSION
+    FORM SUBMISSION
     ===================================================== */
     const uploadClubImage = async (userId, imageFile) => {
         const filePath = `clubs/${userId}-${Date.now()}-${imageFile.name}`;
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const setupForm = () => elements.form?.addEventListener("submit", handleFormSubmit);
 
     /* =====================================================
-       FETCH & RENDER CLUBS
+    FETCH & RENDER CLUBS
     ===================================================== */
     const getClubs = async () => {
         const { data: clubsData, error: clubsError } = await supabaseClient.from('clubs').select('*').order('created_at', { ascending: false });
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* =====================================================
-       JOIN CLUB BUTTONS
+    JOIN CLUB BUTTONS
     ===================================================== */
     const setupJoinClubButtons = async (joinedClubId) => {
         document.querySelectorAll('.join-btn').forEach(btn => {
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* =====================================================
-       INITIALIZE
+    INITIALIZE
     ===================================================== */
     setupModalEvents();
     setupImageEvents();
