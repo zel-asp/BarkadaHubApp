@@ -194,7 +194,7 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
 
 export function createEmptyMessageState() {
     return `
-        < div class="flex flex-col items-center justify-start py-10 px-4 text-center" >
+        <div class="flex flex-col items-center justify-start py-10 px-4 text-center">
             <div class="mb-2 p-6 rounded-full bg-gray-100">
                 <i class="fas fa-comment-alt text-5xl text-primary"></i>
             </div>
