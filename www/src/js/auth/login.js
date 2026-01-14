@@ -89,16 +89,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 password: loginPassword
             });
 
-            if (error) {
-                alertSystem.show(`Login failed: ${error.message}`, 'error');
-                console.error('Login error:', error.message);
-                return;
-            }
-
 
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
             const userName = userData?.user.user_metadata.display_name || "User";
+            const userEmail = userData?.user.user_metadata.email || "User";
+
+            await supabaseClient.from('user_activity').insert({
+                user_id: data.user.id,
+                action: 'login',
+                description: 'User login',
+                ip_address: window.location.hostname,
+                user_agent: navigator.userAgent,
+                user_name: userName,
+                user_email: userEmail
+            });
+
+
+            if (error) {
+                alertSystem.show(`Login failed: ${error.message}`, 'error');
+                return;
+            }
 
             const { error: upsertError } = await supabaseClient
                 .from('profile')
