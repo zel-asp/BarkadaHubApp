@@ -95,6 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 minute: '2-digit'
             });
 
+        const formatDate = date =>
+            new Date(date).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
         /* -----------------------------------------
         RENDER FRIENDS
         ----------------------------------------- */
@@ -106,7 +113,8 @@ document.addEventListener("DOMContentLoaded", () => {
             badgeText: mes.relation,
             subtitle: 'Tap to chat',
             conversationId: mes.conversation_id,
-            firendId: mes.friends_id
+            firendId: mes.friends_id,
+            formatDate: formatDate(mes.created_at)
         })).join('');
 
         /* -----------------------------------------
@@ -121,7 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
             members: membersCountMap[mes.friends_id] || 0,
             subtitle: 'Tap to chat',
             conversationId: mes.conversation_id,
-            firendId: mes.friends_id
+            firendId: mes.friends_id,
+            formatDate: formatDate(mes.created_at)
         })).join('');
 
 
@@ -137,7 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
             badgeText: mes.relation,
             subtitle: mes.latest_message || 'Tap to chat',
             conversationId: mes.conversation_id,
-            firendId: mes.friends_id
+            firendId: mes.friends_id,
+            formatDate: formatDate(mes.created_at)
         })).join('');
     }
     render();
@@ -150,6 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const friendName = selectedChat.dataset.name;
         const friendAvatar = selectedChat.dataset.avatar;
         const relation = selectedChat.dataset.relation;
+        const date = selectedChat.dataset.date;
+        const members = selectedChat.dataset.members;
 
         const directMessageContainer = document.getElementById('directMessage');
         const directMessageModal = document.getElementById('directMessageModal');
@@ -160,32 +172,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const { data, error } = await supabaseClient
             .from('chat_messages')
             .select('*')
-            .eq('conversation_id', conversationId);
+            .eq('conversation_id', conversationId)
+            .order('created_at', { ascending: true });
 
         if (error) {
             console.error(error);
             return;
         }
 
-        // EMPTY CHAT
-        if (!data || data.length === 0) {
-            directMessageContainer.innerHTML =
-                directMessage(friendName, friendAvatar, relation);
-            return;
-        }
+        const renderedMessages = (data || []).map(msg => `
+        <div class="text-sm text-gray-700">
+            ${msg.message}
+        </div>
+    `);
 
-        // WITH MESSAGES
-        const renderedMessages = data.map(msg => {
-            return `
-            <div class="text-sm text-gray-700">
-                ${msg.message}
-            </div>
-        `;
-        });
 
         directMessageContainer.innerHTML =
-            directMessage(friendName, friendAvatar, relation, renderedMessages);
+            directMessage(
+                friendName,
+                friendAvatar,
+                relation,
+                members,
+                date,
+                renderedMessages
+            );
     });
+
 
 
 

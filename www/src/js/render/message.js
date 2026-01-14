@@ -9,12 +9,13 @@ export default function messageItem({
     onlineCount = 0,
     conversationId,
     firendId,
+    formatDate
 }) {
 
     const isClub = relation === 'club';
     return `
         <div class='selectedMessage' data-conversation-id='${conversationId}' data-reference-id='${firendId}'
-            data-name='${name}' data-avatar='${avatar}' data-relation='${relation}'>
+            data-name='${name}' data-avatar='${avatar}' data-relation='${relation}' data-date='${formatDate}' data-members='${members}'>
             <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200 rounded-full mb-2 border border-gray-100 hover:shadow-md
                         ${isClub
             ? 'hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 hover:border-green-200'
@@ -77,6 +78,7 @@ export default function messageItem({
         </div>
 `;
 }
+
 function clubAvatar(onlineCount, avatar) {
 
     const hasAvatar = avatar && avatar.trim() !== '';
@@ -118,7 +120,6 @@ function clubAvatar(onlineCount, avatar) {
     `;
 }
 
-
 function friendAvatar(src) {
     return `
         <div class="relative">
@@ -128,7 +129,9 @@ function friendAvatar(src) {
     `;
 }
 
-export function directMessage(name, avatar, type = 'friend', content = []) {
+export function directMessage(name, avatar, relation = 'friend', members = '', formatDate, content = []) {
+    const isClub = relation === 'club';
+
     return `
         <!-- Chat Header -->
         <div class="bg-white border-b border-gray-200 px-4 py-5 flex items-center gap-3 shadow-sm">
@@ -150,13 +153,13 @@ export function directMessage(name, avatar, type = 'friend', content = []) {
                         <h2 class="font-semibold text-gray-900">${name}</h2>
                         <span
                             class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold capitalize">
-                            ${type}
+                            ${relation}
                         </span>
                     </div>
-                    <p class="text-xs text-gray-500">Active now</p>
-                </div>
-            </div>
-        </div>
+                    <p class="text-xs text-gray-500"> ${isClub ? `${members} members` : (formatDate || '')}</p >
+                </div >
+            </div >
+        </div >
 
         ${content.length === 0
             ? `
@@ -191,7 +194,7 @@ export function directMessage(name, avatar, type = 'friend', content = []) {
 
 export function createEmptyMessageState() {
     return `
-        <div class="flex flex-col items-center justify-start py-10 px-4 text-center" >
+        < div class="flex flex-col items-center justify-start py-10 px-4 text-center" >
             <div class="mb-2 p-6 rounded-full bg-gray-100">
                 <i class="fas fa-comment-alt text-5xl text-primary"></i>
             </div>
