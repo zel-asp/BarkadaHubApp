@@ -124,6 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
             firendId: mes.friends_id
         })).join('');
 
+
+
         /* -----------------------------------------
         RENDER LOST & FOUND
         ----------------------------------------- */
