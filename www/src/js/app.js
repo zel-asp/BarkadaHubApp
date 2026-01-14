@@ -7,6 +7,13 @@ import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navig
 
 const alertSystem = new AlertSystem();
 
+
+const adminIds = [
+    { id: 'c1517366-9c04-41af-bf32-d0db2b2bab85', level: 1 },
+    { id: 'd35072cd-9fe3-43bf-9dc8-adb050384154', level: 2 }
+];
+
+
 // Store the last visited page
 function storeCurrentPage() {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
@@ -79,15 +86,22 @@ async function loadPageComponents() {
         return;
     }
 
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    const userId = userData?.user?.id;
+
+    // Check if user is admin
+    const isAdmin = adminIds.some(admin => admin.id === userId);
+
     const headerElement = document.getElementById('header');
     const mobileNav = document.getElementById('mobileNav');
     const rightSideNav = document.getElementById('rightSideBar');
     const leftSideNav = document.getElementById('leftSideBar');
 
-    if (headerElement) headerElement.innerHTML = HeaderComponent();
+    if (headerElement) headerElement.innerHTML = HeaderComponent(isAdmin);
     if (mobileNav) mobileNav.innerHTML = mobileNavigations();
     if (rightSideNav) rightSideNav.innerHTML = rightSideBar();
     if (leftSideNav) leftSideNav.innerHTML = leftSideBar();
+
 
     // active nav
     const file = window.location.pathname.split("/").pop();
