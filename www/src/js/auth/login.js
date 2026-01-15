@@ -83,19 +83,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.disabled = true;
 
         try {
-
+            // Sign in
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: loginEmail,
                 password: loginPassword
             });
 
+            if (error) {
+                alertSystem.show(`Login failed: ${error.message}`, 'error');
+                return;
+            }
 
+            // Get logged-in user info
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
             const email = userData?.user?.email;
             const userName = userData?.user.user_metadata.display_name || "User";
             const userEmail = userData?.user.user_metadata.email || "User";
 
+            // Log user activity
             await supabaseClient.from('user_activity').insert({
                 user_id: data.user.id,
                 action: 'login',
@@ -106,25 +112,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 user_email: userEmail
             });
 
-
-            if (error) {
-                alertSystem.show(`Login failed: ${error.message}`, 'error');
-                return;
-            }
-
-            const { error: upsertError } = await supabaseClient
+            // Profile: insert/update only ONCE
+            await supabaseClient
                 .from('profile')
                 .upsert({
                     id: userId,
                     name: userName,
                     email: email
-                });
-            if (upsertError) {
-                return alertSystem.show('Failed to update profile', 'error');
-            }
-
+                }, { onConflict: 'id', ignoreDuplicates: true });
+            // Success alert
             alertSystem.show('Login successful', 'success', 1500);
-
 
             setTimeout(() => {
                 window.location.href = 'src/html/profile.html';
