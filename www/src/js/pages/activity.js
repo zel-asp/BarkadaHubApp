@@ -4,7 +4,7 @@ import AlertSystem from '../render/Alerts.js';
 
 const alertSystem = new AlertSystem();
 
-const ITEMS_PER_PAGE = 2;
+const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 let totalPages = 1;
 
