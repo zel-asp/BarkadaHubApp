@@ -2,6 +2,8 @@ import supabaseClient from '../supabase.js';
 import uploadedPost from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 import comments, { emptyComments } from '../render/comments.js';
+import { likePost } from './notification.js';
+import { commentPost } from './notification.js'; 
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -791,9 +793,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data) return;
 
+        // Get postId from URL if exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
 
-        for (const post of data) {
+        // Filter posts if a specific postId is in the URL
+        let postsToRender = data;
+        if (postId) {
+            postsToRender = data.filter(p => p.id == postId);
+        }
+
+        // Render filtered posts
+        for (const post of postsToRender) {
             await renderPost(post, "beforeend");
+        }
+
+        // Scroll to the post if postId exists in URL
+        if (postId) {
+            setTimeout(() => {
+                const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+                if (postElement) {
+                    postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
         }
     }
 
@@ -862,6 +884,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             btn.classList.remove('processing');
                             return;
                         }
+
+                        // Create notification for the post owner
+                        await likePost(postId, userId);
 
                         // Update UI
                         likesEl.textContent = currentLikes + 1;
@@ -1001,6 +1026,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error(insertError);
                 return alertSystem.show('Failed to post comment.', 'error');
             }
+
+            // Create notification for the post owner
+            await commentPost(currentPostId, userId);
 
             commentInput.value = '';
             charCounter.innerHTML = '0/250';

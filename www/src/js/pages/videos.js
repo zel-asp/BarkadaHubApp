@@ -1,6 +1,17 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 import { createVideoItem, createEmptyVideoState } from '../render/videos.js';
+import { videoLike } from './notification.js';
+import { renderNotifications, setupClickMarkRead } from '../render/notification.js';
+
+async function initNotifications() {
+    const notifications = await fetchNotifications(); // your function to get notifications
+    renderNotifications(notifications);
+
+    // <-- This is important
+    setupClickMarkRead(); // attach click listeners after rendering
+}
+
 
 /* ------------------------------------------------------
     POST LOADING
@@ -677,6 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     currentLikes += 1;
                     likeCountSpan.textContent = currentLikes;
                 }
+                await videoLike(videoId, userId);
 
             } catch (err) {
                 console.error('Error toggling like:', err);
@@ -748,7 +760,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const videoPlayback = initVideoPlayback();
         videoPlayback.initAutoPlayOnSnap();
+
+        const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
+    if (videoId) {
+        setTimeout(() => {
+            const videoElement = document.querySelector(`[data-video-id="${videoId}"]`);
+            if (videoElement) {
+                videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 300);
+
+        // OPTIONAL: Mark notification as read after scrolling
+        if (userId) {
+            supabaseClient
+                .from('notifications')
+                .update({ is_read: true })
+                .eq('entity_type', 'video')
+                .eq('entity_id', videoId)
+                .eq('user_id', userId)
+                .then(() => {
+                    updateNotificationBadge(); // refresh badge
+                });
+       } 
     }
+}
+
 
     /* ------------------------------------------------------
         INITIALIZE EVERYTHING
