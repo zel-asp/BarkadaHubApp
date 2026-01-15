@@ -3,6 +3,8 @@ import AlertSystem from '../render/Alerts.js';
 import { displayBio, displayInformation } from '../render/profile.js';
 import uploadedPost from '../render/post.js';
 import comments, { emptyComments } from '../render/comments.js';
+import { likePost } from './notification.js';
+import { commentPost } from './notification.js'; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
@@ -232,6 +234,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             btn.classList.remove('processing');
                             return;
                         }
+
+                        // Create notification for the post owner
+                        await likePost(postId, userId);
+                        await commentPost(postId, userId);
+                    
 
                         // Update UI
                         likesEl.textContent = currentLikes + 1;
@@ -598,6 +605,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alertSystem.show('Failed to post comment.', 'error');
             }
 
+            // Create notification for the post owner
+            await commentPost(currentPostId, userId);
+
             commentInput.value = '';
             charCounter.innerHTML = '0/250';
             sendBtn.disabled = true;
@@ -657,6 +667,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     user_name: document.getElementById('username').textContent
                 }]);
             if (error) throw error;
+
+            // Create notification for the post owner
+            await commentPost(activeCommentPostId, currentUserId);
 
             commentInput.value = '';
             charCounter.textContent = '0/250';
