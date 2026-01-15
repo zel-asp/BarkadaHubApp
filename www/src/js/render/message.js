@@ -9,13 +9,14 @@ export default function messageItem({
     onlineCount = 0,
     conversationId,
     firendId,
+    formatDate
 }) {
 
     const isClub = relation === 'club';
     return `
         <div class='selectedMessage' data-conversation-id='${conversationId}' data-reference-id='${firendId}'
-            data-name='${name}' data-avatar='${avatar}' data-relation='${relation}'>
-            <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200 rounded-xl mb-2 border border-gray-100 hover:shadow-md
+            data-name='${name}' data-avatar='${avatar}' data-relation='${relation}' data-date='${formatDate}' data-members='${members}'>
+            <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200 rounded-full mb-2 border border-gray-100 hover:shadow-md
                         ${isClub
             ? 'hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 hover:border-green-200'
             : 'hover:bg-linear-to-r hover:from-primary hover:to-blue-100 hover:border-purple-200'
@@ -31,7 +32,7 @@ export default function messageItem({
 
                     <!-- AVATAR -->
                     <div class="relative shrink-0">
-                        ${isClub ? clubAvatar(onlineCount) : friendAvatar(avatar)}
+                        ${isClub ? clubAvatar(onlineCount, avatar) : friendAvatar(avatar)}
                     </div>
 
                     <!-- CONTENT -->
@@ -67,7 +68,7 @@ export default function messageItem({
                 </div>
 
                 <!--Hover overlay-->
-                <div class="absolute inset-0 rounded-xl transition-all duration-300
+                <div class="absolute inset-0 rounded-full transition-all duration-300
                             ${isClub
             ? 'group-hover:bg-linear-to-r group-hover:from-emerald-500/5 group-hover:to-green-500/5'
             : 'group-hover:bg-linear-to-r group-hover:from-purple-500/5 group-hover:to-pink-500/5'
@@ -77,45 +78,60 @@ export default function messageItem({
         </div>
 `;
 }
-function clubAvatar(onlineCount) {
+
+function clubAvatar(onlineCount, avatar) {
+
+    const hasAvatar = avatar && avatar.trim() !== '';
+
     return `
-        <div class="relative w-14 h-14 rounded-xl overflow-hidden border-2 border-primary shadow-md" >
-            <div class="absolute inset-0 grid grid-cols-2 gap-0.5 p-0.5">
-                <div class="bg-linear-to-br from-emerald-400 to-green-500"></div>
-                <div class="bg-linear-to-br from-emerald-300 to-green-400"></div>
-                <div class="bg-linear-to-br from-emerald-200 to-green-300"></div>
-                <div class="bg-linear-to-br from-emerald-100 to-green-200"></div>
-            </div>
+        <div class="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary shadow-md">
 
-            <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary/90" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
+            ${hasAvatar
+            ? `
+                    <!-- CLUB IMAGE -->
+                    <img src="${avatar}"
+                        class="w-full h-full object-cover">
+                `
+            : `
+                    <!-- BLUE PLACEHOLDER -->
+                    <div class="absolute inset-0 grid grid-cols-2 gap-0.5 p-0.5">
+                        <div class="bg-linear-to-br from-blue-400 to-blue-500"></div>
+                        <div class="bg-linear-to-br from-blue-300 to-sky-400"></div>
+                        <div class="bg-linear-to-br from-sky-300 to-cyan-400"></div>
+                        <div class="bg-linear-to-br from-blue-200 to-sky-300"></div>
+                    </div>
 
-            ${onlineCount ? `
-                <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-primary flex items-center justify-center">
-                    <span class="text-[9px] font-bold text-primary">${onlineCount}</span>
-                </div>
-            ` : ''
+                    <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
+                        <i class="fas fa-users text-white/90 text-lg"></i>
+                    </div>
+                `
         }
-        </div >
-        `;
+
+            ${onlineCount
+            ? `
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-primary flex items-center justify-center">
+                        <span class="text-[9px] font-bold text-primary">${onlineCount}</span>
+                    </div>
+                `
+            : ''
+        }
+
+        </div>
+    `;
 }
 
 function friendAvatar(src) {
     return `
         <div class="relative">
             <img src="${src}"
-                class="w-14 h-14 rounded object-cover border-2 border-primary shadow-md">
-                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-primary"></div>
+                class="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md">
             </div>
     `;
 }
 
-export function directMessage(name, avatar, type = 'friend', content = []) {
+export function directMessage(name, avatar, relation = 'friend', members = '', formatDate, content = []) {
+    const isClub = relation === 'club';
+
     return `
         <!-- Chat Header -->
         <div class="bg-white border-b border-gray-200 px-4 py-5 flex items-center gap-3 shadow-sm">
@@ -137,13 +153,13 @@ export function directMessage(name, avatar, type = 'friend', content = []) {
                         <h2 class="font-semibold text-gray-900">${name}</h2>
                         <span
                             class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold capitalize">
-                            ${type}
+                            ${relation}
                         </span>
                     </div>
-                    <p class="text-xs text-gray-500">Active now</p>
-                </div>
-            </div>
-        </div>
+                    <p class="text-xs text-gray-500"> ${isClub ? `${members} members` : (formatDate || '')}</p >
+                </div >
+            </div >
+        </div >
 
         ${content.length === 0
             ? `
@@ -178,7 +194,7 @@ export function directMessage(name, avatar, type = 'friend', content = []) {
 
 export function createEmptyMessageState() {
     return `
-        <div class="flex flex-col items-center justify-start py-10 px-4 text-center" >
+        <div class="flex flex-col items-center justify-start py-10 px-4 text-center">
             <div class="mb-2 p-6 rounded-full bg-gray-100">
                 <i class="fas fa-comment-alt text-5xl text-primary"></i>
             </div>

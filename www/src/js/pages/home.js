@@ -655,23 +655,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function initFriendRealtime(currentUserId) {
         supabaseClient
             .channel('friends-request-realtime')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'friends_request'
-                },
-                (payload) => {
-                    const row = payload.new || payload.old;
-                    if (!row) return;
-
-                    // Only react if current user is involved
-                    if (row.sender_id !== currentUserId && row.receiver_id !== currentUserId) return;
-
-                    updateFollowButtonsRealtime(row);
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.new.sender_id === currentUserId || payload.new.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.new);
                 }
-            )
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.new.sender_id === currentUserId || payload.new.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.new);
+                }
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.old.sender_id === currentUserId || payload.old.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.old);
+                }
+            })
             .subscribe();
     }
 
@@ -1087,26 +1085,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Option B: Realtime via Supabase
     supabaseClient
         .channel('public:posts')
-        .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'posts' },
-            (payload) => {
-                if (payload.eventType === 'INSERT') {
-                    // New post
-                    if (!displayedPostIds.has(payload.new.id)) {
-                        renderPost(payload.new, 'afterbegin');
-                    }
-                } else if (payload.eventType === 'DELETE') {
-                    // Deleted post
-                    const postEl = document.querySelector(`.post[data-post-id="${payload.old.id}"]`);
-                    if (postEl) {
-                        postEl.remove();
-                        displayedPostIds.delete(payload.old.id);
-                    }
-                }
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
+            if (!displayedPostIds.has(payload.new.id)) {
+                renderPost(payload.new, 'afterbegin');
             }
-        )
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload) => {
+            const postEl = document.querySelector(`.post[data-post-id="${payload.old.id}"]`);
+            if (postEl) {
+                postEl.remove();
+                displayedPostIds.delete(payload.old.id);
+            }
+        })
         .subscribe();
+
 
     await getPosts();
 

@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
+    const userName = data?.user.user_metadata.display_name || "User";
+    const userEmail = data?.user.user_metadata.email || "User";
+
+    if (error) {
+        console.log(error);
+
+    }
 
     // DOM Elements
     const app = document.getElementById('app');
@@ -57,18 +64,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         confirmLogout.addEventListener('click', async () => {
             confirmLogout.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Logging out...`;
             confirmLogout.disabled = true;
+
             try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
+                // Get CURRENT user
+                const { data: currentUserData, error: userError } = await supabaseClient.auth.getUser();
+                if (userError) throw userError;
+                if (!currentUserData?.user) throw new Error("No user logged in");
+
+                const currentUserId = currentUserData.user.id;
+                const currentUserName = currentUserData.user.user_metadata.display_name || "User";
+                const currentUserEmail = currentUserData.user.user_metadata.email || "User";
+
+                // Insert logout record
+                const { error: insertError } = await supabaseClient
+                    .from('user_activity')
+                    .insert({
+                        user_id: currentUserId,
+                        action: 'logout',
+                        description: 'User Logout',
+                        ip_address: window.location.hostname,
+                        user_agent: navigator.userAgent,
+                        user_name: currentUserName,
+                        user_email: currentUserEmail
+                    });
+                if (insertError) throw insertError;
+
+                // Sign out
+                const { error: signOutError } = await supabaseClient.auth.signOut();
+                if (signOutError) throw signOutError;
+
                 setTimeout(() => window.location.replace('../../index.html'), 1000);
             } catch (err) {
                 console.error(err);
                 alertSystem.show('Logout failed. Please try again.', 'error');
                 confirmLogout.innerHTML = 'Yes, Logout';
                 confirmLogout.disabled = false;
-                closeModal();
             }
         });
+
     }
 
     /* -----------------------------

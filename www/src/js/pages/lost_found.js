@@ -144,9 +144,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .select('id')
                 .eq('user_id', userId)
                 .eq('friends_id', item.auth_id)
+                .eq('relation', 'lost & found')
                 .maybeSingle();
 
-            // ✅ Fix: true only if a message actually exists
             messageAdded = !!existingMessage;
         }
 

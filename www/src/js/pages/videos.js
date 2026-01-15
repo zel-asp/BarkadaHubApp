@@ -424,24 +424,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     function initFriendRealtime(currentUserId) {
         supabaseClient
             .channel('friends-request-realtime-videos')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'friends_request'
-                },
-                (payload) => {
-                    const row = payload.new || payload.old;
-                    if (!row) return;
-
-                    // Only react if current user is involved
-                    if (row.sender_id !== currentUserId && row.receiver_id !== currentUserId) return;
-
-                    updateFollowButtonsRealtime(row);
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.new.sender_id === currentUserId || payload.new.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.new);
                 }
-            )
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.new.sender_id === currentUserId || payload.new.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.new);
+                }
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'friends_request' }, (payload) => {
+                if (payload.old.sender_id === currentUserId || payload.old.receiver_id === currentUserId) {
+                    updateFollowButtonsRealtime(payload.old);
+                }
+            })
             .subscribe();
+
     }
 
     function updateFollowButtonsRealtime(row) {
@@ -810,14 +809,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 render();
             }
         )
-        .subscribe();
-
-    // Realtime for video likes
-    supabaseClient
-        .channel('video-likes-realtime')
         .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'video_likes' },
+            { event: 'DELETE', schema: 'public', table: 'videos' },
             (payload) => {
                 render();
             }

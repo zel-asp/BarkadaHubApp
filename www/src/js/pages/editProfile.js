@@ -183,7 +183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return alertSystem.show('Failed to update profile', 'error');
         }
 
-        // ✅ Update friend avatar in messages table
         await updateFriendAvatarInMessages(userId, avatarUrl, fullName);
 
         // Update preview
@@ -201,37 +200,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         .channel('profile-updates')
         .on(
             'postgres_changes',
-            {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'profile'
-            },
+            { event: 'UPDATE', schema: 'public', table: 'profile', filter: `id=neq.${userId}` },
             async (payload) => {
-                // If this update is for a user who is our friend
-                if (payload.new.id !== userId) {
-                    console.log('Friend updated profile:', payload.new.name);
+                const friendId = payload.new.id;
 
-                    // Check if this user is in our messages
-                    const { data: existingMessage } = await supabaseClient
+                const { data: existingMessage } = await supabaseClient
+                    .from('message')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('friends_id', friendId)
+                    .maybeSingle();
+
+                if (existingMessage) {
+                    await supabaseClient
                         .from('message')
-                        .select('id')
+                        .update({
+                            friend_avatar: payload.new.avatar_url,
+                            friend_name: payload.new.name
+                        })
                         .eq('user_id', userId)
-                        .eq('friends_id', payload.new.id)
-                        .maybeSingle();
-
-                    if (existingMessage) {
-                        // Update the friend's avatar in our messages
-                        await supabaseClient
-                            .from('message')
-                            .update({
-                                friend_avatar: payload.new.avatar_url,
-                                friend_name: payload.new.name
-                            })
-                            .eq('user_id', userId)
-                            .eq('friends_id', payload.new.id);
-                    }
+                        .eq('friends_id', friendId);
                 }
             }
         )
         .subscribe();
+
 });

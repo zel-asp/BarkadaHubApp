@@ -1,4 +1,4 @@
-export default function HeaderComponent() {
+export default function HeaderComponent(admin = null) {
     return `
 <header class="bg-white shadow-sm sticky top-0 z-30 md:mb-10">
     <div class="container mx-auto px-4">
@@ -23,6 +23,21 @@ export default function HeaderComponent() {
 
             <!-- USER ACTIONS -->
             <div class="user-actions flex items-center gap-4">
+
+                
+                <!-- Statistics -->
+                ${admin ? `<div class="relative cursor-pointer">
+                    <a href="./auth-log.html" class="block relative">
+                        <i class="fas fa-chart-line text-primary text-xl"></i>
+                        <span id="notificationBadge"
+                            class="absolute -top-2 -right-1
+                                text-[10px] rounded-full w-4 h-4
+                                flex items-center justify-center
+                                font-extrabold text-white bg-red-500" hidden>
+                            
+                        </span>
+                    </a>
+                </div>` : ''}
 
                 <!-- NOTIFICATIONS -->
                 <div class="relative cursor-pointer">
