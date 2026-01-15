@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
+            const email = userData?.user?.email;
             const userName = userData?.user.user_metadata.display_name || "User";
             const userEmail = userData?.user.user_metadata.email || "User";
 
@@ -115,7 +116,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('profile')
                 .upsert({
                     id: userId,
-                    name: userName
+                    name: userName,
+                    email: email
                 });
             if (upsertError) {
                 return alertSystem.show('Failed to update profile', 'error');
@@ -130,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Unexpected error:', err);
-            alertSystem.show('An unexpected error occurred. Please try again.', 'error');
+            alertSystem.show('Login Failed, please try again', 'error');
         } finally {
             submitBtn.disabled = false;
         }

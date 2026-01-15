@@ -65,6 +65,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        /* ------------------------------------
+CHECK IF EMAIL EXISTS IN PROFILE
+------------------------------------ */
+        const sanitizedEmail = sanitize(signupEmail).toLowerCase();
+
+        const { data: existingUser, error: emailError } = await supabaseClient
+            .from('profile')
+            .select('email')
+            .ilike('email', sanitizedEmail)
+            .maybeSingle();
+
+
+        if (emailError) {
+            alertSystem.show('Server error. Please try again.', 'error');
+            return;
+        }
+
+        if (existingUser) {
+            alertSystem.show('Email is already registered.', 'error');
+            return;
+        }
+
         // Name must contain letters & spaces only
         if (!/^[a-zA-Z\s]+$/.test(signupName)) {
             alertSystem.show('Name contains invalid characters', 'error');
