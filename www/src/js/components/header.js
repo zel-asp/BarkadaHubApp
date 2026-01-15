@@ -1,6 +1,6 @@
 export default function HeaderComponent(admin = null) {
     return `
-<header class="bg-white shadow-sm sticky top-0 z-30 md:mb-10">
+<header class="bg-white shadow-sm fixed top-0 z-30 md:mb-10 w-full">
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center py-4">
 
@@ -71,6 +71,8 @@ export default function HeaderComponent(admin = null) {
         </div>
     </div>
 </header>
+<div class="h-20"></div>
+
 `;
 }
 

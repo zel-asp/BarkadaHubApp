@@ -1,7 +1,7 @@
 import supabaseClient from '../supabase.js';
 import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
-import { renderNotifications, setupClickMarkRead, updateNotificationBadge,} from '../render/notification.js';
+import { renderNotifications, setupClickMarkRead, updateNotificationBadge, } from '../render/notification.js';
 
 /* -------------------------------------------
 like notification function (normalized)
@@ -50,38 +50,38 @@ comments notification functions
 async function commentPost(postId, currentUserId) {
     try {
         // get post owner
-        const { data: postData, error: postError} = await supabaseClient
+        const { data: postData, error: postError } = await supabaseClient
             .from('posts')
             .select('user_id')
             .eq('id', postId)
             .single();
-            if (postError) throw postError;
+        if (postError) throw postError;
 
-            const postOwnerId = postData.user_id;
+        const postOwnerId = postData.user_id;
 
-            // avoid notify to self
-            if (postOwnerId === currentUserId) return;
-             
-            // insert notif with only sender_id (normalized)
-            const { error: notifError } = await supabaseClient
-                .from('notifications')
-                .insert([{
-                    user_id: postOwnerId,
-                    sender_id: currentUserId,
-                    type: 'comment',
-                    entity_type: 'post',
-                    entity_id: postId,
-                    message: 'commented on your post',
-                    is_read: false,
-                    created_at: new Date().toISOString()
-                }]);
-            if (notifError) throw notifError;
+        // avoid notify to self
+        if (postOwnerId === currentUserId) return;
+
+        // insert notif with only sender_id (normalized)
+        const { error: notifError } = await supabaseClient
+            .from('notifications')
+            .insert([{
+                user_id: postOwnerId,
+                sender_id: currentUserId,
+                type: 'comment',
+                entity_type: 'post',
+                entity_id: postId,
+                message: 'commented on your post',
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+        if (notifError) throw notifError;
 
     } catch (err) {
-        console.error('Error:' , err);
+        console.error('Error:', err);
     }
 }
-export { commentPost};
+export { commentPost };
 
 /* -------------------------------------------
 video notification functions
@@ -89,32 +89,32 @@ video notification functions
 async function videoLike(videoId, currentUserId) {
     try {
         // get video owner
-        const { data: videoData, error: videoError} = await supabaseClient
+        const { data: videoData, error: videoError } = await supabaseClient
             .from('videos')
             .select('user_id')
             .eq('id', videoId)
             .single();
-            if (videoError) throw videoError;
+        if (videoError) throw videoError;
 
-            const videoOwnerId = videoData.user_id;
+        const videoOwnerId = videoData.user_id;
 
-            // avoid notify to self
-            if (videoOwnerId === currentUserId) return;
-            
-            // insert notif with only sender_id (normalized)
-            const { error: notifError } = await supabaseClient
-                .from('notifications')
-                .insert([{
-                    user_id: videoOwnerId,
-                    sender_id: currentUserId,
-                    type: 'video_like',
-                    entity_type: 'video',
-                    entity_id: videoId,
-                    message: 'liked your video',
-                    is_read: false,
-                    created_at: new Date().toISOString()
-                }]);
-                if (notifError) throw notifError;
+        // avoid notify to self
+        if (videoOwnerId === currentUserId) return;
+
+        // insert notif with only sender_id (normalized)
+        const { error: notifError } = await supabaseClient
+            .from('notifications')
+            .insert([{
+                user_id: videoOwnerId,
+                sender_id: currentUserId,
+                type: 'video_like',
+                entity_type: 'video',
+                entity_id: videoId,
+                message: 'liked your video',
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+        if (notifError) throw notifError;
     } catch (err) {
         console.error('Error:', err);
     }
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ------------------------------------------- */
     document.addEventListener('click', (e) => {
         const confirmBtn = e.target.closest('.confirm-friend');
-        const deleteBtn  = e.target.closest('.delete-friend');
+        const deleteBtn = e.target.closest('.delete-friend');
 
         if (confirmBtn) {
             const notif = confirmBtn.closest('.notification-item');
