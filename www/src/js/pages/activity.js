@@ -120,7 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 );
             });
 
-
             renderPagination();
         } catch (err) {
             console.error(err);
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const btn = document.createElement('button');
             btn.textContent = i;
-            btn.className = `px-3 py-1 rounded text-lg ${i === currentPage
+            btn.className = `px-3 py-1 rounded text-sm ${i === currentPage
                 ? 'bg-primary text-white'
                 : ' hover:bg-gray-50'
                 }`;

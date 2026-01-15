@@ -7,19 +7,18 @@ import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navig
 
 const alertSystem = new AlertSystem();
 
-
+/* ===================== ADMIN LIST ===================== */
 const adminIds = [
     { id: 'c1517366-9c04-41af-bf32-d0db2b2bab85', level: 1 },
     { id: 'd35072cd-9fe3-43bf-9dc8-adb050384154', level: 2 }
 ];
 
-
-// Store the last visited page
+/* ===================== STORE LAST PAGE ===================== */
 function storeCurrentPage() {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
 }
 
-// Show offline page
+/* ===================== OFFLINE PAGE ===================== */
 function showOfflinePage() {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
@@ -31,21 +30,17 @@ function showOfflinePage() {
     appBody.classList.add('hidden');
     offlinePage.classList.remove('hidden');
 
-    // rtry button 
     const retryBtn = document.getElementById('retryBtn');
     if (!retryBtn) return;
-    retryBtn.addEventListener('click', async () => {
-        const originalContent = retryBtn.innerHTML;
 
+    retryBtn.onclick = async () => {
         retryBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Checking...`;
         retryBtn.disabled = true;
-        retryBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
         const isOnline = await checkConnection();
 
-        retryBtn.innerHTML = originalContent;
+        retryBtn.innerHTML = `Retry`;
         retryBtn.disabled = false;
-        retryBtn.classList.remove('opacity-70', 'cursor-not-allowed');
 
         if (isOnline) {
             hideOfflinePage();
@@ -53,83 +48,106 @@ function showOfflinePage() {
         } else {
             alertSystem.show("Still offline. Please check your connection.", 'error');
         }
-    });
+    };
 }
 
-// Hide offline page
 function hideOfflinePage() {
-    const appBody = document.getElementById('app');
-    const offlinePage = document.getElementById('offlinePage');
-
-    offlinePage.classList.add('hidden');
-    appBody.classList.remove('hidden');
+    document.getElementById('offlinePage')?.classList.add('hidden');
+    document.getElementById('app')?.classList.remove('hidden');
 }
 
+/* ===================== INFO ===================== */
 function showInfo() {
     const infoLink = document.getElementById('infoLink');
-
-    if (!infoLink) return;
-    infoLink.innerHTML = info();
+    if (infoLink) infoLink.innerHTML = info();
 }
 
-//render te page
+/* ===================== PAGE COMPONENTS ===================== */
 async function loadPageComponents() {
 
-    const isAuthPage = document.body.dataset.page === 'auth';
-    if (isAuthPage) return;
+    if (document.body.dataset.page === 'auth') return;
 
-    const { data } = await supabaseClient.auth.getSession();
+    // 🔒 Skip auth check if offline
+    const online = await checkConnection();
+    if (!online) return;
 
-    if (!data?.session) {
-        alertSystem.show("You must be logged in.", 'error');
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+
+    if (!sessionData?.session) {
+        alertSystem.show("Session expired. Please login again.", 'error');
         setTimeout(() => window.location.replace('../../index.html'), 1500);
         return;
     }
 
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    const { data: userData } = await supabaseClient.auth.getUser();
     const userId = userData?.user?.id;
 
-    // Check if user is admin
     const isAdmin = adminIds.some(admin => admin.id === userId);
 
-    const headerElement = document.getElementById('header');
-    const mobileNav = document.getElementById('mobileNav');
-    const rightSideNav = document.getElementById('rightSideBar');
-    const leftSideNav = document.getElementById('leftSideBar');
+    document.getElementById('header')?.replaceChildren();
+    document.getElementById('mobileNav')?.replaceChildren();
+    document.getElementById('rightSideBar')?.replaceChildren();
+    document.getElementById('leftSideBar')?.replaceChildren();
 
-    if (headerElement) headerElement.innerHTML = HeaderComponent(isAdmin);
-    if (mobileNav) mobileNav.innerHTML = mobileNavigations();
-    if (rightSideNav) rightSideNav.innerHTML = rightSideBar();
-    if (leftSideNav) leftSideNav.innerHTML = leftSideBar();
+    document.getElementById('header')?.insertAdjacentHTML('afterbegin', HeaderComponent(isAdmin));
+    document.getElementById('mobileNav')?.insertAdjacentHTML('afterbegin', mobileNavigations());
+    document.getElementById('rightSideBar')?.insertAdjacentHTML('afterbegin', rightSideBar());
+    document.getElementById('leftSideBar')?.insertAdjacentHTML('afterbegin', leftSideBar());
 
-
-    // active nav
-    const file = window.location.pathname.split("/").pop();
-    const currentPage = file.split(".")[0];
+    const currentPage = window.location.pathname.split('/').pop().split('.')[0];
 
     document.querySelectorAll(".mobile-nav-item").forEach(item => {
-        const page = item.dataset.page;
-        item.classList.toggle("text-primary", page === currentPage);
-        item.classList.toggle("text-gray-500", page !== currentPage);
+        item.classList.toggle("text-primary", item.dataset.page === currentPage);
+        item.classList.toggle("text-gray-500", item.dataset.page !== currentPage);
     });
 }
 
+/* ===================== MODAL HANDLING ===================== */
+const modalIds = [
+    'commentModal',
+    'ellipsisMenuModal',
+    'deleteConfirmationModal',
+    'fullImageModal'
+];
 
-//initialize all
-document.addEventListener('DOMContentLoaded', async function () {
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (!session && document.body.dataset.page !== 'auth') {
+let openModals = new Set();
+
+function recordOpenModals() {
+    openModals.clear();
+    modalIds.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal && !modal.classList.contains('hidden')) openModals.add(id);
+    });
+}
+
+function hideAllModals() {
+    modalIds.forEach(id => {
+        document.getElementById(id)?.classList.add('hidden');
+    });
+}
+
+function restoreModals() {
+    openModals.forEach(id => {
+        document.getElementById(id)?.classList.remove('hidden');
+    });
+    openModals.clear();
+}
+
+/* ===================== INIT ===================== */
+document.addEventListener('DOMContentLoaded', async () => {
+
+    // 🔐 Redirect ONLY on real logout
+    supabaseClient.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT' && document.body.dataset.page !== 'auth') {
             window.location.replace('../../index.html');
         }
     });
 
     storeCurrentPage();
 
-    const isOnline = await checkConnection();
-
-    if (!isOnline) {
-        showOfflinePage();
-    } else {
+    const online = await checkConnection();
+    if (!online) showOfflinePage();
+    else {
         hideOfflinePage();
         await loadPageComponents();
     }
@@ -141,55 +159,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         showOfflinePage();
     });
 
-    window.addEventListener('online', async () => {
-        alertSystem.show('Connection restored', 'success');
-        const isOnline = await checkConnection();
-        if (isOnline) {
-            hideOfflinePage();
-            restoreModals();
-            await loadPageComponents();
-        }
+    window.addEventListener('online', () => {
+        alertSystem.show("Connection restored", 'success');
+        hideOfflinePage();
+        restoreModals();
     });
 
-    // List all modal IDs
-    const modalIds = [
-        'commentModal',
-        'ellipsisMenuModal',
-        'deleteConfirmationModal',
-        'fullImageModal'
-    ];
-
-    // Store which modals were open
-    let openModals = new Set();
-
-    // Function to hide all modals
-    function hideAllModals() {
-        modalIds.forEach(id => {
-            const modal = document.getElementById(id);
-            if (modal) modal.classList.add('hidden');
-        });
-    }
-
-    // Function to record currently open modals
-    function recordOpenModals() {
-        openModals.clear();
-        modalIds.forEach(id => {
-            const modal = document.getElementById(id);
-            if (modal && !modal.classList.contains('hidden')) {
-                openModals.add(id);
-            }
-        });
-    }
-
-    // Function to restore previously open modals
-    function restoreModals() {
-        openModals.forEach(id => {
-            const modal = document.getElementById(id);
-            if (modal) modal.classList.remove('hidden');
-        });
-        openModals.clear();
-    }
-
     showInfo();
-
 });
