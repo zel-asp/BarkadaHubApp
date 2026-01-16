@@ -20,6 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const messageContainer = document.getElementById('messagesContainer');
     const app = document.getElementById('app');
 
+    // Store current conversation data
+    let currentConversation = null;
+    let currentUserId = null;
+    let currentMessages = [];
+    let activeSubscription = null;
+    let isSendingMessage = false; // Track if message is being sent
+
     async function render() {
         /* -----------------------------------------
         AUTH USER
@@ -30,8 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const userId = userData?.user?.id;
-        if (!userId) return;
+        currentUserId = userData?.user?.id;
+        if (!currentUserId) return;
 
         /* -----------------------------------------
         FETCH ALL USER MESSAGES
@@ -39,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const { data: messages, error } = await supabaseClient
             .from('message')
             .select('*')
-            .eq('user_id', userId)
+            .eq('user_id', currentUserId)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -133,8 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
             formatDate: formatDate(mes.created_at)
         })).join('');
 
-
-
         /* -----------------------------------------
         RENDER LOST & FOUND
         ----------------------------------------- */
@@ -162,6 +167,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const relation = selectedChat.dataset.relation;
         const date = selectedChat.dataset.date;
         const members = selectedChat.dataset.members;
+        const friendId = selectedChat.dataset.friendid;
+
+        // Store current conversation data
+        currentConversation = {
+            id: conversationId,
+            friendName,
+            friendAvatar,
+            relation,
+            friendId
+        };
 
         const directMessageContainer = document.getElementById('directMessage');
         const directMessageModal = document.getElementById('directMessageModal');
@@ -169,37 +184,39 @@ document.addEventListener("DOMContentLoaded", () => {
         app.classList.add('hidden');
         directMessageModal.classList.remove('hidden');
 
-        const { data, error } = await supabaseClient
-            .from('chat_messages')
-            .select('*')
-            .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true });
+        // Fetch chat messages
+        const { data, error } = await fetchMessages(conversationId);
 
         if (error) {
             console.error(error);
             return;
         }
 
-        const renderedMessages = (data || []).map(msg => `
-        <div class="text-sm text-gray-700">
-            ${msg.message}
-        </div>
-    `);
+        currentMessages = data || [];
 
+        // Format messages for display
+        const renderedMessages = currentMessages.map(msg => formatMessageForDisplay(msg));
 
-        directMessageContainer.innerHTML =
-            directMessage(
-                friendName,
-                friendAvatar,
-                relation,
-                members,
-                date,
-                renderedMessages
-            );
+        directMessageContainer.innerHTML = directMessage(
+            friendName,
+            friendAvatar,
+            relation,
+            members,
+            date,
+            renderedMessages
+        );
+
+        // Set up real-time subscription
+        setupRealtimeSubscription(conversationId);
+
+        // Scroll to bottom
+        setTimeout(() => {
+            scrollToBottom();
+        }, 100);
+
+        // Add scroll event listener to maintain scroll position
+        setupChatScrolling();
     });
-
-
-
 
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
@@ -210,10 +227,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = document.getElementById('sendBtn');
     const mediaPreviewArea = document.getElementById('mediaPreviewArea');
     const previewContainer = document.getElementById('previewContainer');
-    const messagesContainer = document.getElementById('messagesContainer');
+    const backToMessages = document.getElementById('backToMessages');
 
     let currentMediaFile = null;
     let currentMediaType = null;
+
+    // Back button handler
+    if (backToMessages) {
+        backToMessages.addEventListener('click', (e) => {
+            e.preventDefault();
+            const directMessageModal = document.getElementById('directMessageModal');
+            const app = document.getElementById('app');
+
+            directMessageModal.classList.add('hidden');
+            app.classList.remove('hidden');
+
+            // Clear current conversation
+            currentConversation = null;
+            currentMessages = [];
+            messageInput.value = '';
+            removeMediaPreview();
+
+            // Reset send button state
+            updateSendButtonState();
+
+            // Unsubscribe from real-time updates
+            if (activeSubscription) {
+                supabaseClient.removeChannel(activeSubscription);
+                activeSubscription = null;
+            }
+        });
+    }
 
     /* -------------------------------------------
         CAMERA BUTTON HANDLER
@@ -235,32 +279,31 @@ document.addEventListener("DOMContentLoaded", () => {
         input.click();
     });
 
-
     /* -------------------------------------------
         VIDEO BUTTON HANDLER
     ------------------------------------------- */
     videoBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'video/*';
+        input.accept = 'video/*,image/*';
 
         input.onchange = (e) => {
             if (e.target.files?.[0]) {
                 currentMediaFile = e.target.files[0];
-                currentMediaType = 'video';
-                showMediaPreview(currentMediaFile, 'video');
+                const fileType = currentMediaFile.type.startsWith('video/') ? 'video' : 'image';
+                currentMediaType = fileType;
+                showMediaPreview(currentMediaFile, fileType);
             }
         };
 
         input.click();
     });
 
-
     /* -------------------------------------------
         SHOW MEDIA PREVIEW
     ------------------------------------------- */
     function showMediaPreview(file, type) {
-        previewContainer.innerHTML = ''; // Clear previous preview
+        previewContainer.innerHTML = '';
 
         let mediaElement;
         if (type === 'image') {
@@ -276,7 +319,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         previewContainer.appendChild(mediaElement);
 
-        // Add remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors';
         removeBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
@@ -284,8 +326,8 @@ document.addEventListener("DOMContentLoaded", () => {
         previewContainer.appendChild(removeBtn);
 
         mediaPreviewArea.classList.remove('hidden');
+        updateSendButtonState();
     }
-
 
     /* -------------------------------------------
         REMOVE MEDIA PREVIEW
@@ -295,55 +337,479 @@ document.addEventListener("DOMContentLoaded", () => {
         mediaPreviewArea.classList.add('hidden');
         currentMediaFile = null;
         currentMediaType = null;
+        updateSendButtonState();
     }
 
+    /* -------------------------------------------
+        UPDATE SEND BUTTON STATE
+    ------------------------------------------- */
+    function updateSendButtonState() {
+        const hasContent = messageInput.value.trim().length > 0 || currentMediaFile;
+        sendBtn.disabled = isSendingMessage || !hasContent;
+
+        if (isSendingMessage) {
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+            sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else if (hasContent) {
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>';
+            sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>';
+            sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
 
     /* -------------------------------------------
-        SEND MESSAGE HANDLER
+        FETCH MESSAGES FUNCTION
     ------------------------------------------- */
-    sendBtn.addEventListener('click', () => {
+    async function fetchMessages(conversationId) {
+        return await supabaseClient
+            .from('chat_messages')
+            .select('*')
+            .eq('conversation_id', conversationId)
+            .order('created_at', { ascending: true });
+    }
+
+    /* -------------------------------------------
+        UPLOAD FILE TO STORAGE - FIXED VERSION
+    ------------------------------------------- */
+    async function uploadFileToStorage(file, conversationId) {
+        try {
+            // Create a folder structure: chat-media/{conversationId}/{timestamp_filename}
+            const fileExt = file.name.split('.').pop();
+            const timestamp = Date.now();
+            const randomString = Math.random().toString(36).substring(7);
+            const fileName = `${timestamp}_${randomString}.${fileExt}`;
+            const filePath = `${conversationId}/${fileName}`;
+
+            console.log('Uploading file to path:', filePath);
+
+            // Upload file to Supabase Storage
+            const { data, error } = await supabaseClient.storage
+                .from('chat-media')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false,
+                    contentType: file.type
+                });
+
+            if (error) {
+                console.error('Storage upload error:', error);
+
+                // For bucket permission errors, use data URL fallback
+                if (error.message.includes('bucket') || error.code === '400' || error.message.includes('policy')) {
+                    console.log('Storage bucket access issue, using data URL fallback');
+                    throw new Error('STORAGE_UNAVAILABLE');
+                }
+                throw error;
+            }
+
+            console.log('Upload successful');
+
+            // Get public URL
+            const { data: urlData } = supabaseClient.storage
+                .from('chat-media')
+                .getPublicUrl(filePath);
+
+            const publicUrl = urlData.publicUrl;
+            console.log('Public URL:', publicUrl);
+
+            return {
+                url: publicUrl,
+                type: file.type.startsWith('video/') ? 'video' : 'image',
+                fileName: file.name,
+                path: filePath
+            };
+
+        } catch (error) {
+            console.error('Error in uploadFileToStorage:', error);
+
+            // Re-throw the error for the calling function to handle
+            if (error.message === 'STORAGE_UNAVAILABLE') {
+                throw error;
+            }
+
+            // For other errors, also use fallback
+            throw new Error('STORAGE_UNAVAILABLE');
+        }
+    }
+
+    /* -------------------------------------------
+        FORMAT MESSAGE FOR DISPLAY - FIXED VERSION
+    ------------------------------------------- */
+    function formatMessageForDisplay(msg) {
+        const isCurrentUser = msg.sender_id === currentUserId;
+        const messageDate = new Date(msg.created_at);
+        const timeString = messageDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Check what type of content we have
+        let contentHTML = msg.content || '';
+
+        // If it's already HTML with <img> or <video> tags, use it as is
+        if (contentHTML.includes('<img ') || contentHTML.includes('<video ') ||
+            contentHTML.includes('data:image/') || contentHTML.includes('supabase.co/storage/')) {
+            // Content is already HTML or contains media URLs
+            // No need to escape or modify
+        } else {
+            // It's plain text - escape it for safety
+            const div = document.createElement('div');
+            div.textContent = contentHTML;
+            contentHTML = div.innerHTML;
+        }
+
+        return `
+            <div class="mb-4 ${isCurrentUser ? 'text-right' : 'text-left'}" data-message-id="${msg.id}">
+                <div class="inline-block max-w-xs lg:max-w-md ${isCurrentUser
+                ? ' text-white rounded-2xl rounded-tr-none px-4 py-2'
+                : 'bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2'}"
+                >
+                    <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
+                    <div class="text-xs mt-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}">
+                        ${timeString}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /* -------------------------------------------
+        HELPER FUNCTIONS
+    ------------------------------------------- */
+    function getVideoMimeType(url) {
+        const ext = url.split('.').pop().split('?')[0].toLowerCase();
+        const mimeTypes = {
+            'mp4': 'video/mp4',
+            'mov': 'video/quicktime',
+            'webm': 'video/webm',
+            'avi': 'video/x-msvideo',
+            'mkv': 'video/x-matroska'
+        };
+        return mimeTypes[ext] || 'video/mp4';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /* -------------------------------------------
+        SETUP CHAT SCROLLING
+    ------------------------------------------- */
+    function setupChatScrolling() {
+        const chatBody = document.querySelector('#directMessage .overflow-y-auto');
+        if (!chatBody) return;
+
+        // Ensure chat body has proper scrolling
+        chatBody.style.overflowY = 'auto';
+        chatBody.style.maxHeight = 'calc(100vh - 200px)'; // Adjust based on your layout
+
+        // Scroll to bottom when new content is added
+        const observer = new MutationObserver(() => {
+            scrollToBottom();
+        });
+
+        observer.observe(chatBody, { childList: true, subtree: true });
+    }
+
+    /* -------------------------------------------
+        SEND MESSAGE HANDLER - FIXED VERSION
+    ------------------------------------------- */
+    sendBtn.addEventListener('click', async () => {
+        if (isSendingMessage) return; // Prevent multiple sends
+
         const messageText = messageInput.value.trim();
 
-        if (!messageText && !currentMediaFile) return; // Nothing to send
+        if (!messageText && !currentMediaFile) return;
 
-        const message = {
-            text: messageText,
-            media: currentMediaFile ? {
-                file: currentMediaFile,
-                type: currentMediaType,
-                url: URL.createObjectURL(currentMediaFile)
-            } : null,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isOutgoing: true
-        };
+        if (!currentConversation || !currentUserId) {
+            alert('No conversation selected');
+            return;
+        }
 
-        addMessageToUI(message);  // Function to render message in UI
-        messageInput.value = '';
-        if (currentMediaFile) removeMediaPreview();
-        scrollToBottom();
+        try {
+            isSendingMessage = true;
+            updateSendButtonState();
 
-        console.log('Message sent:', message); // Placeholder: replace with actual API/WebSocket logic
+            let textContent = messageText || '';
+            let mediaHtml = '';
+
+            // Handle media upload
+            if (currentMediaFile) {
+                try {
+                    const uploadResult = await uploadFileToStorage(currentMediaFile, currentConversation.id);
+
+                    if (uploadResult.type === 'image') {
+                        mediaHtml = `<img src="${uploadResult.url}" alt="Shared image" class="max-w-xs rounded-lg mt-1" style="max-height: 300px; max-width: 100%;" loading="lazy">`;
+                    } else if (uploadResult.type === 'video') {
+                        mediaHtml = `<video controls class="max-w-xs rounded-lg mt-1" preload="metadata" style="max-height: 300px; max-width: 100%;"><source src="${uploadResult.url}" type="${getVideoMimeType(uploadResult.url)}"></video>`;
+                    }
+
+                } catch (uploadError) {
+                    if (uploadError.message === 'STORAGE_UNAVAILABLE') {
+                        // Use data URL as fallback for images only
+                        if (currentMediaFile.type.startsWith('image/') && currentMediaFile.size < 5000000) {
+                            const reader = new FileReader();
+                            const dataUrl = await new Promise((resolve, reject) => {
+                                reader.onload = () => resolve(reader.result);
+                                reader.onerror = reject;
+                                reader.readAsDataURL(currentMediaFile);
+                            });
+
+                            mediaHtml = `<img src="${dataUrl}" alt="Shared image" class="max-w-xs rounded-lg mt-1" style="max-height: 300px; max-width: 100%;" loading="lazy">`;
+                        } else {
+                            alert('File upload not available. Please try sending text only or a smaller image (<5MB).');
+                            isSendingMessage = false;
+                            updateSendButtonState();
+                            return;
+                        }
+                    } else {
+                        throw uploadError;
+                    }
+                }
+            }
+
+            // Combine text and media
+            let finalContent = '';
+            if (textContent && mediaHtml) {
+                finalContent = `${escapeHtml(textContent)}<br>${mediaHtml}`;
+            } else if (textContent) {
+                finalContent = escapeHtml(textContent);
+            } else if (mediaHtml) {
+                finalContent = mediaHtml;
+            }
+
+            // Send the message to database
+            await sendMessageToDatabase(finalContent, messageText);
+
+            // Clear input and reset button
+            messageInput.value = '';
+            if (currentMediaFile) removeMediaPreview();
+
+            isSendingMessage = false;
+            updateSendButtonState();
+
+            // Focus back on input
+            messageInput.focus();
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+            isSendingMessage = false;
+            updateSendButtonState();
+        }
     });
 
+    /* -------------------------------------------
+        SEND MESSAGE TO DATABASE
+    ------------------------------------------- */
+    async function sendMessageToDatabase(finalContent, originalText) {
+        try {
+            // Insert message into chat_messages table
+            const { data, error } = await supabaseClient
+                .from('chat_messages')
+                .insert([
+                    {
+                        conversation_id: currentConversation.id,
+                        sender_id: currentUserId,
+                        content: finalContent,
+                        friend_name: currentConversation.friendName,
+                        friend_avatar: currentConversation.friendAvatar
+                    }
+                ])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Update latest message in the message table for instant UI update
+            await supabaseClient
+                .from('message')
+                .update({
+                    latest_message: originalText || (currentMediaFile ? `Shared ${currentMediaType}` : ''),
+                    created_at: new Date().toISOString()
+                })
+                .eq('conversation_id', currentConversation.id)
+                .eq('user_id', currentUserId);
+
+            console.log('Message sent successfully');
+
+            // Add message to UI immediately (optimistic update)
+            addMessageToUI(finalContent, true);
+
+        } catch (error) {
+            console.error('Error in sendMessageToDatabase:', error);
+            throw error;
+        }
+    }
+
+    /* -------------------------------------------
+        ADD MESSAGE TO UI (OPTIMISTIC UPDATE)
+    ------------------------------------------- */
+    function addMessageToUI(content, isCurrentUser = true) {
+        const messagesContainer = document.querySelector('#directMessage #messagesContainer');
+        if (!messagesContainer) return;
+
+        const messageDate = new Date();
+        const timeString = messageDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const messageElement = `
+            <div class="mb-4 text-right" data-temp-message="true">
+                <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
+                    <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
+                    <div class="text-xs mt-1 text-blue-100">${timeString}</div>
+                </div>
+            </div>
+        `;
+
+        messagesContainer.innerHTML += messageElement;
+        scrollToBottom();
+    }
+
+    /* -------------------------------------------
+        SETUP REAL-TIME SUBSCRIPTION - FIXED VERSION
+    ------------------------------------------- */
+    function setupRealtimeSubscription(conversationId) {
+        // Unsubscribe from previous subscription if exists
+        if (activeSubscription) {
+            supabaseClient.removeChannel(activeSubscription);
+            activeSubscription = null;
+        }
+
+        // Create new subscription with better error handling
+        activeSubscription = supabaseClient
+            .channel(`conversation:${conversationId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'chat_messages',
+                    filter: `conversation_id=eq.${conversationId}`
+                },
+                async (payload) => {
+                    console.log('Realtime update received:', payload);
+
+                    // Skip if this is our own message (handled by optimistic update)
+                    if (payload.new.sender_id === currentUserId) {
+                        // Remove temporary message if exists
+                        const tempMsg = document.querySelector('[data-temp-message="true"]');
+                        if (tempMsg) {
+                            tempMsg.remove();
+                        }
+                        return;
+                    }
+
+                    // Add message from other person
+                    const messageElement = formatMessageForDisplay(payload.new);
+                    const messagesContainer = document.querySelector('#directMessage #messagesContainer');
+
+                    if (messagesContainer) {
+                        messagesContainer.innerHTML += messageElement;
+                        scrollToBottom();
+
+                        // Update the messages list on the main page
+                        updateMessagesList(payload.new);
+                    }
+                }
+            )
+            .on('system', { event: 'channel_joined' }, (event) => {
+                console.log('Realtime subscription joined:', event);
+            })
+            .on('system', { event: 'channel_error' }, (event) => {
+                console.error('Realtime subscription error:', event);
+            })
+            .subscribe(
+                (status) => {
+                    console.log('Subscription status:', status);
+                },
+                (error) => {
+                    console.error('Subscription setup error:', error);
+                    // Try to reconnect after delay
+                    setTimeout(() => {
+                        if (currentConversation) {
+                            setupRealtimeSubscription(currentConversation.id);
+                        }
+                    }, 3000);
+                }
+            );
+
+        return activeSubscription;
+    }
+
+    /* -------------------------------------------
+        UPDATE MESSAGES LIST
+    ------------------------------------------- */
+    function updateMessagesList(newMessage) {
+        // Update the conversation in the messages list
+        const conversationElements = document.querySelectorAll(`[data-conversation-id="${newMessage.conversation_id}"]`);
+
+        conversationElements.forEach(element => {
+            const subtitle = element.querySelector('.text-xs.text-gray-500');
+            if (subtitle) {
+                // Create a temporary div to extract text from HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newMessage.content;
+
+                // Remove image/video tags for preview
+                tempDiv.querySelectorAll('img, video').forEach(el => el.remove());
+
+                let messageText = tempDiv.textContent || tempDiv.innerText || '';
+                messageText = messageText.trim();
+
+                const cleanText = messageText.substring(0, 30);
+                subtitle.textContent = cleanText + (messageText.length >= 30 ? '...' : '');
+            }
+
+            const timestamp = element.querySelector('.text-xs.font-medium.text-gray-400');
+            if (timestamp) {
+                const messageDate = new Date(newMessage.created_at);
+                timestamp.textContent = messageDate.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        });
+    }
 
     /* -------------------------------------------
         SCROLL CHAT TO BOTTOM
     ------------------------------------------- */
     function scrollToBottom() {
-        const chatBody = document.querySelector('.overflow-y-auto');
-        chatBody.scrollTop = chatBody.scrollHeight;
+        const chatBody = document.querySelector('#directMessage .overflow-y-auto');
+        if (chatBody) {
+            // Use requestAnimationFrame for smoother scrolling
+            requestAnimationFrame(() => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            });
+        }
     }
-
 
     /* -------------------------------------------
         SEND MESSAGE ON ENTER KEY
-        (Shift+Enter for newline)
     ------------------------------------------- */
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendBtn.click();
+            if (!isSendingMessage) {
+                sendBtn.click();
+            }
         }
     });
 
+    /* -------------------------------------------
+        UPDATE SEND BUTTON ON INPUT
+    ------------------------------------------- */
+    messageInput.addEventListener('input', () => {
+        updateSendButtonState();
+    });
+
+    // Initialize send button state
+    updateSendButtonState();
 });
