@@ -54,7 +54,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
         <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                        <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover">
+                        <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover" loading="eager">
                     </div>
                     <div>
                         <h4 class="font-bold">${name}</h4>
@@ -83,7 +83,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
                     ${media_type === "video"
                 ? `<video src="${file}" controls class="w-auto max-w-full h-auto max-h-96 object-contain"></video>`
                 : `<img src="${file}" alt="Post Image" class="w-auto max-w-full h-auto max-h-96 object-contain"
-                        onload="this.style.opacity='1'" style="opacity: 0; transition: opacity 0.3s;">`
+                        onload="this.style.opacity='1'" style="opacity: 0; transition: opacity 0.3s;" loading="lazy">`
             }
                 </div>
                 ${media_type === "image" ? `

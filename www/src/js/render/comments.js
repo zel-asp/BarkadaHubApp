@@ -6,7 +6,7 @@ export default function comments(name, comment, avatar, timeAgo = "2 minutes ago
                 <div class="flex-0">
                     <div class="w-12 h-12 rounded-full bg-linear-to-r from-green-400 to-teal-500 overflow-hidden shadow-lg ring-2 ring-white ring-offset-1 ring-offset-gray-50 group-hover:ring-teal-300 transition-all duration-300">
                         <img src="${avatar}" alt="${name}" 
-                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                            class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" loading="eager">
                     </div>
                 </div>
                 

@@ -90,7 +90,7 @@ function clubAvatar(onlineCount, avatar) {
             ? `
                     <!-- CLUB IMAGE -->
                     <img src="${avatar}"
-                        class="w-full h-full object-cover">
+                        class="w-full h-full object-cover" loading="lazy">
                 `
             : `
                     <!-- BLUE PLACEHOLDER -->
@@ -124,7 +124,7 @@ function friendAvatar(src) {
     return `
         <div class="relative">
             <img src="${src}"
-                class="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md">
+                class="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md" loading="lazy">
             </div>
     `;
 }
@@ -143,7 +143,7 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <img src="${avatar}"
-                        class="w-10 h-10 rounded-full object-cover border border-gray-300">
+                        class="w-10 h-10 rounded-full object-cover border border-gray-300" loading="lazy">
                     <span
                         class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></span>
                 </div>

@@ -44,3 +44,30 @@ export default function Offline() {
         </div>
     `
 };
+
+export function Loading() {
+    return `
+        <div id="loadingOverlay" class="fixed inset-0 bg-white/10 z-50 flex items-center justify-center">
+            <div class="text-center space-y-4">
+                <!-- Animated dots -->
+                <div class="flex justify-center items-center space-x-2">
+                    <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
+                    <div class="w-4 h-4 bg-pink-500 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-4 h-4 bg-violet-500 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+                
+                <p class="text-black font-bold">Loading<span class="loading-dots"></span></p>
+                
+                <style>
+                    @keyframes dot-flash {
+                        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+                        50% { opacity: 1; transform: scale(1); }
+                    }
+                    .animate-pulse {
+                        animation: dot-flash 1.5s ease-in-out infinite;
+                    }
+                </style>
+            </div>
+        </div>
+    `;
+}
