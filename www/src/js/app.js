@@ -5,12 +5,13 @@ import AlertSystem from './render/Alerts.js';
 import offline, { Loading } from './render/offline.js';
 import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navigations.js";
 
-// Constants
+// Admin user IDs
 const ADMIN_IDS = new Map([
     ['c1517366-9c04-41af-bf32-d0db2b2bab85', 1],
     ['d35072cd-9fe3-43bf-9dc8-adb050384154', 2]
 ]);
 
+// All modal/popup IDs in the app
 const MODAL_IDS = [
     'commentModal',
     'ellipsisMenuModal',
@@ -18,38 +19,41 @@ const MODAL_IDS = [
     'fullImageModal'
 ];
 
-// State Management
+// App state to track what's happening
 const state = {
     openModals: new Set(),
     isAdmin: false,
     userId: null,
     isOnline: false,
-    isLoading: true  // Add loading state
+    isLoading: true  // Start in loading state
 };
 
-// Initialize Systems
+// Initialize notification system
 const alertSystem = new AlertSystem();
 
-/* ===================== UTILITY FUNCTIONS ===================== */
+// ===================== HELPER FUNCTIONS =====================
+// Save current page to localStorage
 const storeCurrentPage = () => {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
 };
 
+// Get current page name from URL
 const getCurrentPageName = () => {
     const path = window.location.pathname;
     return path.substring(path.lastIndexOf('/') + 1).split('.')[0];
 };
 
-/* ===================== LOADING MANAGEMENT ===================== */
+// ===================== LOADING MANAGEMENT =====================
+// Show loading screen
 const showLoading = () => {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
 
-    // Hide both main app and offline page during loading
+    // Hide main content during loading
     appBody?.classList.add('hidden');
     offlinePage?.classList.add('hidden');
 
-    // Add loading overlay to body
+    // Create loading element if it doesn't exist
     const loadingHtml = Loading();
     let loadingContainer = document.getElementById('loadingContainer');
 
@@ -62,20 +66,19 @@ const showLoading = () => {
     loadingContainer.innerHTML = loadingHtml;
     loadingContainer.classList.remove('hidden');
 
-    // Set loading state
     state.isLoading = true;
 };
 
+// Hide loading screen with fade animation
 const hideLoading = () => {
     const loadingContainer = document.getElementById('loadingContainer');
     if (loadingContainer) {
-        // Add fade-out animation
+        // Fade out animation
         loadingContainer.style.opacity = '0';
         loadingContainer.style.transition = 'opacity 0.3s ease-out';
 
         setTimeout(() => {
             loadingContainer.classList.add('hidden');
-            // Remove from DOM after animation
             setTimeout(() => {
                 loadingContainer.remove();
             }, 300);
@@ -85,11 +88,13 @@ const hideLoading = () => {
     state.isLoading = false;
 };
 
-/* ===================== OFFLINE MANAGEMENT ===================== */
+// ===================== OFFLINE MANAGEMENT =====================
+// Show offline page when no internet
 const showOfflinePage = async () => {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
 
+    // Create offline page content once
     if (!offlinePage.innerHTML.trim()) {
         offlinePage.innerHTML = offline();
     }
@@ -100,7 +105,7 @@ const showOfflinePage = async () => {
     const retryBtn = document.getElementById('retryBtn');
     if (!retryBtn) return;
 
-    // Debounced retry handler
+    // Handle retry button click
     retryBtn.onclick = async () => {
         retryBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Checking...`;
         retryBtn.disabled = true;
@@ -119,12 +124,14 @@ const showOfflinePage = async () => {
     };
 };
 
+// Hide offline page
 const hideOfflinePage = () => {
     document.getElementById('offlinePage')?.classList.add('hidden');
     document.getElementById('app')?.classList.remove('hidden');
 };
 
-/* ===================== MODAL MANAGEMENT ===================== */
+// ===================== MODAL MANAGEMENT =====================
+// Track which modals are open
 const recordOpenModals = () => {
     state.openModals.clear();
     MODAL_IDS.forEach(id => {
@@ -135,12 +142,14 @@ const recordOpenModals = () => {
     });
 };
 
+// Close all modals
 const hideAllModals = () => {
     MODAL_IDS.forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
 };
 
+// Reopen modals that were closed due to offline
 const restoreModals = () => {
     state.openModals.forEach(id => {
         document.getElementById(id)?.classList.remove('hidden');
@@ -148,7 +157,8 @@ const restoreModals = () => {
     state.openModals.clear();
 };
 
-/* ===================== SESSION & AUTH ===================== */
+// ===================== USER SESSION =====================
+// Check if user is logged in
 const checkUserSession = async () => {
     if (document.body.dataset.page === 'auth') return null;
 
@@ -167,7 +177,8 @@ const checkUserSession = async () => {
     return userData?.user;
 };
 
-/* ===================== COMPONENT RENDERING ===================== */
+// ===================== PAGE RENDERING =====================
+// Update active navigation item
 const updateNavigationActiveState = () => {
     const currentPage = getCurrentPageName();
     document.querySelectorAll(".mobile-nav-item").forEach(item => {
@@ -177,6 +188,7 @@ const updateNavigationActiveState = () => {
     });
 };
 
+// Render all page components
 const renderComponents = () => {
     const components = [
         { id: 'header', html: HeaderComponent(state.isAdmin) },
@@ -196,7 +208,8 @@ const renderComponents = () => {
     updateNavigationActiveState();
 };
 
-/* ===================== MAIN INITIALIZATION ===================== */
+// ===================== APP INITIALIZATION =====================
+// Main app initialization
 const initializeApp = async () => {
     showLoading();
     const startTime = Date.now();
@@ -204,6 +217,7 @@ const initializeApp = async () => {
     try {
         storeCurrentPage();
 
+        // Check connection and wait at least 1 second
         const [isOnline] = await Promise.all([
             checkConnection(),
             new Promise(resolve => setTimeout(resolve, 1000))
@@ -212,20 +226,18 @@ const initializeApp = async () => {
         state.isOnline = isOnline;
 
         if (!state.isOnline) {
-            // Loading will be hidden in finally block
             showOfflinePage();
             return;
         }
 
         hideOfflinePage();
 
-        // These will run AFTER the 1 second minimum, but loading is still showing
         const user = await checkUserSession();
         if (user) {
             renderComponents();
         }
 
-        // Ensure total loading time is at least 1 second
+        // Ensure loading shows for at least 1 second
         const elapsed = Date.now() - startTime;
         if (elapsed < 1000) {
             await new Promise(resolve => setTimeout(resolve, 1000 - elapsed));
@@ -235,17 +247,19 @@ const initializeApp = async () => {
         console.error('Initialization error:', error);
         alertSystem.show("Something went wrong. Please try again.", 'error');
     } finally {
-        // Only hide loading when EVERYTHING is done
         hideLoading();
     }
 };
-/* ===================== EVENT HANDLERS ===================== */
+
+// ===================== EVENT HANDLERS =====================
+// Handle auth state changes
 const handleAuthStateChange = (event) => {
     if (event === 'SIGNED_OUT' && document.body.dataset.page !== 'auth') {
         window.location.replace('../../index.html');
     }
 };
 
+// Handle going offline
 const handleOffline = () => {
     if (state.isLoading) {
         hideLoading();
@@ -256,11 +270,10 @@ const handleOffline = () => {
     showOfflinePage();
 };
 
+// Handle coming back online
 const handleOnline = async () => {
-    // If we were loading when connection was lost, continue loading
     if (state.isLoading) {
         showLoading();
-        // Give it a moment to show loading state
         await new Promise(resolve => setTimeout(resolve, 500));
     }
 
@@ -268,46 +281,37 @@ const handleOnline = async () => {
     hideOfflinePage();
     restoreModals();
 
-    // Re-check session when coming back online
     if (document.body.dataset.page !== 'auth') {
         await checkUserSession();
     }
 
-    // Hide loading if it was shown
     if (state.isLoading) {
         hideLoading();
     }
 };
 
-/* ===================== DOM READY ===================== */
+// ===================== PAGE LOAD =====================
+// When page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Set up auth listener
     supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
 
-    // Show loading before anything else
     showLoading();
-
-    // Initialize app
     initializeApp();
 
-    // Network event listeners
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
 });
 
-// Add this for page refresh detection
+// Detect page refresh
 window.addEventListener('beforeunload', () => {
-    // Optionally save state that we're refreshing
     sessionStorage.setItem('isRefreshing', 'true');
 });
 
-// Check if this is a refresh
 if (performance.navigation.type === 1 || sessionStorage.getItem('isRefreshing')) {
     sessionStorage.removeItem('isRefreshing');
-    // The loading will be shown in DOMContentLoaded
 }
 
-// Export for testing or if needed elsewhere
+// Export for other files
 export {
     state,
     initializeApp,
