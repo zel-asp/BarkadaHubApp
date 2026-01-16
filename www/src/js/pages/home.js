@@ -3,7 +3,7 @@ import uploadedPost from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 import comments, { emptyComments } from '../render/comments.js';
 import { likePost } from './notification.js';
-import { commentPost } from './notification.js'; 
+import { commentPost } from './notification.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
 
                         /* -----------------------------------------
-                           UI UPDATE
+                        UI UPDATE
                         ----------------------------------------- */
                         btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                         btn.disabled = true;
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 /* -----------------------------------------
-                   SEND NEW REQUEST
+                SEND NEW REQUEST
                 ----------------------------------------- */
                 if (
                     (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&

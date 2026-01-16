@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.join-btn').forEach(btn => {
             const clubId = btn.dataset.id;
 
+            // User already joined another club
             if (joinedClubId && clubId !== joinedClubId) {
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -191,38 +192,88 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             btn.addEventListener('click', async () => {
-                if (joinedClubId) return window.location.href = `./joinedClub.html?clubId=${clubId}`;
+                if (joinedClubId === clubId) {
+                    window.location.href = `./joinedClub.html?clubId=${clubId}`;
+                    return;
+                }
 
                 try {
-                    const { data, error } = await supabaseClient.from('club_members').insert([{ club_id: clubId, user_id: userId }]).select();
-                    if (error) throw error;
+                    /* ===============================
+                    INSERT club membership
+                    =============================== */
+                    const { data: member, error: memberError } =
+                        await supabaseClient
+                            .from('club_members')
+                            .insert({
+                                club_id: clubId,
+                                user_id: userId
+                            })
+                            .select('id')
+                            .single();
 
-                    const { data: clubData, error: clubError } = await supabaseClient.from('clubs').select('club_name, club_image').eq('id', clubId).single();
+                    if (memberError) throw memberError;
+
+                    /* ===============================
+                    Get club info
+                    =============================== */
+                    const { data: clubData, error: clubError } =
+                        await supabaseClient
+                            .from('clubs')
+                            .select('club_name, club_image')
+                            .eq('id', clubId)
+                            .single();
+
                     if (clubError) throw clubError;
 
-                    const { data: conversation, error: convError } = await supabaseClient.from('conversations').insert({ type: 'friend' }).select('id').single();
+                    /* ===============================
+                    Create conversation
+                    =============================== */
+                    const { data: conversation, error: convError } =
+                        await supabaseClient
+                            .from('conversations')
+                            .insert({ type: 'friend' })
+                            .select('id')
+                            .single();
+
                     if (convError) throw convError;
 
-                    const { data: member } = await supabaseClient.from('club_members').select('id').eq('user_id', userId).eq('club_id', clubId).single();
-                    const { error: messageError } = await supabaseClient.from('message').insert({
-                        user_id: userId,
-                        friends_id: clubId,
-                        friend_name: clubData.club_name,
-                        friend_avatar: clubData.club_image,
-                        relation: 'club',
-                        clubMember_id: member.id,
-                        conversation_id: conversation.id
-                    });
+                    /* ===============================
+                    Create message entry
+                    =============================== */
+                    const { error: messageError } =
+                        await supabaseClient
+                            .from('message')
+                            .insert({
+                                user_id: userId,
+                                friends_id: clubId,
+                                friend_name: clubData.club_name,
+                                friend_avatar: clubData.club_image,
+                                relation: 'club',
+                                clubMember_id: member.id,
+                                conversation_id: conversation.id
+                            });
+
                     if (messageError) throw messageError;
 
-                    getClubs();
+                    /* ===============================
+                    Refresh UI
+                    =============================== */
+                    alertSystem.show('Successfully joined the club!', 'success');
+                    await getClubs();
+
                 } catch (err) {
-                    console.error(err);
-                    alertSystem.show('Failed to join the club.', 'error');
+                    console.error('Join club error:', err);
+                    alertSystem.show(
+                        err.code === '23505'
+                            ? 'You already joined this club.'
+                            : 'Failed to join the club.',
+                        'error'
+                    );
                 }
             });
         });
     };
+
 
     /* =====================================================
     INITIALIZE
