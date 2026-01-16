@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Store current conversation data
     let currentConversation = null;
     let currentUserId = null;
+    let currentUserName = 'You'; // Store current user's name
     let currentMessages = [];
     let activeSubscription = null;
     let isSendingMessage = false; // Track if message is being sent
@@ -39,6 +40,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         currentUserId = userData?.user?.id;
         if (!currentUserId) return;
+
+        // Get current user's name
+        if (userData?.user) {
+            currentUserName = userData.user.user_metadata?.name ||
+                userData.user.user_metadata?.full_name ||
+                userData.user.email?.split('@')[0] ||
+                'You';
+        }
 
         /* -----------------------------------------
         FETCH ALL USER MESSAGES
@@ -195,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentMessages = data || [];
 
         // Format messages for display
-        const renderedMessages = currentMessages.map(msg => formatMessageForDisplay(msg));
+        const renderedMessages = await Promise.all(currentMessages.map(msg => formatMessageForDisplay(msg)));
 
         directMessageContainer.innerHTML = directMessage(
             friendName,
@@ -348,13 +357,13 @@ document.addEventListener("DOMContentLoaded", () => {
         sendBtn.disabled = isSendingMessage || !hasContent;
 
         if (isSendingMessage) {
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
         } else if (hasContent) {
-            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>';
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
             sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         } else {
-            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>';
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
             sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
@@ -371,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        UPLOAD FILE TO STORAGE - FIXED VERSION
+        UPLOAD FILE TO STORAGE
     ------------------------------------------- */
     async function uploadFileToStorage(file, conversationId) {
         try {
@@ -435,15 +444,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        FORMAT MESSAGE FOR DISPLAY - FIXED VERSION
+        GET USER DISPLAY NAME
     ------------------------------------------- */
-    function formatMessageForDisplay(msg) {
+    async function getUserDisplayName(userId) {
+        // If it's the current user, return cached name
+        if (userId === currentUserId) {
+            return currentUserName;
+        }
+
+        try {
+            // First, check if we have a profiles table
+            const { data: profileData, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('full_name, username, name')
+                .eq('id', userId)
+                .single();
+
+            if (!profileError && profileData) {
+                return profileData.full_name || profileData.name || profileData.username || 'Unknown User';
+            }
+
+            // If no profiles table or user not found, try to get from auth metadata
+            // Note: This requires appropriate RLS policies
+            const { data: authData, error: authError } = await supabaseClient.auth.admin.getUserById(userId);
+
+            if (!authError && authData?.user) {
+                return authData.user.user_metadata?.name ||
+                    authData.user.user_metadata?.full_name ||
+                    authData.user.email?.split('@')[0] ||
+                    'Unknown User';
+            }
+
+            return 'Unknown User';
+        } catch (error) {
+            console.error('Error getting user display name:', error);
+            return 'Unknown User';
+        }
+    }
+
+    /* -------------------------------------------
+        FORMAT MESSAGE FOR DISPLAY - WITH SENDER NAME
+    ------------------------------------------- */
+    async function formatMessageForDisplay(msg) {
         const isCurrentUser = msg.sender_id === currentUserId;
         const messageDate = new Date(msg.created_at);
         const timeString = messageDate.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit'
         });
+
+        // Get sender name - use from message if available, otherwise fetch it
+        let senderName = msg.sender_name;
+
+        if (!senderName && msg.sender_id) {
+            senderName = await getUserDisplayName(msg.sender_id);
+        }
 
         // Check what type of content we have
         let contentHTML = msg.content || '';
@@ -460,19 +515,36 @@ document.addEventListener("DOMContentLoaded", () => {
             contentHTML = div.innerHTML;
         }
 
-        return `
-            <div class="mb-4 ${isCurrentUser ? 'text-right' : 'text-left'}" data-message-id="${msg.id}">
-                <div class="inline-block max-w-xs lg:max-w-md ${isCurrentUser
-                ? ' text-white rounded-2xl rounded-tr-none px-4 py-2'
-                : 'bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2'}"
-                >
-                    <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
-                    <div class="text-xs mt-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}">
-                        ${timeString}
+        // For current user's messages, don't show name
+        // For other users' messages, show sender name
+        if (isCurrentUser) {
+            return `
+                <div class="mb-4 text-right" data-message-id="${msg.id}" data-sender-id="${msg.sender_id}">
+                    <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
+                        <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
+                        <div class="text-xs mt-1 text-blue-100">
+                            ${timeString}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div class="mb-4 text-left" data-message-id="${msg.id}" data-sender-id="${msg.sender_id}">
+                    <div class="flex items-start gap-2 mb-1">
+                        <div class="text-xs font-medium text-gray-700">
+                            ${escapeHtml(senderName)}
+                        </div>
+                    </div>
+                    <div class="inline-block max-w-xs lg:max-w-md bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2">
+                        <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
+                        <div class="text-xs mt-1 text-gray-500">
+                            ${timeString}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     /* -------------------------------------------
@@ -505,7 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Ensure chat body has proper scrolling
         chatBody.style.overflowY = 'auto';
-        chatBody.style.maxHeight = 'calc(100vh - 200px)'; // Adjust based on your layout
+        chatBody.style.maxHeight = 'calc(100vh - 200px)';
 
         // Scroll to bottom when new content is added
         const observer = new MutationObserver(() => {
@@ -516,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        SEND MESSAGE HANDLER - FIXED VERSION
+        SEND MESSAGE HANDLER
     ------------------------------------------- */
     sendBtn.addEventListener('click', async () => {
         if (isSendingMessage) return; // Prevent multiple sends
@@ -604,17 +676,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* -------------------------------------------
-        SEND MESSAGE TO DATABASE
+        SEND MESSAGE TO DATABASE - WITH SENDER NAME
     ------------------------------------------- */
     async function sendMessageToDatabase(finalContent, originalText) {
         try {
-            // Insert message into chat_messages table
+            // Insert message into chat_messages table with sender name
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .insert([
                     {
                         conversation_id: currentConversation.id,
                         sender_id: currentUserId,
+                        sender_name: currentUserName, // Include sender name
                         content: finalContent,
                         friend_name: currentConversation.friendName,
                         friend_avatar: currentConversation.friendAvatar
@@ -638,6 +711,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('Message sent successfully');
 
             // Add message to UI immediately (optimistic update)
+            // For current user, show without name
             addMessageToUI(finalContent, true);
 
         } catch (error) {
@@ -659,21 +733,33 @@ document.addEventListener("DOMContentLoaded", () => {
             minute: '2-digit'
         });
 
-        const messageElement = `
-            <div class="mb-4 text-right" data-temp-message="true">
-                <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
-                    <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
-                    <div class="text-xs mt-1 text-blue-100">${timeString}</div>
+        if (isCurrentUser) {
+            const messageElement = `
+                <div class="mb-4 text-right" data-temp-message="true">
+                    <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
+                        <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
+                        <div class="text-xs mt-1 text-blue-100">${timeString}</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+            messagesContainer.innerHTML += messageElement;
+        } else {
+            const messageElement = `
+                <div class="mb-4 text-left" data-temp-message="true">
+                    <div class="inline-block max-w-xs lg:max-w-md bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2">
+                        <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
+                        <div class="text-xs mt-1 text-gray-500">${timeString}</div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.innerHTML += messageElement;
+        }
 
-        messagesContainer.innerHTML += messageElement;
         scrollToBottom();
     }
 
     /* -------------------------------------------
-        SETUP REAL-TIME SUBSCRIPTION - FIXED VERSION
+        SETUP REAL-TIME SUBSCRIPTION
     ------------------------------------------- */
     function setupRealtimeSubscription(conversationId) {
         // Unsubscribe from previous subscription if exists
@@ -703,11 +789,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (tempMsg) {
                             tempMsg.remove();
                         }
+
+                        // Add the actual message with proper formatting
+                        const messageElement = await formatMessageForDisplay(payload.new);
+                        const messagesContainer = document.querySelector('#directMessage #messagesContainer');
+                        if (messagesContainer) {
+                            messagesContainer.innerHTML += messageElement;
+                            scrollToBottom();
+                        }
                         return;
                     }
 
                     // Add message from other person
-                    const messageElement = formatMessageForDisplay(payload.new);
+                    const messageElement = await formatMessageForDisplay(payload.new);
                     const messagesContainer = document.querySelector('#directMessage #messagesContainer');
 
                     if (messagesContainer) {
@@ -719,24 +813,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             )
-            .on('system', { event: 'channel_joined' }, (event) => {
-                console.log('Realtime subscription joined:', event);
-            })
-            .on('system', { event: 'channel_error' }, (event) => {
-                console.error('Realtime subscription error:', event);
-            })
             .subscribe(
                 (status) => {
                     console.log('Subscription status:', status);
-                },
-                (error) => {
-                    console.error('Subscription setup error:', error);
-                    // Try to reconnect after delay
-                    setTimeout(() => {
-                        if (currentConversation) {
-                            setupRealtimeSubscription(currentConversation.id);
-                        }
-                    }, 3000);
                 }
             );
 
