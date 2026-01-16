@@ -46,7 +46,7 @@ export default function messageItem({
         } transition-colors">
                                     ${name}
                                 </span>
-
+ 
                                 <span class="px-2.5 py-0.5 text-white text-xs font-semibold rounded-full
                                             ${isClub
             ? ''
@@ -181,7 +181,7 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
         `
             : `
         <!-- Chat Body -->
-        <div class="flex-1 p-4 overflow-y-auto bg-linear-to-b from-white to-blue-50">
+        <div class="flex-1 p-4 overflow-y-auto">
             <div class="space-y-4" id="messagesContainer">
                 ${content.join('')}
             </div>
