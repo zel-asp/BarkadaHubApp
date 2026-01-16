@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) throw error;
         return supabaseClient.storage.from("clubs").getPublicUrl(filePath).data.publicUrl;
     };
+
     const handleFormSubmit = async e => {
         e.preventDefault();
         const clubName = document.getElementById("clubName")?.value.trim();
@@ -122,13 +123,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!selectedCategory) return;
 
         try {
+            /* ===============================
+            Create conversation
+            =============================== */
+            const { data: conversation, error: convError } =
+                await supabaseClient
+                    .from('conversations')
+                    .insert({ type: 'club' })
+                    .select('id')
+                    .single();
+
+            if (convError) throw convError;
+
             const imageUrl = imageFile ? await uploadClubImage(userId, imageFile) : null;
             const { error } = await supabaseClient.from("clubs").insert({
                 club_name: clubName,
                 description,
                 location,
                 club_image: imageUrl,
-                category: selectedCategory
+                category: selectedCategory,
+                conversation_id: conversation.id
             });
             if (error) throw error;
 
@@ -147,11 +161,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     FETCH & RENDER CLUBS
     ===================================================== */
     const getClubs = async () => {
-        const { data: clubsData, error: clubsError } = await supabaseClient.from('clubs').select('*').order('created_at', { ascending: false });
+        const { data: clubsData, error: clubsError } = await supabaseClient
+            .from('clubs')
+            .select('*')
+            .order('created_at', { ascending: false });
+
         if (clubsError) return alertSystem.show(clubsError.message, 'error');
+
         if (!clubsData || clubsData.length === 0) return alertSystem.show('No Clubs available right now', 'info');
 
-        const { data: joinedClubData } = await supabaseClient.from('club_members').select('club_id').eq('user_id', userId).maybeSingle();
+        const { data: joinedClubData } = await supabaseClient
+            .from('club_members')
+            .select('club_id')
+            .eq('user_id', userId)
+            .maybeSingle();
+
         const joinedClubId = joinedClubData?.club_id || null;
 
         // Move joined club to top
@@ -161,7 +185,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (idx > -1) orderedClubs.unshift(...orderedClubs.splice(idx, 1));
         }
 
-        const { data: membersData } = await supabaseClient.from('club_members').select('club_id, user_id');
+        const { data: membersData } = await supabaseClient
+            .from('club_members')
+            .select('club_id, user_id');
+
         const memberCounts = {};
         membersData?.forEach(m => memberCounts[m.club_id] = (memberCounts[m.club_id] || 0) + 1);
 
@@ -171,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const icon = iconMap[club.category] || 'users';
             const isJoined = joinedClubId === club.id;
             const totalMembers = memberCounts[club.id] || 0;
-            elements.clubContainer.insertAdjacentHTML('beforeend', clubs(club.club_image, club.club_name, icon, club.location, club.description, club.id, club.category, totalMembers, isJoined));
+            elements.clubContainer.insertAdjacentHTML('beforeend', clubs(club.club_image, club.club_name, icon, club.location, club.description, club.id, club.category, totalMembers, isJoined, club.conversation_id));
         });
 
         setupJoinClubButtons(joinedClubId);
@@ -183,6 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const setupJoinClubButtons = async (joinedClubId) => {
         document.querySelectorAll('.join-btn').forEach(btn => {
             const clubId = btn.dataset.id;
+            const conversationId = btn.dataset.conversationId;
 
             // User already joined another club
             if (joinedClubId && clubId !== joinedClubId) {
@@ -226,18 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (clubError) throw clubError;
 
                     /* ===============================
-                    Create conversation
-                    =============================== */
-                    const { data: conversation, error: convError } =
-                        await supabaseClient
-                            .from('conversations')
-                            .insert({ type: 'friend' })
-                            .select('id')
-                            .single();
-
-                    if (convError) throw convError;
-
-                    /* ===============================
                     Create message entry
                     =============================== */
                     const { error: messageError } =
@@ -250,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 friend_avatar: clubData.club_image,
                                 relation: 'club',
                                 clubMember_id: member.id,
-                                conversation_id: conversation.id
+                                conversation_id: conversationId
                             });
 
                     if (messageError) throw messageError;
