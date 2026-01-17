@@ -160,34 +160,12 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
                 </div >
             </div >
         </div >
-
-        ${content.length === 0
-            ? `
-        <!-- Empty State -->
-        <div class = 'h-10'></div>
-        <div class="flex-1 flex flex-col justify-center items-center text-center px-6 bg-gray-50 min-h-[calc(100vh-64px)]">
-            <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                <i class="fas fa-comments text-3xl text-gray-500"></i>
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-1">
-                No messages yet
-            </h3>
-
-            <p class="text-gray-600 text-sm max-w-xs">
-                Start the conversation by sending your first message.
-            </p>
-        </div>
-        `
-            : `
         <!-- Chat Body -->
         <div class="flex-1 p-4 overflow-y-auto">
             <div class="space-y-4" id="messagesContainer">
                 ${content.join('')}
             </div>
         </div>
-        `
-        }
     `;
 }
 
