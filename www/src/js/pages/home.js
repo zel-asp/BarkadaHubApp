@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             isLikedByUser,
             post.file_path,
             post.user_id,
-            friendStatus
+            friendStatus,
         );
 
         postsContainer.insertAdjacentHTML(position, html);
