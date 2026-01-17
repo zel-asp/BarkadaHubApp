@@ -4,7 +4,7 @@ import { displayBio, displayInformation } from '../render/profile.js';
 import uploadedPost from '../render/post.js';
 import comments, { emptyComments } from '../render/comments.js';
 import { likePost } from './notification.js';
-import { commentPost } from './notification.js'; 
+import { commentPost } from './notification.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const nullData = "No information available";
 
         const bioText = profile?.about_me || nullData;
-        const name = profile?.display_name || nullData;
+        const name = profile?.name || nullData;
         const email = profile?.email || nullData;
         const major = profile?.major || nullData;
         const year_level = profile?.year_level || nullData;
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('displayBio').innerHTML = displayBio(bioText);
         document.getElementById('location').textContent = profile?.location || '';
         document.getElementById('PersonalInfo').innerHTML =
-            displayInformation(name, email, major, year_level);
+            displayInformation(name, email, major, year_level, true);
 
         // =============================
         // OPEN FULL IMAGE MODAL
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Create notification for the post owner
                         await likePost(postId, userId);
                         await commentPost(postId, userId);
-                    
+
 
                         // Update UI
                         likesEl.textContent = currentLikes + 1;
