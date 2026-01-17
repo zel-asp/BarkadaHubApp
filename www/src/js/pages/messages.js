@@ -3,6 +3,8 @@ import AlertSystem from '../render/Alerts.js';
 import messageItem, { createEmptyMessageState, directMessage } from '../render/message.js';
 
 document.addEventListener("DOMContentLoaded", () => {
+    const alertSystem = new AlertSystem();
+
     const backIcon = document.getElementById("backIcon");
     if (!backIcon) return;
 
@@ -26,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentUserName = 'You'; // Store current user's name
     let currentMessages = [];
     let activeSubscription = null;
-    let isSendingMessage = false; // Track if message is being sent
+    let isSendingMessage = false;
 
     async function render() {
         /* -----------------------------------------
@@ -35,11 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError) {
             console.error(authError);
+            alertSystem.show('Authentication error. Please try again.', 'error');
             return;
         }
 
         currentUserId = userData?.user?.id;
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            alertSystem.show('User not found. Please log in again.', 'error');
+            return;
+        }
 
         // Get current user's name
         if (userData?.user) {
@@ -60,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
             console.error(error);
+            alertSystem.show('Failed to load messages.', 'error');
             return;
         }
 
@@ -198,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
             console.error(error);
+            alertSystem.show('Failed to load chat messages.', 'error');
             return;
         }
 
@@ -225,6 +233,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Add scroll event listener to maintain scroll position
         setupChatScrolling();
+
+        // Initialize ellipsis buttons for delete functionality
+        initEllipsisButtons();
     });
 
     /* -------------------------------------------
@@ -269,13 +280,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        CAMERA BUTTON HANDLER
+        CAMERA BUTTON HANDLER - SIMPLIFIED
     ------------------------------------------- */
     cameraBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.capture = 'environment';
 
         input.onchange = (e) => {
             if (e.target.files?.[0]) {
@@ -444,6 +454,262 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
+        DELETE FILE FROM STORAGE
+    ------------------------------------------- */
+    async function deleteFileFromStorage(filePath) {
+        try {
+            if (!filePath) return;
+
+            console.log('Deleting file from storage:', filePath);
+
+            const { data, error } = await supabaseClient.storage
+                .from('chat-media')
+                .remove([filePath]);
+
+            if (error) {
+                console.error('Error deleting file from storage:', error);
+                return false;
+            }
+
+            console.log('File deleted from storage:', data);
+            return true;
+
+        } catch (error) {
+            console.error('Error in deleteFileFromStorage:', error);
+            return false;
+        }
+    }
+
+    /* -------------------------------------------
+        EXTRACT FILE PATH FROM MESSAGE CONTENT
+    ------------------------------------------- */
+    function extractFilePathFromContent(content) {
+        try {
+            // Check if content contains Supabase storage URL
+            const storagePattern = /https:\/\/[^\/]+\/storage\/v1\/object\/public\/chat-media\/([^"'\s]+)/;
+            const match = content.match(storagePattern);
+
+            if (match && match[1]) {
+                return match[1];
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error extracting file path:', error);
+            return null;
+        }
+    }
+
+    /* -------------------------------------------
+        DELETE MESSAGE FUNCTION
+    ------------------------------------------- */
+    async function deleteMessage(messageId, content, senderId) {
+        // Check if current user is the sender
+        if (senderId !== currentUserId) {
+            alertSystem.show('You can only delete your own messages.', 'error');
+            return false;
+        }
+
+        try {
+            // Extract file path if it's a media message
+            const filePath = extractFilePathFromContent(content);
+
+            // Delete file from storage if it exists
+            if (filePath) {
+                const storageDeleted = await deleteFileFromStorage(filePath);
+                if (!storageDeleted) {
+                    console.warn('Failed to delete file from storage, but continuing with message deletion');
+                }
+            }
+
+            // Delete message from database
+            const { error } = await supabaseClient
+                .from('chat_messages')
+                .delete()
+                .eq('id', messageId);
+
+            if (error) {
+                console.error('Error deleting message from database:', error);
+                alertSystem.show('Failed to delete message. Please try again.', 'error');
+                return false;
+            }
+
+            console.log('Message deleted successfully');
+            alertSystem.show('Message deleted successfully.', 'success');
+            return true;
+
+        } catch (error) {
+            console.error('Error in deleteMessage:', error);
+            alertSystem.show('An error occurred while deleting the message.', 'error');
+            return false;
+        }
+    }
+
+    /* -------------------------------------------
+        INITIALIZE ELLIPSIS BUTTONS FOR DELETE
+    ------------------------------------------- */
+    function initEllipsisButtons() {
+        // Add click event to message containers to show ellipsis
+        document.addEventListener('click', (e) => {
+            const messageContainer = e.target.closest('[data-message-id]');
+
+            if (!messageContainer) {
+                // Hide all ellipsis menus if clicking outside
+                hideAllEllipsisMenus();
+                return;
+            }
+
+            // Check if clicking on ellipsis button or message bubble
+            if (e.target.closest('.message-ellipsis-btn')) {
+                const messageId = messageContainer.dataset.messageId;
+                const senderId = messageContainer.dataset.senderId;
+                const messageContent = messageContainer.querySelector('.message-content')?.innerHTML || '';
+
+                // Show ellipsis menu
+                showEllipsisMenu(messageId, senderId, messageContent, e);
+            } else if (e.target.closest('.message-content')) {
+                // Show ellipsis button when clicking on message
+                showEllipsisButton(messageContainer);
+            }
+        });
+    }
+
+    /* -------------------------------------------
+        SHOW ELLIPSIS BUTTON ON MESSAGE CLICK
+    ------------------------------------------- */
+    function showEllipsisButton(messageContainer) {
+        // Hide any existing ellipsis buttons first
+        hideAllEllipsisButtons();
+
+        // Check if this is the current user's message
+        const senderId = messageContainer.dataset.senderId;
+        if (senderId !== currentUserId) return; // Only show for own messages
+
+        // Create ellipsis button if it doesn't exist
+        let ellipsisBtn = messageContainer.querySelector('.message-ellipsis-btn');
+        if (!ellipsisBtn) {
+            ellipsisBtn = document.createElement('button');
+            ellipsisBtn.className = 'message-ellipsis-btn absolute top-1 right-1 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 z-10';
+            ellipsisBtn.innerHTML = '<i class="fas fa-ellipsis-h text-gray-600 text-sm"></i>';
+            ellipsisBtn.title = 'More options';
+
+            // Add to message container
+            messageContainer.style.position = 'relative';
+            messageContainer.appendChild(ellipsisBtn);
+        }
+
+        // Show the ellipsis button
+        ellipsisBtn.classList.remove('hidden');
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (ellipsisBtn && !ellipsisBtn.matches(':hover')) {
+                ellipsisBtn.classList.add('hidden');
+            }
+        }, 5000);
+    }
+
+    /* -------------------------------------------
+        HIDE ALL ELLIPSIS BUTTONS
+    ------------------------------------------- */
+    function hideAllEllipsisButtons() {
+        document.querySelectorAll('.message-ellipsis-btn').forEach(btn => {
+            btn.classList.add('hidden');
+        });
+    }
+
+    /* -------------------------------------------
+        SHOW ELLIPSIS MENU
+    ------------------------------------------- */
+    function showEllipsisMenu(messageId, senderId, content, event) {
+        // Hide any existing menus first
+        hideAllEllipsisMenus();
+
+        // Create menu
+        const menu = document.createElement('div');
+        menu.className = 'fixed bg-white rounded-lg shadow-lg py-2 min-w-[150px] z-50 border border-gray-200';
+        menu.innerHTML = `
+            <button class="delete-message-btn w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 hover:text-red-700 flex items-center gap-2">
+                <i class="fas fa-trash text-sm"></i>
+                <span class="text-sm">Delete Message</span>
+            </button>
+        `;
+
+        // Position menu near the click
+        const clickX = event.clientX;
+        const clickY = event.clientY;
+        const menuWidth = 150;
+        const menuHeight = 40;
+
+        // Adjust position to fit within viewport
+        let left = clickX;
+        let top = clickY;
+
+        if (clickX + menuWidth > window.innerWidth) {
+            left = window.innerWidth - menuWidth - 10;
+        }
+
+        if (clickY + menuHeight > window.innerHeight) {
+            top = window.innerHeight - menuHeight - 10;
+        }
+
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+
+        document.body.appendChild(menu);
+
+        // Handle delete button click
+        const deleteBtn = menu.querySelector('.delete-message-btn');
+        deleteBtn.addEventListener('click', async () => {
+            const confirmed = confirm('Are you sure you want to delete this message? This action cannot be undone.');
+
+            if (confirmed) {
+                try {
+                    const success = await deleteMessage(messageId, content, senderId);
+
+                    if (success) {
+                        // Remove the message from UI
+                        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                        if (messageElement) {
+                            messageElement.remove();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in delete handler:', error);
+                    alertSystem.show('Failed to delete message. Please try again.', 'error');
+                }
+            }
+
+            // Remove menu
+            document.body.removeChild(menu);
+        });
+
+        // Close menu when clicking outside
+        const closeMenu = (e) => {
+            if (!menu.contains(e.target) && !e.target.closest('.message-ellipsis-btn')) {
+                document.body.removeChild(menu);
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+
+        setTimeout(() => {
+            document.addEventListener('click', closeMenu);
+        }, 100);
+    }
+
+    /* -------------------------------------------
+        HIDE ALL ELLIPSIS MENUS
+    ------------------------------------------- */
+    function hideAllEllipsisMenus() {
+        const menus = document.querySelectorAll('.fixed.bg-white.rounded-lg.shadow-lg.py-2');
+        menus.forEach(menu => {
+            if (document.body.contains(menu)) {
+                document.body.removeChild(menu);
+            }
+        });
+    }
+
+    /* -------------------------------------------
         GET USER DISPLAY NAME
     ------------------------------------------- */
     async function getUserDisplayName(userId) {
@@ -483,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        FORMAT MESSAGE FOR DISPLAY - WITH SENDER NAME
+        FORMAT MESSAGE FOR DISPLAY - WITH SENDER NAME AND DELETE OPTION
     ------------------------------------------- */
     async function formatMessageForDisplay(msg) {
         const isCurrentUser = msg.sender_id === currentUserId;
@@ -515,13 +781,13 @@ document.addEventListener("DOMContentLoaded", () => {
             contentHTML = div.innerHTML;
         }
 
-        // For current user's messages, don't show name
+        // For current user's messages, don't show name but add delete option
         // For other users' messages, show sender name
         if (isCurrentUser) {
             return `
-                <div class="mb-4 text-right" data-message-id="${msg.id}" data-sender-id="${msg.sender_id}">
-                    <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
-                        <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
+                <div class="mb-4 text-right relative" data-message-id="${msg.id}" data-sender-id="${msg.sender_id}">
+                    <div class="inline-block max-w-xs lg:max-w-md bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 hover:bg-blue-700 transition-colors cursor-pointer message-content">
+                        <div class="text-sm wrap-break-word overflow-hidden">${contentHTML}</div>
                         <div class="text-xs mt-1 text-blue-100">
                             ${timeString}
                         </div>
@@ -537,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                     <div class="inline-block max-w-xs lg:max-w-md bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2">
-                        <div class="text-sm wrap-break-word overflow-hidden message-content">${contentHTML}</div>
+                        <div class="text-sm wrap-break-word overflow-hidden">${contentHTML}</div>
                         <div class="text-xs mt-1 text-gray-500">
                             ${timeString}
                         </div>
@@ -591,14 +857,17 @@ document.addEventListener("DOMContentLoaded", () => {
         SEND MESSAGE HANDLER
     ------------------------------------------- */
     sendBtn.addEventListener('click', async () => {
-        if (isSendingMessage) return; // Prevent multiple sends
+        if (isSendingMessage) return;
 
         const messageText = messageInput.value.trim();
 
-        if (!messageText && !currentMediaFile) return;
+        if (!messageText && !currentMediaFile) {
+            alertSystem.show('Please enter a message or attach a file.', 'info');
+            return;
+        }
 
         if (!currentConversation || !currentUserId) {
-            alert('No conversation selected');
+            alertSystem.show('No conversation selected.', 'error');
             return;
         }
 
@@ -633,7 +902,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             mediaHtml = `<img src="${dataUrl}" alt="Shared image" class="max-w-xs rounded-lg mt-1" style="max-height: 300px; max-width: 100%;" loading="lazy">`;
                         } else {
-                            alert('File upload not available. Please try sending text only or a smaller image (<5MB).');
+                            alertSystem.show('File upload not available. Please try sending text only or a smaller image (<5MB).', 'error');
                             isSendingMessage = false;
                             updateSendButtonState();
                             return;
@@ -667,9 +936,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Focus back on input
             messageInput.focus();
 
+            render();
+
+            // REMOVED: Don't add optimistic update here - real-time subscription will handle it
+
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again.');
+            alertSystem.show('Failed to send message. Please try again.', 'error');
             isSendingMessage = false;
             updateSendButtonState();
         }
@@ -687,7 +960,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     {
                         conversation_id: currentConversation.id,
                         sender_id: currentUserId,
-                        sender_name: currentUserName, // Include sender name
+                        sender_name: currentUserName,
                         content: finalContent,
                         friend_name: currentConversation.friendName,
                         friend_avatar: currentConversation.friendAvatar
@@ -698,7 +971,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error) throw error;
 
-            // Update latest message in the message table for instant UI update
             await supabaseClient
                 .from('message')
                 .update({
@@ -708,12 +980,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 .eq('conversation_id', currentConversation.id)
                 .eq('user_id', currentUserId);
 
-            console.log('Message sent successfully');
-
-            // Add message to UI immediately (optimistic update)
-            // For current user, show without name
-            addMessageToUI(finalContent, true);
-
         } catch (error) {
             console.error('Error in sendMessageToDatabase:', error);
             throw error;
@@ -721,45 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* -------------------------------------------
-        ADD MESSAGE TO UI (OPTIMISTIC UPDATE)
-    ------------------------------------------- */
-    function addMessageToUI(content, isCurrentUser = true) {
-        const messagesContainer = document.querySelector('#directMessage #messagesContainer');
-        if (!messagesContainer) return;
-
-        const messageDate = new Date();
-        const timeString = messageDate.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        if (isCurrentUser) {
-            const messageElement = `
-                <div class="mb-4 text-right" data-temp-message="true">
-                    <div class="inline-block max-w-xs lg:max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2">
-                        <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
-                        <div class="text-xs mt-1 text-blue-100">${timeString}</div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.innerHTML += messageElement;
-        } else {
-            const messageElement = `
-                <div class="mb-4 text-left" data-temp-message="true">
-                    <div class="inline-block max-w-xs lg:max-w-md bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2">
-                        <div class="text-sm wrap-break-word overflow-hidden message-content">${content}</div>
-                        <div class="text-xs mt-1 text-gray-500">${timeString}</div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.innerHTML += messageElement;
-        }
-
-        scrollToBottom();
-    }
-
-    /* -------------------------------------------
-        SETUP REAL-TIME SUBSCRIPTION
+        SETUP REAL-TIME SUBSCRIPTION WITH DELETE HANDLING
     ------------------------------------------- */
     function setupRealtimeSubscription(conversationId) {
         // Unsubscribe from previous subscription if exists
@@ -813,9 +1041,32 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'chat_messages',
+                    filter: `conversation_id=eq.${conversationId}`
+                },
+                (payload) => {
+                    console.log('Message deleted:', payload.old);
+
+                    // Remove the message from UI
+                    const messageElement = document.querySelector(`[data-message-id="${payload.old.id}"]`);
+                    if (messageElement) {
+                        messageElement.remove();
+                    }
+                }
+            )
             .subscribe(
                 (status) => {
                     console.log('Subscription status:', status);
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Successfully subscribed to real-time updates');
+                    } else if (status === 'CHANNEL_ERROR') {
+                        alertSystem.show('Failed to connect to real-time updates.', 'error');
+                    }
                 }
             );
 
