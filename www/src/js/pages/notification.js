@@ -102,6 +102,7 @@ async function videoLike(videoId, currentUserId) {
         if (videoOwnerId === currentUserId) return;
 
         // insert notif with only sender_id (normalized)
+        // Don't store entity_id since videoId is numeric but entity_id expects UUID
         const { error: notifError } = await supabaseClient
             .from('notifications')
             .insert([{
@@ -109,14 +110,13 @@ async function videoLike(videoId, currentUserId) {
                 sender_id: currentUserId,
                 type: 'video_like',
                 entity_type: 'video',
-                entity_id: videoId,
                 message: 'liked your video',
                 is_read: false,
                 created_at: new Date().toISOString()
             }]);
         if (notifError) throw notifError;
     } catch (err) {
-        console.error('Error:', err);
+        console.error('Error in videoLike:', err);
     }
 }
 export { videoLike };

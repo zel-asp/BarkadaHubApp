@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function likeVideo(videoId, userId) {
         const { error } = await supabaseClient
             .from('video_likes')
-            .insert({ video_id: Number(videoId), user_id: userId });
+            .insert({ video_id: videoId, user_id: userId });
         if (error) throw error;
     }
 
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { error } = await supabaseClient
             .from('video_likes')
             .delete()
-            .eq('video_id', Number(videoId))
+            .eq('video_id', videoId)
             .eq('user_id', userId);
         if (error) throw error;
     }
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data, error } = await supabaseClient
             .from('video_likes')
             .select('id')
-            .eq('video_id', Number(videoId))
+            .eq('video_id', videoId)
             .eq('user_id', userId)
             .maybeSingle();
 
@@ -645,7 +645,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const btn = e.target.closest('.likeBtn');
             if (!btn) return;
 
-            const videoId = parseInt(btn.dataset.videoId, 10);
+            const videoId = btn.dataset.videoId;
             const isLiked = btn.dataset.liked === 'true';
             const { data: userData } = await supabaseClient.auth.getUser();
             const userId = userData?.user?.id;
