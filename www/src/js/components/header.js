@@ -11,7 +11,7 @@ const NotificationBadge = ({ count, position = 'default', hidden = false, id = '
             class="${positions[position]}
             flex text-[10px] rounded-full w-4 h-4
             items-center justify-center
-            font-bold text-white bg-red-500">
+            font-extrabold text-white bg-red-500">
             ${count || ''}
         </span>
     `;
