@@ -33,7 +33,7 @@ export default function HeaderComponent(admin = null) {
                             class="absolute -top-2 -right-1
                                 text-[11px] rounded-full w-5 h-5
                                 flex items-center justify-center
-                                font-bold text-white bg-red-500" style="display: none;">
+                                font-extrabold text-white bg-red-500" style="display: none;">
                             
                         </span>
                     </a>
@@ -47,7 +47,7 @@ export default function HeaderComponent(admin = null) {
                             class="absolute -top-2 -right-1
                                 text-[10px] rounded-full w-4 h-4
                                 flex items-center justify-center
-                                font-bold text-white bg-red-500" style="display: none;">
+                                font-extrabold text-white bg-red-500" style="display: none;">
                             
                         </span>
                     </a>
@@ -61,7 +61,7 @@ export default function HeaderComponent(admin = null) {
                             class="absolute -top-2 -right-1
                             text-[10px] rounded-full w-4 h-4
                             flex items-center justify-center
-                            font-bold text-white bg-red-500">
+                            font-extrabold text-white bg-red-500">
                             3
                         </span>
                     </a>
