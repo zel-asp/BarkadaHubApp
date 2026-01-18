@@ -5,13 +5,10 @@ import { videoLike } from './notification.js';
 import { renderNotifications, setupClickMarkRead } from '../render/notification.js';
 
 async function initNotifications() {
-    const notifications = await fetchNotifications(); // your function to get notifications
+    const notifications = await fetchNotifications();
     renderNotifications(notifications);
-
-    // <-- This is important
-    setupClickMarkRead(); // attach click listeners after rendering
+    setupClickMarkRead();
 }
-
 
 /* ------------------------------------------------------
     POST LOADING
@@ -57,6 +54,85 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
+
+    /* ------------------------------------------------------
+        ADD NEW VIDEO (INSTEAD OF FULL RE-RENDER)
+    ------------------------------------------------------ */
+    async function addNewVideo(videoId) {
+        // Fetch only the new video
+        const { data: video, error } = await supabaseClient
+            .from('videos')
+            .select('*')
+            .eq('id', videoId)
+            .single();
+
+        if (error || !video) {
+            console.error('Error fetching new video:', error);
+            return;
+        }
+
+        const { data: authData } = await supabaseClient.auth.getUser();
+        const userId = authData?.user?.id;
+
+        // Get friend status and like data for the new video
+        const friendStatus = await getFriendStatus(userId, video.user_id);
+
+        const { count: likeCount } = await supabaseClient
+            .from('video_likes')
+            .select('id', { count: 'exact' })
+            .eq('video_id', video.id);
+
+        const userLiked = await checkUserLiked(video.id, userId);
+
+        const videoWithData = {
+            ...video,
+            friendStatus,
+            likeCount: Number(likeCount) || 0,
+            userLiked
+        };
+
+        // Create the HTML for the new video
+        const postOwner = userId === video.user_id;
+        const newVideoHTML = createVideoItem(
+            videoWithData.video_url,
+            videoWithData.avatar_url || '../images/image.png',
+            videoWithData.auth_name,
+            videoWithData.user_id,
+            videoWithData.caption,
+            videoWithData.id,
+            videoWithData.likeCount,
+            postOwner,
+            videoWithData.friendStatus,
+            videoWithData.userLiked
+        );
+
+        // Store current scroll position before adding new video
+        const isUserNearTop = window.scrollY < 100; // Check if user is near top of page
+        const currentActiveVideo = document.querySelector('.video-barkadahub-item video:not([paused])');
+
+        // Insert new video at the top
+        videoContainer.insertAdjacentHTML('afterbegin', newVideoHTML);
+
+        // Reinitialize playback for the new video only
+        const newVideoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
+        if (newVideoElement && window.userInteracted) {
+            const video = newVideoElement.querySelector('video');
+            if (video && isUserNearTop) {
+                video.play().catch(() => { });
+            }
+        }
+    }
+
+    /* ------------------------------------------------------
+        DELETE VIDEO (INSTEAD OF FULL RE-RENDER)
+    ------------------------------------------------------ */
+    function removeVideoFromDOM(videoId) {
+        const videoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
+        if (videoElement) {
+            videoElement.remove();
+        }
+    }
+
     /* ------------------------------------------------------
         MODAL LOGIC
     ------------------------------------------------------ */
@@ -146,17 +222,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 videoUrl = supabaseClient.storage.from('videos').getPublicUrl(filePath).data.publicUrl;
             }
 
-            await supabaseClient.from('videos').insert([{
-                video_url: videoUrl,
-                file_path: filePath,
-                caption,
-                user_id: userData.user.id,
-                auth_name: userData.user.user_metadata?.display_name || 'Anonymous'
-            }]);
+            const { data: newVideo, error: insertError } = await supabaseClient
+                .from('videos')
+                .insert([{
+                    video_url: videoUrl,
+                    file_path: filePath,
+                    caption,
+                    user_id: userData.user.id,
+                    auth_name: userData.user.user_metadata?.display_name || 'Anonymous'
+                }])
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
 
             alertSystem.show('Video uploaded successfully!', 'success');
             closeVideoModal();
-            render();
+
+            // Add the new video to the top instead of re-rendering everything
+            if (newVideo) {
+                await addNewVideo(newVideo.id);
+            }
         } catch (err) {
             console.error(err);
             alertSystem.show(err.message, 'error');
@@ -166,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     /* ------------------------------------------------------
-        DELETE VIDEO
+        DELETE VIDEO FROM DATABASE
     ------------------------------------------------------ */
     async function deleteVideo(postId) {
         const { data } = await supabaseClient
@@ -183,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /* ------------------------------------------------------
-        FRIEND SYSTEM (SAME AS HOME.JS)
+        FRIEND SYSTEM
     ------------------------------------------------------ */
     async function getFriendStatus(currentUserId, videoUserId) {
         if (currentUserId === videoUserId) return null;
@@ -200,12 +286,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data || data.length === 0) return null;
 
-        // Decide which row applies to current user
-        // If current user sent the request
         const sentRequest = data.find(r => r.sender_id === currentUserId);
         if (sentRequest) return sentRequest.status;
 
-        // If current user received the request
         const receivedRequest = data.find(r => r.receiver_id === currentUserId);
         if (receivedRequest) return receivedRequest.status === 'pending' ? 'accept' : receivedRequest.status;
 
@@ -221,18 +304,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentStatus = btn.dataset.status;
 
             try {
-                /* -----------------------------------------
-                AUTH USER
-                ----------------------------------------- */
                 const { data: userData, error: authError } = await supabaseClient.auth.getUser();
                 if (authError) throw authError;
 
                 const senderId = userData?.user?.id;
                 if (!senderId) throw new Error('User not logged in');
 
-                /* -----------------------------------------
-                CHECK EXISTING REQUEST
-                ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
                     .from('friends_request')
                     .select('id, status, sender_id, receiver_id')
@@ -242,13 +319,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (fetchError) throw fetchError;
 
-                /* -----------------------------------------
-                IF REQUEST EXISTS
-                ----------------------------------------- */
                 if (existingRequests && existingRequests.length > 0) {
                     const existingRequest = existingRequests[0];
 
-                    // Sender already sent request
                     if (existingRequest.sender_id === senderId) {
                         if (existingRequest.status === 'pending') {
                             alertSystem.show('You already sent a follow request', 'info');
@@ -260,14 +333,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
                     }
 
-                    /* -----------------------------------------
-                    ACCEPT REQUEST
-                    ----------------------------------------- */
                     if (
                         existingRequest.receiver_id === senderId &&
                         existingRequest.status === 'pending'
                     ) {
-                        // Update request status
                         const { error: updateError } = await supabaseClient
                             .from('friends_request')
                             .update({
@@ -278,9 +347,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (updateError) throw updateError;
 
-                        /* -----------------------------------------
-                        INSERT FRIENDS (BIDIRECTIONAL)
-                        ----------------------------------------- */
                         const { error: friendsError } = await supabaseClient
                             .from('friends')
                             .insert([
@@ -298,9 +364,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (friendsError) throw friendsError;
 
-                        /* -----------------------------------------
-                        FETCH BOTH PROFILES
-                        ----------------------------------------- */
                         const { data: profiles, error: profileError } = await supabaseClient
                             .from('profile')
                             .select('id, name, avatar_url')
@@ -311,9 +374,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (profileError) throw profileError;
 
-                        /* -----------------------------------------
-                        BUILD PROFILE MAP
-                        ----------------------------------------- */
                         const profileMap = {};
                         profiles.forEach(p => {
                             profileMap[p.id] = {
@@ -322,9 +382,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             };
                         });
 
-                        /* -----------------------------------------
-                        INSERT MESSAGES (BIDIRECTIONAL)
-                        ----------------------------------------- */
                         const { error: messageError } = await supabaseClient
                             .from('message')
                             .insert([
@@ -350,9 +407,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             throw messageError;
                         }
 
-                        /* -----------------------------------------
-                        UI UPDATE
-                        ----------------------------------------- */
                         updateFollowButtonUI(btn, 'friends');
                         alertSystem.show('Friend request accepted!', 'success');
                         return;
@@ -364,9 +418,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                /* -----------------------------------------
-                SEND NEW REQUEST
-                ----------------------------------------- */
                 if (
                     (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
                     (!existingRequests || existingRequests.length === 0)
@@ -391,7 +442,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
 
     function updateFollowButtonUI(btn, status) {
         const container = btn.querySelector('.relative > div:last-child');
@@ -444,7 +494,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateFollowButtonsRealtime(row) {
-        // UPDATE → both see FRIENDS
         if (row.status === 'friends') {
             document.querySelectorAll(
                 `.followBtn[data-user-post-id="${row.sender_id}"],
@@ -468,35 +517,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let selectedPostId = null;
 
-        // ==========================
-        // OPEN ELLIPSIS MENU
-        // ==========================
         document.addEventListener('click', e => {
             const btn = e.target.closest('.openEllipsisMenuBtn');
             if (!btn) return;
 
             e.stopPropagation();
-
             selectedPostId = btn.dataset.id;
-
-
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete permanently';
-
             ellipsisModal.classList.remove('hidden');
         });
 
-        // ==========================
-        // OPEN DELETE CONFIRMATION
-        // ==========================
         deletePostBtn?.addEventListener('click', () => {
             ellipsisModal.classList.add('hidden');
             deleteConfirmModal.classList.remove('hidden');
         });
 
-        // ==========================
-        // CONFIRM DELETE
-        // ==========================
         confirmDeleteBtn?.addEventListener('click', async () => {
             if (!selectedPostId) return;
 
@@ -505,12 +541,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 await deleteVideo(selectedPostId);
-
                 alertSystem.show('Deleted', 'success');
-
-                document
-                    .querySelector(`.video-barkadahub-item[data-id="${selectedPostId}"]`)
-                    ?.parentElement?.remove();
+                removeVideoFromDOM(selectedPostId);
             } catch (err) {
                 console.error(err);
                 alertSystem.show('Failed to delete', 'error');
@@ -518,29 +550,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             deleteConfirmModal.classList.add('hidden');
             selectedPostId = null;
-
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete permanently';
         });
 
-        // ==========================
-        // CANCEL DELETE
-        // ==========================
         cancelDeleteBtn?.addEventListener('click', () => {
             deleteConfirmModal.classList.add('hidden');
             selectedPostId = null;
-
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete permanently';
         });
 
-        // ==========================
-        // CLOSE ELLIPSIS MENU
-        // ==========================
         closeEllipsisMenu?.addEventListener('click', () => {
             ellipsisModal.classList.add('hidden');
             selectedPostId = null;
-
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.textContent = 'Delete permanently';
         });
@@ -550,11 +573,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         VIDEO PLAY / PAUSE
     ------------------------------------------------------ */
     function initVideoPlayback() {
-        let userInteracted = false;
+        window.userInteracted = false;
 
         function unlockVideos() {
-            if (userInteracted) return;
-            userInteracted = true;
+            if (window.userInteracted) return;
+            window.userInteracted = true;
             playVisibleVideo();
             document.removeEventListener('click', unlockVideos);
             document.removeEventListener('touchstart', unlockVideos);
@@ -579,7 +602,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 entries.forEach(entry => {
                     const video = entry.target.querySelector('video');
                     if (!video) return;
-                    entry.isIntersecting && userInteracted
+                    entry.isIntersecting && window.userInteracted
                         ? video.play().catch(() => { })
                         : video.pause();
                 });
@@ -661,43 +684,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let currentLikes = Number(likeCountSpan.textContent) || 0;
 
                 if (isLiked) {
-                    // Unlike the video
                     await unlikeVideo(videoId, userId);
-
-                    // Update UI immediately
                     btn.dataset.liked = 'false';
                     btn.classList.remove('liked');
                     likeIcon.classList.remove('fas', 'text-red-500');
                     likeIcon.classList.add('far');
-
-                    // Update count
                     currentLikes = Math.max(0, currentLikes - 1);
                     likeCountSpan.textContent = currentLikes;
-
                 } else {
-                    // Like the video
                     await likeVideo(videoId, userId);
-
-                    // Update UI immediately
                     btn.dataset.liked = 'true';
                     btn.classList.add('liked');
                     likeIcon.classList.remove('far');
                     likeIcon.classList.add('fas', 'text-red-500');
-
-                    // Update count
                     currentLikes += 1;
                     likeCountSpan.textContent = currentLikes;
                 }
                 await videoLike(videoId, userId);
-
             } catch (err) {
                 console.error('Error toggling like:', err);
                 alertSystem.show('Failed to update like', 'error');
             }
         });
     }
+
     /* ------------------------------------------------------
-        RENDER VIDEOS
+        RENDER VIDEOS (INITIAL LOAD)
     ------------------------------------------------------ */
     async function render() {
         const { data: videos, error } = await supabaseClient
@@ -718,18 +730,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Get friend status and like data for each video
         const videosWithData = await Promise.all(
             videos.map(async video => {
                 const friendStatus = await getFriendStatus(userId, video.user_id);
-
-                // Fetch like count
                 const { count: likeCount } = await supabaseClient
                     .from('video_likes')
                     .select('id', { count: 'exact' })
                     .eq('video_id', video.id);
-
-                // Check if current user liked this video
                 const userLiked = await checkUserLiked(video.id, userId);
 
                 return {
@@ -743,7 +750,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         videoContainer.innerHTML = videosWithData.map(video => {
             const postOwner = userId === video.user_id;
-
             return createVideoItem(
                 video.video_url,
                 video.avatar_url || '../images/image.png',
@@ -754,7 +760,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 video.likeCount,
                 postOwner,
                 video.friendStatus,
-                video.userLiked  // This should now be true/false
+                video.userLiked
             );
         }).join('');
 
@@ -771,21 +777,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }, 300);
 
-            // OPTIONAL: Mark notification as read after scrolling
             if (userId) {
                 supabaseClient
                     .from('notifications')
                     .update({ is_read: true })
                     .eq('entity_type', 'video')
                     .eq('entity_id', videoId)
-                    .eq('user_id', userId)
-                    .then(() => {
-                        updateNotificationBadge(); // refresh badge
-                    });
+                    .eq('user_id', userId);
             }
         }
     }
-
 
     /* ------------------------------------------------------
         INITIALIZE EVERYTHING
@@ -799,14 +800,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     initLikeButtons();
     await render();
 
-    // Realtime for new videos
+    // Realtime for new videos - UPDATED VERSION
     supabaseClient
         .channel('videos-realtime')
         .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'videos' },
-            (payload) => {
-                render();
+            async (payload) => {
+                await addNewVideo(payload.new.id);
             }
         )
         .on(
