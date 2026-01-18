@@ -29,11 +29,11 @@ export default function HeaderComponent(admin = null) {
                 ${admin ? `<div class="relative cursor-pointer">
                     <a href="./auth-log.html" class="block relative">
                         <i class="fas fa-chart-line text-primary text-xl"></i>
-                        <span id="notificationBadge"
+                        <span id="statsBadge"
                             class="absolute -top-2 -right-1
-                                text-[10px] rounded-full w-4 h-4
+                                text-[11px] rounded-full w-5 h-5
                                 flex items-center justify-center
-                                font-extrabold text-white bg-red-500" hidden>
+                                font-bold text-white bg-red-500" style="display: none;">
                             
                         </span>
                     </a>
@@ -47,7 +47,7 @@ export default function HeaderComponent(admin = null) {
                             class="absolute -top-2 -right-1
                                 text-[10px] rounded-full w-4 h-4
                                 flex items-center justify-center
-                                font-extrabold text-white bg-red-500">
+                                font-bold text-white bg-red-500" style="display: none;">
                             
                         </span>
                     </a>
@@ -61,7 +61,7 @@ export default function HeaderComponent(admin = null) {
                             class="absolute -top-2 -right-1
                             text-[10px] rounded-full w-4 h-4
                             flex items-center justify-center
-                            font-extrabold text-white bg-red-500">
+                            font-bold text-white bg-red-500">
                             3
                         </span>
                     </a>
