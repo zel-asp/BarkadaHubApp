@@ -1,5 +1,6 @@
 import { checkConnection } from './functions.js';
 import HeaderComponent from "./components/header.js";
+import { updateNotificationBadge, updateMessageBadge } from './render/notification.js';
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
 import offline, { Loading } from './render/offline.js';
@@ -189,7 +190,7 @@ const updateNavigationActiveState = () => {
 };
 
 // Render all page components
-const renderComponents = () => {
+const renderComponents = async () => {
     const components = [
         { id: 'header', html: HeaderComponent(state.isAdmin) },
         { id: 'mobileNav', html: mobileNavigations() },
@@ -206,6 +207,37 @@ const renderComponents = () => {
     });
 
     updateNavigationActiveState();
+
+    // Update notification badge after header is in DOM
+    try {
+        const user = await supabaseClient.auth.getUser();
+        if (user.data?.user?.id) {
+            // Fetch unread notifications
+            const { data: notifications } = await supabaseClient
+                .from('notifications')
+                .select('id, is_read')
+                .eq('user_id', user.data.user.id)
+                .order('created_at', { ascending: false });
+
+            if (notifications) {
+                updateNotificationBadge(notifications);
+            }
+
+            // Fetch unread messages
+            const { data: messages } = await supabaseClient
+                .from('chat_messages')
+                .select('id')
+                .eq('conversation_id', user.data.user.id)
+                .eq('is_read', false)
+                .order('created_at', { ascending: false });
+
+            if (messages) {
+                updateMessageBadge(messages);
+            }
+        }
+    } catch (error) {
+        console.error('Failed to update badges:', error);
+    }
 };
 
 // ===================== APP INITIALIZATION =====================
@@ -234,7 +266,7 @@ const initializeApp = async () => {
 
         const user = await checkUserSession();
         if (user) {
-            renderComponents();
+            await renderComponents();
         }
 
         // Ensure loading shows for at least 1 second

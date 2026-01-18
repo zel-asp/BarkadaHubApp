@@ -1,21 +1,22 @@
-// Reusable notification badge component
-const NotificationBadge = ({ count, position = 'default', hidden = false }) => {
+const NotificationBadge = ({ count, position = 'default', hidden = false, id = '' }) => {
     if (hidden) return '';
 
     const positions = {
-        default: 'absolute -top-2 -right-1',
-        custom: '' // Add custom positions as needed
+        default: 'absolute -top-2 -right-1 z-50', // add z-index
+        custom: ''
     };
 
     return `
-        <span class="${positions[position]}
-            text-[10px] rounded-full w-4 h-4
-            flex items-center justify-center
+        <span id="${id}"
+            class="${positions[position]}
+            flex text-[10px] rounded-full w-4 h-4
+            items-center justify-center
             font-extrabold text-white bg-red-500">
             ${count || ''}
         </span>
     `;
 };
+
 
 // Reusable icon link component
 const IconLink = ({ href, icon, badge = null, ariaLabel = '' }) => {
@@ -41,18 +42,19 @@ export default function HeaderComponent(isAdmin = false) {
         }] : []),
 
         // Notifications
-        {
-            href: './notification.html',
-            icon: 'fas fa-bell',
-            badge: NotificationBadge({ position: 'default' }),
-            ariaLabel: 'View notifications'
-        },
+          {
+    href: './notification.html',
+    icon: 'fas fa-bell',
+    badge: NotificationBadge({ position: 'default', id: 'notificationBadge' }),
+    ariaLabel: 'View notifications'
+          },
+
 
         // Messages
         {
             href: './messages.html',
             icon: 'fa-solid fa-message',
-            badge: NotificationBadge({ count: 3, position: 'default' }),
+            badge: NotificationBadge({ id: 'messageBadge', position: 'default' }),
             ariaLabel: 'View messages'
         }
     ];
@@ -80,56 +82,8 @@ export default function HeaderComponent(isAdmin = false) {
             </a>
 
             <!-- USER ACTIONS -->
-<<<<<<< HEAD
-            <div class="user-actions flex items-center gap-4">
-
-                
-                <!-- Statistics -->
-                ${admin ? `<div class="relative cursor-pointer">
-                    <a href="./auth-log.html" class="block relative">
-                        <i class="fas fa-chart-line text-primary text-xl"></i>
-                        <span id="statsBadge"
-                            class="absolute -top-2 -right-1
-                                text-[11px] rounded-full w-5 h-5
-                                flex items-center justify-center
-                                font-extrabold text-white bg-red-500" style="display: none;">
-                            
-                        </span>
-                    </a>
-                </div>` : ''}
-
-                <!-- NOTIFICATIONS -->
-                <div class="relative cursor-pointer">
-                    <a href="./notification.html" class="block relative">
-                        <i class="fas fa-bell text-primary text-xl"></i>
-                        <span id="notificationBadge"
-                            class="absolute -top-2 -right-1
-                                text-[10px] rounded-full w-4 h-4
-                                flex items-center justify-center
-                                font-eabold text-white bg-red-500" style="display: none;">
-                            
-                        </span>
-                    </a>
-                </div>
-
-                <!-- MESSAGES -->
-                <div class="relative cursor-pointer">
-                    <a href="./messages.html" class="block relative">
-                        <i class="fa-solid fa-message text-primary text-xl"></i>
-                        <span
-                            class="absolute -top-2 -right-1
-                            text-[10px] rounded-full w-4 h-4
-                            flex items-center justify-center
-                            font-extrabold text-white bg-red-500">
-                            3
-                        </span>
-                    </a>
-                </div>
-
-=======
             <div class="user-actions flex items-center gap-4" role="navigation" aria-label="User actions">
                 ${userActions.map(IconLink).join('')}
->>>>>>> 025248c6df8f05d83e3235cd1d564b3b6d97b061
             </div>
         </div>
     </div>

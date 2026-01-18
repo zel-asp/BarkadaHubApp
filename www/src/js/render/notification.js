@@ -202,6 +202,28 @@ export function updateNotificationBadge(notifications = null) {
     }
 }
 
+export function updateMessageBadge(messages = null) {
+    const badge = document.getElementById('messageBadge');
+    
+    if (!badge) {
+        console.warn('Message badge element not found in DOM');
+        return;
+    }
+
+    if (!messages) {
+        messages = Array.from(document.querySelectorAll('[data-message-id]'));
+    }
+
+    const unreadCount = messages.length > 0 ? messages.length : 0;
+    console.log("Unread messages:", unreadCount);
+
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
 
 export function attachNotificationListeners() {
     // You can put other notification-specific event listeners here

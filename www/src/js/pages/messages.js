@@ -681,13 +681,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Remove menu
-            document.body.removeChild(menu);
+            if (menu.parentNode) {
+                document.body.removeChild(menu);
+            }
+            document.removeEventListener('click', closeMenu);
         });
 
         // Close menu when clicking outside
         const closeMenu = (e) => {
             if (!menu.contains(e.target) && !e.target.closest('.message-ellipsis-btn')) {
-                document.body.removeChild(menu);
+                // Check if menu still exists in DOM before removing
+                if (menu.parentNode) {
+                    document.body.removeChild(menu);
+                }
                 document.removeEventListener('click', closeMenu);
             }
         };
