@@ -101,6 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (error) throw error;
 
+                // Delete the membership
+                const { error: message } = await supabaseClient
+                    .from('message')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('relation', 'club')
+
                 alertSystem.show('You left the club.', 'success');
 
                 setTimeout(() => {

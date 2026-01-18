@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) throw error;
         return supabaseClient.storage.from("clubs").getPublicUrl(filePath).data.publicUrl;
     };
+
     const handleFormSubmit = async e => {
         e.preventDefault();
         const clubName = document.getElementById("clubName")?.value.trim();
@@ -122,13 +123,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!selectedCategory) return;
 
         try {
+            /* ===============================
+            Create conversation
+            =============================== */
+            const { data: conversation, error: convError } =
+                await supabaseClient
+                    .from('conversations')
+                    .insert({ type: 'club' })
+                    .select('id')
+                    .single();
+
+            if (convError) throw convError;
+
             const imageUrl = imageFile ? await uploadClubImage(userId, imageFile) : null;
             const { error } = await supabaseClient.from("clubs").insert({
                 club_name: clubName,
                 description,
                 location,
                 club_image: imageUrl,
-                category: selectedCategory
+                category: selectedCategory,
+                conversation_id: conversation.id
             });
             if (error) throw error;
 
@@ -147,11 +161,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     FETCH & RENDER CLUBS
     ===================================================== */
     const getClubs = async () => {
-        const { data: clubsData, error: clubsError } = await supabaseClient.from('clubs').select('*').order('created_at', { ascending: false });
+        const { data: clubsData, error: clubsError } = await supabaseClient
+            .from('clubs')
+            .select('*')
+            .order('created_at', { ascending: false });
+
         if (clubsError) return alertSystem.show(clubsError.message, 'error');
+
         if (!clubsData || clubsData.length === 0) return alertSystem.show('No Clubs available right now', 'info');
 
-        const { data: joinedClubData } = await supabaseClient.from('club_members').select('club_id').eq('user_id', userId).maybeSingle();
+        const { data: joinedClubData } = await supabaseClient
+            .from('club_members')
+            .select('club_id')
+            .eq('user_id', userId)
+            .maybeSingle();
+
         const joinedClubId = joinedClubData?.club_id || null;
 
         // Move joined club to top
@@ -161,7 +185,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (idx > -1) orderedClubs.unshift(...orderedClubs.splice(idx, 1));
         }
 
-        const { data: membersData } = await supabaseClient.from('club_members').select('club_id, user_id');
+        const { data: membersData } = await supabaseClient
+            .from('club_members')
+            .select('club_id, user_id');
+
         const memberCounts = {};
         membersData?.forEach(m => memberCounts[m.club_id] = (memberCounts[m.club_id] || 0) + 1);
 
@@ -171,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const icon = iconMap[club.category] || 'users';
             const isJoined = joinedClubId === club.id;
             const totalMembers = memberCounts[club.id] || 0;
-            elements.clubContainer.insertAdjacentHTML('beforeend', clubs(club.club_image, club.club_name, icon, club.location, club.description, club.id, club.category, totalMembers, isJoined));
+            elements.clubContainer.insertAdjacentHTML('beforeend', clubs(club.club_image, club.club_name, icon, club.location, club.description, club.id, club.category, totalMembers, isJoined, club.conversation_id));
         });
 
         setupJoinClubButtons(joinedClubId);
@@ -183,7 +210,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const setupJoinClubButtons = async (joinedClubId) => {
         document.querySelectorAll('.join-btn').forEach(btn => {
             const clubId = btn.dataset.id;
+            const conversationId = btn.dataset.conversationId;
 
+            // User already joined another club
             if (joinedClubId && clubId !== joinedClubId) {
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -191,38 +220,76 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             btn.addEventListener('click', async () => {
-                if (joinedClubId) return window.location.href = `./joinedClub.html?clubId=${clubId}`;
+                if (joinedClubId === clubId) {
+                    window.location.href = `./joinedClub.html?clubId=${clubId}`;
+                    return;
+                }
 
                 try {
-                    const { data, error } = await supabaseClient.from('club_members').insert([{ club_id: clubId, user_id: userId }]).select();
-                    if (error) throw error;
+                    /* ===============================
+                    INSERT club membership
+                    =============================== */
+                    const { data: member, error: memberError } =
+                        await supabaseClient
+                            .from('club_members')
+                            .insert({
+                                club_id: clubId,
+                                user_id: userId
+                            })
+                            .select('id')
+                            .single();
 
-                    const { data: clubData, error: clubError } = await supabaseClient.from('clubs').select('club_name, club_image').eq('id', clubId).single();
+                    if (memberError) throw memberError;
+
+                    /* ===============================
+                    Get club info
+                    =============================== */
+                    const { data: clubData, error: clubError } =
+                        await supabaseClient
+                            .from('clubs')
+                            .select('club_name, club_image')
+                            .eq('id', clubId)
+                            .single();
+
                     if (clubError) throw clubError;
 
-                    const { data: conversation, error: convError } = await supabaseClient.from('conversations').insert({ type: 'friend' }).select('id').single();
-                    if (convError) throw convError;
+                    /* ===============================
+                    Create message entry
+                    =============================== */
+                    const { error: messageError } =
+                        await supabaseClient
+                            .from('message')
+                            .insert({
+                                user_id: userId,
+                                friends_id: clubId,
+                                friend_name: clubData.club_name,
+                                friend_avatar: clubData.club_image,
+                                relation: 'club',
+                                clubMember_id: member.id,
+                                conversation_id: conversationId
+                            });
 
-                    const { data: member } = await supabaseClient.from('club_members').select('id').eq('user_id', userId).eq('club_id', clubId).single();
-                    const { error: messageError } = await supabaseClient.from('message').insert({
-                        user_id: userId,
-                        friends_id: clubId,
-                        friend_name: clubData.club_name,
-                        friend_avatar: clubData.club_image,
-                        relation: 'club',
-                        clubMember_id: member.id,
-                        conversation_id: conversation.id
-                    });
                     if (messageError) throw messageError;
 
-                    getClubs();
+                    /* ===============================
+                    Refresh UI
+                    =============================== */
+                    alertSystem.show('Successfully joined the club!', 'success');
+                    await getClubs();
+
                 } catch (err) {
-                    console.error(err);
-                    alertSystem.show('Failed to join the club.', 'error');
+                    console.error('Join club error:', err);
+                    alertSystem.show(
+                        err.code === '23505'
+                            ? 'You already joined this club.'
+                            : 'Failed to join the club.',
+                        'error'
+                    );
                 }
             });
         });
     };
+
 
     /* =====================================================
     INITIALIZE

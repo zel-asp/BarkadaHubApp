@@ -53,9 +53,11 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
     <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}" id='${postId}'>
         <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                        <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover">
-                    </div>
+                    <a href="${postOwner ? './profile.html' : `./otherProfile.html?user=${userId}`}">
+                        <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                            <img src="${avatar}" alt="${name} Avatar" class="w-full h-full object-cover" loading="eager">
+                        </div>
+                    </a>
                     <div>
                         <h4 class="font-bold">${name}</h4>
                         <span class="text-xs text-gray-500">${date} · <i class="fa fa-user"></i></span>
@@ -83,7 +85,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
                     ${media_type === "video"
                 ? `<video src="${file}" controls class="w-auto max-w-full h-auto max-h-96 object-contain"></video>`
                 : `<img src="${file}" alt="Post Image" class="w-auto max-w-full h-auto max-h-96 object-contain"
-                        onload="this.style.opacity='1'" style="opacity: 0; transition: opacity 0.3s;">`
+                        onload="this.style.opacity='1'" style="opacity: 0; transition: opacity 0.3s;" loading="lazy">`
             }
                 </div>
                 ${media_type === "image" ? `

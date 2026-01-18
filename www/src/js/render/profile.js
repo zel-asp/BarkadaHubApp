@@ -18,7 +18,7 @@ export function displayBio(bio) {
     `
 }
 
-export function displayInformation(name, email, major, year_level,) {
+export function displayInformation(name, email, major, year_level, owner = false) {
     return `
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Personal Information -->
@@ -30,7 +30,15 @@ export function displayInformation(name, email, major, year_level,) {
                             class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                             <i class="fas fa-user text-primary"></i>
                         </div>
-                        <h4 class="font-bold text-gray-800">Personal Information</h4>
+                        <div class="flex-1 flex items-center justify-between">
+                            <h4 class="font-bold text-gray-800">Personal Information</h4>
+                            ${!owner ? `
+                                <button type="button" class="follow-btn flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-500 transition-all duration-200">
+                                    <i class="fas fa-user-plus text-sm"></i>
+                                    <span>Follow</span>
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="space-y-4">
                         <div

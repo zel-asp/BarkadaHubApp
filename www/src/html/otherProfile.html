@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BarkadaHub - Campus Social Network</title>
+        <link rel="stylesheet" href="../../dist/output.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+
+    <body class="bg-gray-200 min-h-screen" data-page="protected">
+
+        <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
+
+        <div id="app">
+            <div id="header"></div>
+            <div class="container mx-auto px-4" id="pageContent">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Left Sidebar -->
+                    <div id="leftSideBar"></div>
+
+                    <!-- Main Content Area -->
+                    <div class="lg:col-span-2">
+
+                        <!-- Profile Page -->
+                        <div class="page-section" id="profile-page">
+                            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                                <div class="h-48 bg-primary overflow-hidden relative">
+                                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
+                                        alt="Profile Banner" class="w-full h-full object-cover">
+                                </div>
+                                <div class="p-6 relative">
+                                    <div
+                                        class="w-24 h-24 rounded-full border-4 border-white absolute -top-12 left-1/2 -translate-x-1/2 overflow-hidden bg-gray-200">
+                                        <img src="" alt="User Avatar" class="w-full h-full object-cover"
+                                            id="userAvatar">
+                                    </div>
+
+                                    <div class="profile-details  md:mt-0 md:ml-32">
+                                        <h1 class="text-2xl font-bold mb-1 mt-5" id="username"></h1>
+                                        <p class="text-gray-600 mb-4"><i class="fas fa-map-marker-alt mr-1"></i><span
+                                                id="location"></span></p>
+
+                                        <div class="profile-stats flex gap-6 mb-4">
+                                            <div class="stat text-center">
+                                                <div class="stat-value font-bold text-xl">245</div>
+                                                <div class="stat-label text-sm text-gray-500">Friends</div>
+                                            </div>
+                                            <div class="stat text-center">
+                                                <div class="stat-value font-bold text-xl">47</div>
+                                                <div class="stat-label text-sm text-gray-500">Posts</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Profile Information Card -->
+                            <div
+                                class="bg-white rounded-xl shadow-lg p-6 mb-8 transition-all duration-300 hover:shadow-xl">
+                                <div class="flex items-center gap-4 mb-8">
+                                    <div
+                                        class="bg-linear-to-br from-blue-100 to-indigo-100 w-12 h-12 rounded-xl flex items-center justify-center shadow-sm">
+                                        <i class="fas fa-user-circle text-xl text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">Profile Information</h3>
+                                        <p class="text-gray-500 text-sm">Personal and academic details</p>
+                                    </div>
+                                </div>
+
+                                <!-- Information Grid -->
+                                <div id="PersonalInfo">
+                                </div>
+
+                                <!-- Bio Section -->
+                                <div id="displayBio">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Sidebar -->
+                    <div id="rightSideBar"></div>
+                </div>
+            </div>
+            <!-- Mobile Bottom Navigation -->
+            <div id="mobileNav"></div>
+            <div id="infoLink"></div>
+
+        </div>
+        <div id="offlinePage" class="hidden">
+        </div>
+
+        <div id="offlinePage" class="hidden"></div>
+
+        <!-- Full Image Modal -->
+        <div id="fullImageModal" class="fixed inset-0 bg-black flex items-center justify-center z-50 hidden p-5">
+            <span id="closeFullImage" class="absolute top-5 right-5 text-white text-3xl cursor-pointer">&times;</span>
+            <img id="viewAvatar" src="" alt="Full Image" class="max-w-full max-h-full rounded-lg shadow-lg">
+        </div>
+
+        <script type="module" src="../js/app.js"></script>
+        <script type="module" src="../js/pages/otherProfile.js"></script>
+    </body>
+
+</html>

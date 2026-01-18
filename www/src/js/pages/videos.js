@@ -762,29 +762,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         videoPlayback.initAutoPlayOnSnap();
 
         const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('id');
-    if (videoId) {
-        setTimeout(() => {
-            const videoElement = document.querySelector(`[data-video-id="${videoId}"]`);
-            if (videoElement) {
-                videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 300);
+        const videoId = urlParams.get('id');
+        if (videoId) {
+            setTimeout(() => {
+                const videoElement = document.querySelector(`[data-video-id="${videoId}"]`);
+                if (videoElement) {
+                    videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
 
-        // OPTIONAL: Mark notification as read after scrolling
-        if (userId) {
-            supabaseClient
-                .from('notifications')
-                .update({ is_read: true })
-                .eq('entity_type', 'video')
-                .eq('entity_id', videoId)
-                .eq('user_id', userId)
-                .then(() => {
-                    updateNotificationBadge(); // refresh badge
-                });
-       } 
+            // OPTIONAL: Mark notification as read after scrolling
+            if (userId) {
+                supabaseClient
+                    .from('notifications')
+                    .update({ is_read: true })
+                    .eq('entity_type', 'video')
+                    .eq('entity_id', videoId)
+                    .eq('user_id', userId)
+                    .then(() => {
+                        updateNotificationBadge(); // refresh badge
+                    });
+            }
+        }
     }
-}
 
 
     /* ------------------------------------------------------

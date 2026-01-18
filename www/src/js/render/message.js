@@ -46,7 +46,7 @@ export default function messageItem({
         } transition-colors">
                                     ${name}
                                 </span>
-
+ 
                                 <span class="px-2.5 py-0.5 text-white text-xs font-semibold rounded-full
                                             ${isClub
             ? ''
@@ -90,7 +90,7 @@ function clubAvatar(onlineCount, avatar) {
             ? `
                     <!-- CLUB IMAGE -->
                     <img src="${avatar}"
-                        class="w-full h-full object-cover">
+                        class="w-full h-full object-cover" loading="lazy">
                 `
             : `
                     <!-- BLUE PLACEHOLDER -->
@@ -124,7 +124,7 @@ function friendAvatar(src) {
     return `
         <div class="relative">
             <img src="${src}"
-                class="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md">
+                class="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md" loading="lazy">
             </div>
     `;
 }
@@ -143,7 +143,7 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <img src="${avatar}"
-                        class="w-10 h-10 rounded-full object-cover border border-gray-300">
+                        class="w-10 h-10 rounded-full object-cover border border-gray-300" loading="lazy">
                     <span
                         class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></span>
                 </div>
@@ -160,34 +160,12 @@ export function directMessage(name, avatar, relation = 'friend', members = '', f
                 </div >
             </div >
         </div >
-
-        ${content.length === 0
-            ? `
-        <!-- Empty State -->
-        <div class = 'h-10'></div>
-        <div class="flex-1 flex flex-col justify-center items-center text-center px-6 bg-gray-50 min-h-[calc(100vh-64px)]">
-            <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                <i class="fas fa-comments text-3xl text-gray-500"></i>
-            </div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-1">
-                No messages yet
-            </h3>
-
-            <p class="text-gray-600 text-sm max-w-xs">
-                Start the conversation by sending your first message.
-            </p>
-        </div>
-        `
-            : `
         <!-- Chat Body -->
-        <div class="flex-1 p-4 overflow-y-auto bg-linear-to-b from-white to-blue-50">
+        <div class="flex-1 p-4 overflow-y-auto">
             <div class="space-y-4" id="messagesContainer">
                 ${content.join('')}
             </div>
         </div>
-        `
-        }
     `;
 }
 

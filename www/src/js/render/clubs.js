@@ -1,4 +1,4 @@
-export default function clubs(image, name, icon, location, description, id, category, members = 0, isJoined = false) {
+export default function clubs(image, name, icon, location, description, id, category, members = 0, isJoined = false, conversationId = null) {
     return `
         <div
             class="mb-5 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden
@@ -38,7 +38,7 @@ export default function clubs(image, name, icon, location, description, id, cate
                     class="join-btn w-full ${isJoined ? 'bg-success' : 'bg-primary'} hover:bg-secondary text-white
                         py-3 rounded-xl font-medium transition-all duration-200
                         flex items-center justify-center gap-2 shadow-sm hover:shadow"
-                    data-id="${id}">
+                    data-id="${id}" data-conversation-id="${conversationId}">
                     <i class="fas ${isJoined ? 'fa-sign-in-alt' : 'fa-user-plus'}"></i>
                     <span>${isJoined ? 'Enter' : 'Join Club'}</span>
                 </button>

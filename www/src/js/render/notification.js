@@ -3,11 +3,11 @@ import supabaseClient from '../supabase.js';
 // Helper function to format time
 function timeAgo(createdAt) {
     if (!createdAt) return 'just now';
-    
+
     const now = new Date();
     const then = new Date(createdAt);
     const seconds = Math.floor((now - then) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
@@ -17,7 +17,7 @@ function timeAgo(createdAt) {
     if (days < 7) return `${days}d ago`;
     const weeks = Math.floor(days / 7);
     if (weeks < 4) return `${weeks}w ago`;
-    
+
     return then.toLocaleDateString();
 }
 
@@ -121,7 +121,7 @@ export async function renderNotifications(notifications) {
 
                     <!-- Avatar -->
                     <div class="flex-0 ml-3">
-                        <img src="${avatarUrl}" alt="${username}" class="w-10 h-10 rounded-full">
+                        <img src="${avatarUrl}" alt="${username}" class="w-10 h-10 rounded-full" loading="eager">
                     </div>
                 </div>
             </div>
@@ -143,10 +143,10 @@ export function setupClickMarkRead() {
             // Skip if a button inside is clicked
             if (e.target.closest('button')) return;
 
-            const notifId  = item.dataset.notifId;
-            const postId   = item.dataset.postId || '';
-            const videoId  = item.dataset.videoId || '';
-            const type     = item.dataset.type || '';
+            const notifId = item.dataset.notifId;
+            const postId = item.dataset.postId || '';
+            const videoId = item.dataset.videoId || '';
+            const type = item.dataset.type || '';
 
             if (!notifId) return;
 

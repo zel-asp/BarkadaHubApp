@@ -3,12 +3,12 @@ import uploadedPost from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 import comments, { emptyComments } from '../render/comments.js';
 import { likePost } from './notification.js';
-import { commentPost } from './notification.js'; 
+import { commentPost } from './notification.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
     // =======================
-    // ELEMENTS
+    // PAGE ELEMENTS
     // =======================
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // =======================
-    // STATE
+    // APP STATE
     // =======================
     let selectedMedia = null;
     const displayedPostIds = new Set();
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // CHARACTER COUNT & POST BUTTON STATE
+    // CHARACTER COUNT
     // =======================
     postContent.addEventListener('input', () => {
         charCount.textContent = postContent.value.length;
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // =======================
-    // MEDIA UPLOAD HANDLER
+    // MEDIA UPLOAD
     // =======================
     function handleMediaUpload(file, type) {
         selectedMedia = { file, type };
@@ -109,8 +109,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         videoUpload.value = '';
         postButton.disabled = (postContent.value.length === 0);
     });
+
     // =======================
-    // ELLIPSIS MENU HANDLER
+    // THREE-DOTS MENU
     // =======================
     function initEllipsisButtons() {
         const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
@@ -125,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.dataset.bound = "true";
                 btn.addEventListener('click', () => {
                     const postId = btn.closest('.post').dataset.postId;
-                    ellipsisMenuModal.dataset.postId = postId; // store current post
+                    ellipsisMenuModal.dataset.postId = postId;
                     ellipsisMenuModal.classList.remove('hidden');
                     app.classList.add('opacity-50');
                 });
@@ -142,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // SHOW DELETE CONFIRMATION
+    // DELETE CONFIRMATION
     // =======================
     function showDeleteConfirmation() {
         const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
@@ -159,9 +160,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ellipsisMenuModal.classList.add('hidden');
     }
 
-    // =======================
-    // HIDE DELETE CONFIRMATION
-    // =======================
     function hideDeleteConfirmation() {
         const modal = document.getElementById('deleteConfirmationModal');
         const card = modal.querySelector('.delete-card');
@@ -172,9 +170,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 150);
     }
 
-    // =======================
-    // CONFIRM DELETE BUTTON
-    // =======================
     function deletePermanently() {
         document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
             const modal = document.getElementById('deleteConfirmationModal');
@@ -186,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const filePathForStorage = postEl.dataset.filePath;
             const alertId = alertSystem.show('Deleting...', 'info');
 
-            // 1. Fetch post to check ownership
+            // Check post ownership
             const { data: post, error: fetchError } = await supabaseClient
                 .from('posts')
                 .select('user_id')
@@ -197,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!post) return alertSystem.show("Post not found", 'error');
             if (post.user_id !== userId) return alertSystem.show("You can't delete this post", 'error');
 
-            // 2. Delete file from storage
+            // Delete from storage
             const { data, error } = await supabaseClient
                 .storage
                 .from('post-media')
@@ -206,10 +201,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error) console.error('Delete failed:', error);
             else console.log('File deleted:', data);
 
-
             if (error) return alertSystem.show(`Failed to delete file: ${error.message}`, 'error');
 
-            // 3. Delete post from DB
+            // Delete from database
             const { data: deletedPost, error: deleteError } = await supabaseClient
                 .from('posts')
                 .delete()
@@ -217,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (deleteError) return alertSystem.show(`Failed to delete post: ${deleteError.message}`, 'error');
 
-            // 4. Remove from UI
+            // Remove from page
             postEl.remove();
             hideDeleteConfirmation();
             alertSystem.show('Post deleted successfully!', 'success');
@@ -226,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // RELATIVE TIME FORMAT
+    // TIME FORMATTING
     // =======================
     function formatRelativeTime(dateString) {
         const date = new Date(dateString);
@@ -250,16 +244,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function renderPost(post, position = "beforeend") {
         if (!post.id || displayedPostIds.has(post.id)) return;
 
-        // ------------------------------
-        // Get current user
-        // ------------------------------
         const { data: userData } = await supabaseClient.auth.getUser();
         const currentUserId = userData?.user?.id;
         const owner = currentUserId === post.user_id;
 
-        // ------------------------------
         // Check if user liked this post
-        // ------------------------------
         let isLikedByUser = false;
         if (currentUserId) {
             const { data: userLike } = await supabaseClient
@@ -271,26 +260,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             isLikedByUser = !!userLike;
         }
 
-        // ------------------------------
-        // Fetch total likes
-        // ------------------------------
+        // Get total likes
         const { count: totalLikes } = await supabaseClient
             .from('post_likes')
             .select('*', { count: 'exact', head: true })
             .eq('post_id', post.id);
 
-        // ------------------------------
-        // Fetch total comments
-        // ------------------------------
+        // Get total comments
         const { count: commentCount } = await supabaseClient
             .from('post_comments')
             .select('*', { count: 'exact', head: true })
             .eq('post_id', post.id);
 
-        // ------------------------------
-        // Fetch latest profile avatar dynamically
-        // ------------------------------
-        let avatar = post.avatar_url || '../images/defaultAvatar.jpg'; // use saved post avatar first
+        // Get profile avatar
+        let avatar = post.avatar_url || '../images/defaultAvatar.jpg';
         try {
             const { data: profile } = await supabaseClient
                 .from('profile')
@@ -298,19 +281,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('id', post.user_id)
                 .maybeSingle();
 
-            if (profile?.avatar_url) avatar = profile.avatar_url; // use latest profile avatar
+            if (profile?.avatar_url) avatar = profile.avatar_url;
         } catch (err) {
-            console.warn(' Failed to fetch profile avatar for user:', post.user_id, err);
+            console.warn('Failed to fetch profile avatar for user:', post.user_id, err);
         }
 
-        // ------------------------------
-        // Format relative time
-        // ------------------------------
         const relativeTime = formatRelativeTime(post.created_at);
-
         const friendStatus = await getFriendStatus(currentUserId, post.user_id);
 
-        // Then call uploadedPost
         const html = uploadedPost(
             avatar,
             owner,
@@ -325,15 +303,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             isLikedByUser,
             post.file_path,
             post.user_id,
-            friendStatus
+            friendStatus,
         );
 
-
-        // Insert into posts container
         postsContainer.insertAdjacentHTML(position, html);
         displayedPostIds.add(post.id);
 
-        // Initialize buttons after DOM update
         setTimeout(() => {
             initEllipsisButtons();
             initLikeButtons();
@@ -355,18 +330,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data || data.length === 0) return null;
 
-        // Decide which row applies to current user
-        // If current user sent the request
         const sentRequest = data.find(r => r.sender_id === currentUserId);
         if (sentRequest) return sentRequest.status;
 
-        // If current user received the request
         const receivedRequest = data.find(r => r.receiver_id === currentUserId);
         if (receivedRequest) return receivedRequest.status === 'pending' ? 'accept' : receivedRequest.status;
 
         return null;
     }
 
+    // =======================
+    // FOLLOW BUTTONS
+    // =======================
     function initFollowButtons() {
         document.addEventListener('click', async (e) => {
             const btn = e.target.closest('.follow-btn');
@@ -378,18 +353,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentStatus = btn.dataset.status;
 
             try {
-                /* -----------------------------------------
-                AUTH USER
-                ----------------------------------------- */
                 const { data: userData, error: authError } = await supabaseClient.auth.getUser();
                 if (authError) throw authError;
 
                 const senderId = userData?.user?.id;
                 if (!senderId) throw new Error('User not logged in');
 
-                /* -----------------------------------------
-                CHECK EXISTING REQUEST
-                ----------------------------------------- */
                 const { data: existingRequests, error: fetchError } = await supabaseClient
                     .from('friends_request')
                     .select('id, status, sender_id, receiver_id')
@@ -400,7 +369,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (existingRequests && existingRequests.length > 0) {
                     const req = existingRequests[0];
 
-                    // Sender already sent request
                     if (req.sender_id === senderId) {
                         if (req.status === 'pending') {
                             alertSystem.show('You already sent a follow request', 'info');
@@ -412,11 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
                     }
 
-                    /* -----------------------------------------
-                    ACCEPT REQUEST
-                    ----------------------------------------- */
                     if (req.receiver_id === senderId && req.status === 'pending') {
-                        // Update request
                         const { error: updateError } = await supabaseClient
                             .from('friends_request')
                             .update({
@@ -427,27 +391,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (updateError) throw updateError;
 
-                        /* -----------------------------------------
-                        FETCH BOTH PROFILES CORRECTLY
-                        ----------------------------------------- */
-                        // First, let's check what's in the profile table
-                        console.log('Fetching profiles for:', {
-                            sender_id: req.sender_id,
-                            receiver_id: req.receiver_id
-                        });
-
-                        // Try to fetch both profiles using 'id' column (most common)
                         const { data: profiles, error: profileError } = await supabaseClient
                             .from('profile')
                             .select('id, name, avatar_url')
                             .in('id', [req.sender_id, req.receiver_id]);
 
                         console.log('Profiles found:', profiles);
-
-                        if (profileError) {
-                            console.error('Profile fetch error:', profileError);
-                            // Continue with default values
-                        }
 
                         let senderProfile = {
                             id: req.sender_id,
@@ -460,7 +409,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             avatar_url: '../images/defaultAvatar.jpg'
                         };
 
-                        // If profiles were found, assign them
                         if (profiles && profiles.length > 0) {
                             profiles.forEach(profile => {
                                 if (profile.id === req.sender_id) {
@@ -480,10 +428,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             });
                         }
 
-                        // If names are still 'User', try to get from auth metadata
                         if (senderProfile.name === 'User') {
                             try {
-                                // Try to get from posts or other tables
                                 const { data: userPost } = await supabaseClient
                                     .from('posts')
                                     .select('user_name')
@@ -501,7 +447,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (receiverProfile.name === 'User') {
                             try {
-                                // Try to get from posts or other tables
                                 const { data: userPost } = await supabaseClient
                                     .from('posts')
                                     .select('user_name')
@@ -517,14 +462,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         }
 
-                        console.log('Final profiles to insert:', {
-                            senderProfile,
-                            receiverProfile
-                        });
-
-                        /* -----------------------------------------
-                        INSERT FRIENDS (BIDIRECTIONAL)
-                        ----------------------------------------- */
                         const { error: friendsError } = await supabaseClient
                             .from('friends')
                             .insert([
@@ -540,7 +477,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 }
                             ]);
 
-
                         if (friendsError) throw friendsError;
 
                         const { data: conversation, error: convError } = await supabaseClient
@@ -553,9 +489,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         const conversationId = conversation.id;
 
-                        /* -----------------------------------------
-                        INSERT MESSAGES (WITH NAME & AVATAR)
-                        ----------------------------------------- */
                         try {
                             const { error: messageError } = await supabaseClient
                                 .from('message')
@@ -582,8 +515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             if (messageError) {
                                 console.error('Message insert error:', messageError);
-                                // Check if it's a duplicate error
-                                if (messageError.code === '23505') { // Unique violation
+                                if (messageError.code === '23505') {
                                     console.log('Message entries already exist, skipping...');
                                 } else {
                                     throw messageError;
@@ -593,12 +525,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         } catch (messageErr) {
                             console.error('Failed to create message entries:', messageErr);
-                            // Don't block the friend acceptance if message fails
                         }
 
-                        /* -----------------------------------------
-                           UI UPDATE
-                        ----------------------------------------- */
                         btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                         btn.disabled = true;
                         btn.classList.remove('bg-green-500', 'hover:bg-green-600');
@@ -616,9 +544,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                /* -----------------------------------------
-                   SEND NEW REQUEST
-                ----------------------------------------- */
                 if (
                     (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined') &&
                     (!existingRequests || existingRequests.length === 0)
@@ -649,8 +574,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
     // =======================
-    // REALTIME: FRIEND REQUESTS
+    // REALTIME FRIEND REQUESTS
     // =======================
     function initFriendRealtime(currentUserId) {
         supabaseClient
@@ -678,7 +604,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateFollowButtonsRealtime(row) {
-        // INSERT → receiver sees ACCEPT
         if (row.status === 'pending') {
             document.querySelectorAll(
                 `.follow-btn[data-user-post-id="${row.sender_id}"]`
@@ -692,7 +617,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // UPDATE → both see FRIENDS
         if (row.status === 'friends') {
             document.querySelectorAll(
                 `.follow-btn[data-user-post-id="${row.sender_id}"],
@@ -708,7 +632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // CREATE / SUBMIT POST
+    // CREATE POST
     // =======================
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -724,7 +648,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let mediaUrl = null;
         let mediaType = null;
         let filePath = null;
-        // --- Handle media upload (existing code) ---
+
         if (selectedMedia) {
             const file = selectedMedia.file;
             const ext = file.name.split('.').pop();
@@ -740,7 +664,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             mediaType = selectedMedia.type;
         }
 
-        // --- FETCH USER AVATAR ---
         let avatar = '../images/defaultAvatar.jpg';
         const { data: profile } = await supabaseClient
             .from('profile')
@@ -750,7 +673,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (profile?.avatar_url) avatar = profile.avatar_url;
 
-        // --- Insert post including avatar ---
         const { data: newPost, error } = await supabaseClient
             .from("posts")
             .insert({
@@ -778,7 +700,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // =======================
-    // FETCH & RENDER ALL POSTS
+    // FETCH POSTS
     // =======================
     async function getPosts() {
         const { data, error } = await supabaseClient
@@ -793,22 +715,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!data) return;
 
-        // Get postId from URL if exists
         const urlParams = new URLSearchParams(window.location.search);
         const postId = urlParams.get('id');
 
-        // Filter posts if a specific postId is in the URL
         let postsToRender = data;
         if (postId) {
             postsToRender = data.filter(p => p.id == postId);
         }
 
-        // Render filtered posts
         for (const post of postsToRender) {
             await renderPost(post, "beforeend");
         }
 
-        // Scroll to the post if postId exists in URL
         if (postId) {
             setTimeout(() => {
                 const postElement = document.querySelector(`[data-post-id="${postId}"]`);
@@ -834,7 +752,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // LIKE BUTTONS HANDLER
+    // LIKE BUTTONS
     // =======================
     function initLikeButtons() {
         document.querySelectorAll('.like-btn').forEach(btn => {
@@ -885,10 +803,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             return;
                         }
 
-                        // Create notification for the post owner
                         await likePost(postId, userId);
 
-                        // Update UI
                         likesEl.textContent = currentLikes + 1;
                         heartIcon.className = 'fas fa-heart text-red-600';
                         likeTextSpan.textContent = 'Liked';
@@ -906,7 +822,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // UPDATE LIKE BUTTON STATES ON LOAD
+    // UPDATE LIKE BUTTONS
     // =======================
     async function updateLikeButtonStates() {
         const { data: userData } = await supabaseClient.auth.getUser();
@@ -944,7 +860,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // COMMENTS MODAL HANDLER
+    // COMMENTS MODAL
     // =======================
     function openComments() {
         const commentModal = document.getElementById('commentModal');
@@ -987,7 +903,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             sendBtn.disabled = commentLength === 0;
         })
 
-
         commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentPostId) return alertSystem.show("No post selected!", "error");
@@ -1027,7 +942,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alertSystem.show('Failed to post comment.', 'error');
             }
 
-            // Create notification for the post owner
             await commentPost(currentPostId, userId);
 
             commentInput.value = '';
@@ -1038,7 +952,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // LOAD COMMENTS FOR A POST
+    // LOAD COMMENTS
     // =======================
     async function loadComments(postId) {
         const commentsContainer = document.getElementById('comments');
@@ -1074,7 +988,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // INIT FUNCTIONS
+    // INITIALIZE
     // =======================
     await loadUser();
     deletePermanently();
@@ -1082,7 +996,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initFollowButtons();
     setTimeout(updateLikeButtonStates, 500);
 
-    // Option B: Realtime via Supabase
+    // Realtime posts updates
     supabaseClient
         .channel('public:posts')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
@@ -1098,7 +1012,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         })
         .subscribe();
-
 
     await getPosts();
 
