@@ -4,7 +4,7 @@ import { updateNotificationBadge, updateMessageBadge } from './render/notificati
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
 import offline, { Loading } from './render/offline.js';
-import { mobileNavigations, rightSideBar, leftSideBar } from "./components/navigations.js";
+import { mobileNavigations, leftSideBar } from "./components/navigations.js";
 
 // Admin user IDs
 const ADMIN_IDS = new Map([
@@ -194,7 +194,6 @@ const renderComponents = async () => {
     const components = [
         { id: 'header', html: HeaderComponent(state.isAdmin) },
         { id: 'mobileNav', html: mobileNavigations() },
-        { id: 'rightSideBar', html: rightSideBar() },
         { id: 'leftSideBar', html: leftSideBar() }
     ];
 
