@@ -137,7 +137,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtitle: 'Tap to chat',
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at)
+            formatDate: formatDate(mes.created_at),
+            isSeen: mes.isSeen
         })).join('');
 
         /* -----------------------------------------
@@ -153,7 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtitle: 'Tap to chat',
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at)
+            formatDate: formatDate(mes.created_at),
+            isSeen: mes.isSeen
         })).join('');
 
         /* -----------------------------------------
@@ -168,7 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtitle: mes.latest_message || 'Tap to chat',
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at)
+            formatDate: formatDate(mes.created_at),
+            isSeen: mes.isSeen
         })).join('');
     }
     render();
@@ -199,6 +202,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         app.classList.add('hidden');
         directMessageModal.classList.remove('hidden');
+
+        // ------------------ MARK MESSAGES AS SEEN ------------------
+        try {
+            const { data: updated, error: updateError } = await supabaseClient
+                .from('chat_messages')
+                .update({ isSeen: true })
+                .eq('conversation_id', conversationId)
+                .eq('isSeen', false);
+
+            if (updateError) {
+                console.error('Error updating messages as seen:', updateError);
+            } else {
+                console.log(`Marked ${updated?.length || 0} messages as seen in conversation ${conversationId}`);
+            }
+        } catch (err) {
+            console.error('Unexpected error updating is_seen:', err);
+        }
 
         // Fetch chat messages
         const { data, error } = await fetchMessages(conversationId);
@@ -237,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Initialize ellipsis buttons for delete functionality
         initEllipsisButtons();
     });
+
 
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
@@ -981,7 +1002,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .from('message')
                 .update({
                     latest_message: originalText || (currentMediaFile ? `Shared ${currentMediaType}` : ''),
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    isSeen: false
                 })
                 .eq('conversation_id', currentConversation.id)
                 .eq('user_id', currentUserId);
