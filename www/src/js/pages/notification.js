@@ -25,8 +25,8 @@ async function likePost(postId, currentUserId) {
         const { error: notifError } = await supabaseClient
             .from('notifications')
             .insert([{
-                user_id: postOwnerId,      // receiver
-                sender_id: currentUserId,  // sender
+                user_id: postOwnerId,
+                sender_id: currentUserId,
                 type: 'like',
                 entity_type: 'post',
                 entity_id: postId,
