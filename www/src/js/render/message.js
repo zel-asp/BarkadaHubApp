@@ -9,7 +9,8 @@ export default function messageItem({
     onlineCount = 0,
     conversationId,
     firendId,
-    formatDate
+    formatDate,
+    isSeen = false
 }) {
 
     const isClub = relation === 'club';
@@ -17,10 +18,15 @@ export default function messageItem({
         <div class='selectedMessage' data-conversation-id='${conversationId}' data-reference-id='${firendId}'
             data-name='${name}' data-avatar='${avatar}' data-relation='${relation}' data-date='${formatDate}' data-members='${members}'>
             <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200 rounded-full mb-2 border border-gray-100 hover:shadow-md
-                        ${isClub
-            ? 'hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 hover:border-green-200'
-            : 'hover:bg-linear-to-r hover:from-primary hover:to-blue-100 hover:border-purple-200'
-        } ">
+                        ${isSeen
+            ? (isClub
+                ? 'hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 hover:border-green-200'
+                : 'hover:bg-linear-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200')
+            : (isClub
+                ? 'hover:bg-linear-to-r hover:from-emerald-100 hover:to-green-100 hover:border-green-300'
+                : 'hover:bg-linear-to-r hover:from-primary hover:to-blue-100 hover:border-purple-200')
+        } 
+                        ${isSeen ? 'bg-gray-100 shadow-sm' : 'shadow-md'}">
 
                 <!--Active indicator-->
                 <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-1
@@ -46,7 +52,6 @@ export default function messageItem({
         } transition-colors">
                                     ${name}
                                 </span>
- 
                                 <span class="px-2.5 py-0.5 text-white text-xs font-semibold rounded-full
                                             ${isClub
             ? ''
