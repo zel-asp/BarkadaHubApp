@@ -54,8 +54,8 @@ export function emptyComments() {
                 <!-- Animated icon container -->
                 <div class="relative inline-block mb-6">
                     <div class="absolute inset-0 bg-linear-to-r from-blue-100/50 to-teal-100/50 rounded-full blur-xl animate-pulse"></div>
-                    <div class="relative p-7 rounded-full bg-linear-to-br from-white to-gray-50 shadow-lg border border-gray-100">
-                        <i class="far fa-comment-dots text-5xl text-linear bg-linear-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent"></i>
+                    <div class="relative p-7 rounded-full bg-black/10">
+                        <i class="far fa-comment-dots text-5xl text-linear bg-gray-400 bg-clip-text text-transparent"></i>
                     </div>
                     <!-- Floating dots -->
                     <div class="absolute -top-2 -left-2 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
@@ -69,21 +69,6 @@ export function emptyComments() {
                 <p class="text-gray-600 max-w-md mx-auto text-base leading-relaxed mb-8">
                     Be the first to start the conversation! Share your thoughts and spark meaningful discussions.
                 </p>
-            
-                
-                <!-- Stats or tips -->
-                <div class="mt-10 pt-8 border-t border-gray-200">
-                    <div class="inline-flex items-center gap-6">
-                        <div class="flex items-center gap-2">
-                            <i class="far fa-lightbulb text-blue-400"></i>
-                            <span class="text-sm text-gray-500">Keep comments respectful</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="far fa-users text-teal-400"></i>
-                            <span class="text-sm text-gray-500">Join the community</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     `;
