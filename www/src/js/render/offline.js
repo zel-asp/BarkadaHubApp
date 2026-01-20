@@ -47,27 +47,82 @@ export default function Offline() {
 
 export function Loading() {
     return `
-        <div id="loadingOverlay" class="fixed inset-0 bg-white/10 z-50 flex items-center justify-center">
-            <div class="text-center space-y-4">
-                <!-- Animated dots -->
-                <div class="flex justify-center items-center space-x-2">
-                    <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
-                    <div class="w-4 h-4 bg-pink-500 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
-                    <div class="w-4 h-4 bg-violet-500 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
-                </div>
-                
-                <p class="text-black font-bold">Loading<span class="loading-dots"></span></p>
-                
-                <style>
-                    @keyframes dot-flash {
-                        0%, 100% { opacity: 0.3; transform: scale(0.8); }
-                        50% { opacity: 1; transform: scale(1); }
-                    }
-                    .animate-pulse {
-                        animation: dot-flash 1.5s ease-in-out infinite;
-                    }
-                </style>
-            </div>
+<div id="loadingOverlay" class="fixed inset-0 bg-linear-to-br from-white via-gray-50 to-blue-50/30 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="text-center space-y-6 animate-fadeIn">
+        
+        <!-- Loading text with animated linear -->
+        <div class="space-y-2">
+            <h2 class="text-2xl font-bold bg-primary bg-clip-text text-transparent animate-linear-x">
+                Loading, Please wait
+            </h2>
+            <p class="text-gray-600 text-sm font-medium tracking-wide">Preparing content<span class="loading-dots">...</span></p>
         </div>
+        
+        <!-- Progress bar (optional) -->
+        <div class="w-64 mx-auto">
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full animate-progress"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 font-medium"><span class="loading-dots">...</span></p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom animations used in your HTML */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* Animation classes */
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.animate-linear-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+}
+
+.animate-progress {
+    animation: progress 2s ease-in-out infinite;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+/* Smooth transitions */
+#loadingOverlay {
+    transition: opacity 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .text-2xl {
+        font-size: 1.25rem;
+    }
+}
+
+</style>
     `;
 }
