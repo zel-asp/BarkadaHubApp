@@ -1,5 +1,5 @@
 import { checkConnection } from './functions.js';
-import HeaderComponent from "./components/header.js";
+import HeaderComponent, { NotificationBadge } from "./components/header.js";
 import { updateNotificationBadge, updateMessageBadge } from './render/notification.js';
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
@@ -321,6 +321,112 @@ const handleOnline = async () => {
     }
 };
 
+const messageCount = async () => {
+    try {
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const userId = userData?.user?.id;
+        if (!userId) return;
+
+        // Get all conversations of this user
+        const { data: conversations, error: convoError } = await supabaseClient
+            .from('message')
+            .select('conversation_id')
+            .or(`user_id.eq.${userId},friends_id.eq.${userId}`);
+
+        if (convoError || !conversations?.length) return;
+
+        const conversationIds = conversations
+            .map(c => c.conversation_id)
+            .filter(Boolean);
+
+        if (!conversationIds.length) return;
+
+        // Count unread messages (sender is not current user)
+        const { data, count, error: chatError } = await supabaseClient
+            .from('chat_messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('isSeen', false)
+            .neq('sender_id', userId)
+            .in('conversation_id', conversationIds);
+
+        if (chatError) {
+            console.error('Unread messages error:', chatError);
+            return;
+        }
+
+        console.log('Unread messages count:', count);
+
+        // Update badge
+        const badge = document.getElementById('messageBadge');
+        if (!badge) return;
+
+        if (!count || count === 0) {
+            badge.textContent = '';
+            badge.classList.add('hidden');
+        } else {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error('Error in messageCount():', err);
+    }
+};
+
+const subscribeToUnreadMessages = async () => {
+    try {
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const userId = userData?.user?.id;
+        if (!userId) return;
+
+        // Get all conversations of this user
+        const { data: conversations, error: convoError } = await supabaseClient
+            .from('message')
+            .select('conversation_id')
+            .or(`user_id.eq.${userId},friends_id.eq.${userId}`);
+
+        if (convoError || !conversations?.length) return;
+
+        const conversationIds = conversations
+            .map(c => c.conversation_id)
+            .filter(Boolean);
+
+        if (!conversationIds.length) return;
+
+        // Wrap UUIDs in quotes
+        const formattedIds = conversationIds.map(id => `'${id}'`);
+
+        // Create a single channel for all conversations
+        const channel = supabaseClient.channel('unread-messages');
+
+        channel.on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'chat_messages',
+                filter: `conversation_id=in.(${formattedIds.join(',')})`
+            },
+            (payload) => {
+                // Only count messages not sent by the current user
+                if (payload.new.sender_id !== userId) {
+                    console.log('New unread message:', payload.new);
+                    messageCount(); // Update badge
+                }
+            }
+        );
+
+        await channel.subscribe();
+
+        console.log('Subscribed to unread messages for all conversations');
+    } catch (err) {
+        console.error('Error in subscribeToUnreadMessages():', err);
+    }
+};
+
+messageCount();               // Load initial unread count
+subscribeToUnreadMessages();  // Start listening for new messages
+
+
 // ===================== PAGE LOAD =====================
 // When page loads
 document.addEventListener('DOMContentLoaded', () => {
@@ -328,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showLoading();
     initializeApp();
+    messageCount();
 
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
@@ -341,12 +448,3 @@ window.addEventListener('beforeunload', () => {
 if (performance.navigation.type === 1 || sessionStorage.getItem('isRefreshing')) {
     sessionStorage.removeItem('isRefreshing');
 }
-
-// Export for other files
-export {
-    state,
-    initializeApp,
-    checkUserSession,
-    handleOffline,
-    handleOnline
-};
