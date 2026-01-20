@@ -50,7 +50,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
     }
 
     return `
-    <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}" id='${postId}'>
+    <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}" id='${postId}' data-user-id="${userId}">
         <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <a href="${postOwner ? './profile.html' : `./otherProfile.html?user=${userId}`}">
