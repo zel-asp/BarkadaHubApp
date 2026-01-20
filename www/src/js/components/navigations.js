@@ -110,37 +110,6 @@ export function mobileNavigations(currentPage = null) {
     return component;
 };
 
-// Right Sidebar
-export function rightSideBar() {
-    const cacheKey = 'right-sidebar';
-    if (componentCache.has(cacheKey)) {
-        return componentCache.get(cacheKey);
-    }
-
-    const clubsList = CLUBS.map(generateClubCard).join('');
-    const friendsList = ONLINE_FRIENDS.map(generateFriendCard).join('');
-
-    const component = `
-<aside class="lg:col-span-1 hidden lg:block" aria-label="Sidebar">
-    <div class="bg-white rounded-lg shadow-sm p-5 mb-6">
-        <h3 class="text-lg font-bold text-primary mb-4">My Clubs</h3>
-        ${clubsList}
-        <a href="./clubs.html" class="view-all block text-center text-primary font-medium mt-3" data-page="clubs">View
-            All Clubs</a>
-    </div>
-
-    <div class="bg-white rounded-lg shadow-sm p-5">
-        <h3 class="text-lg font-bold text-primary mb-4">Online Friends</h3>
-        ${friendsList}
-        <a href="./friends.html" class="view-all block text-center text-primary font-medium mt-3"
-            data-page="friends">View All Friends</a>
-    </div>
-</aside>
-`;
-
-    componentCache.set(cacheKey, component);
-    return component;
-};
 
 // Left Sidebar
 export function leftSideBar(currentPage = null) {
