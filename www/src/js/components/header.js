@@ -2,7 +2,7 @@ const NotificationBadge = ({ count, position = 'default', hidden = false, id = '
     if (hidden) return '';
 
     const positions = {
-        default: 'absolute -top-2 -right-1 z-50', 
+        default: 'absolute -top-2 -right-1 z-50',
         custom: ''
     };
 
@@ -12,7 +12,7 @@ const NotificationBadge = ({ count, position = 'default', hidden = false, id = '
             flex text-[10px] rounded-full w-4 h-4
             items-center justify-center
             font-extrabold text-white bg-red-500">
-            ${count || ''}
+            ${count || '0'}
         </span>
     `;
 };
@@ -33,7 +33,6 @@ const IconLink = ({ href, icon, badge = null, ariaLabel = '' }) => {
 // Main Header Component
 export default function HeaderComponent(isAdmin = false) {
     const userActions = [
-        // Statistics (admin only)
         ...(isAdmin ? [{
             href: './auth-log.html',
             icon: 'fas fa-chart-line',
@@ -42,12 +41,12 @@ export default function HeaderComponent(isAdmin = false) {
         }] : []),
 
         // Notifications
-          {
-    href: './notification.html',
-    icon: 'fas fa-bell',
-    badge: NotificationBadge({ position: 'default', id: 'notificationBadge' }),
-    ariaLabel: 'View notifications'
-          },
+        {
+            href: './notification.html',
+            icon: 'fas fa-bell',
+            badge: NotificationBadge({ position: 'default', id: 'notificationBadge' }),
+            ariaLabel: 'View notifications'
+        },
 
 
         // Messages
