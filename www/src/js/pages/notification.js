@@ -43,7 +43,6 @@ async function likePost(postId, currentUserId) {
 
 export { likePost };
 
-
 /* -------------------------------------------
 comments notification functions
 ------------------------------------------- */
@@ -121,11 +120,6 @@ async function videoLike(videoId, currentUserId) {
 }
 export { videoLike };
 
-
-
-
-
-
 async function fetchNotifications(userId) {
     const { data, error } = await supabaseClient
         .from('notifications')
@@ -143,6 +137,7 @@ async function fetchNotifications(userId) {
 
     return data || [];
 }
+
 function setupRealtimeNotifications(userId) {
     if (!userId) return;
 
