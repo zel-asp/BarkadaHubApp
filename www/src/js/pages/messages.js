@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function render() {
         /* -----------------------------------------
-        AUTH USER
+           AUTH USER
         ----------------------------------------- */
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError) {
@@ -48,15 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Get current user's name
-        if (userData?.user) {
-            currentUserName = userData.user.user_metadata?.name ||
-                userData.user.user_metadata?.full_name ||
-                userData.user.email?.split('@')[0] ||
-                'You';
-        }
+        currentUserName = userData.user?.user_metadata?.name ||
+            userData.user?.user_metadata?.full_name ||
+            userData.user?.email?.split('@')[0] ||
+            'You';
 
         /* -----------------------------------------
-        FETCH ALL USER MESSAGES
+           FETCH ALL USER MESSAGES
         ----------------------------------------- */
         const { data: messages, error } = await supabaseClient
             .from('message')
@@ -76,24 +74,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /* -----------------------------------------
-        SPLIT BY RELATION
+           FETCH UNREAD CHAT MESSAGES
+        ----------------------------------------- */
+        const { data: unreadRows, error: unreadError } = await supabaseClient
+            .from('chat_messages')
+            .select('conversation_id')
+            .eq('is_seen', false)
+            .neq('sender_id', currentUserId);
+
+        if (unreadError) {
+            console.error('Unread fetch error:', unreadError);
+        }
+
+        const unreadMap = {};
+        (unreadRows || []).forEach(row => {
+            unreadMap[row.conversation_id] = true; // true = has unread
+        });
+
+        /* -----------------------------------------
+           SPLIT BY RELATION
         ----------------------------------------- */
         const friendMessages = messages.filter(m => m.relation === 'friend');
         const clubMessages = messages.filter(m => m.relation === 'club');
         const lostFoundMessages = messages.filter(m => m.relation === 'lost & found');
 
         /* -----------------------------------------
-        CLUB MEMBER COUNTS
+           CLUB MEMBER COUNTS
         ----------------------------------------- */
         const membersCountMap = {};
-
-        const clubIds = [
-            ...new Set(
-                clubMessages
-                    .map(m => m.friends_id)
-                    .filter(Boolean)
-            )
-        ];
+        const clubIds = [...new Set(clubMessages.map(m => m.friends_id).filter(Boolean))];
 
         for (const clubId of clubIds) {
             const { count, error: countError } = await supabaseClient
@@ -110,23 +119,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /* -----------------------------------------
-        HELPER
+           HELPER FUNCTIONS
         ----------------------------------------- */
         const formatTime = date =>
-            new Date(date).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const formatDate = date =>
-            new Date(date).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
+            new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
         /* -----------------------------------------
-        RENDER FRIENDS
+           RENDER FRIENDS
         ----------------------------------------- */
         friendsMessage.innerHTML = friendMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -138,11 +140,11 @@ document.addEventListener("DOMContentLoaded", () => {
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
             formatDate: formatDate(mes.created_at),
-            isSeen: mes.isSeen
+            isSeen: !unreadMap[mes.conversation_id] // true = seen, false = unread
         })).join('');
 
         /* -----------------------------------------
-        RENDER CLUBS
+           RENDER CLUBS
         ----------------------------------------- */
         clubMessage.innerHTML = clubMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -155,11 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
             formatDate: formatDate(mes.created_at),
-            isSeen: mes.isSeen
+            isSeen: !unreadMap[mes.conversation_id]
         })).join('');
 
         /* -----------------------------------------
-        RENDER LOST & FOUND
+           RENDER LOST & FOUND
         ----------------------------------------- */
         lostMessage.innerHTML = lostFoundMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -171,9 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
             conversationId: mes.conversation_id,
             firendId: mes.friends_id,
             formatDate: formatDate(mes.created_at),
-            isSeen: mes.isSeen
+            isSeen: !unreadMap[mes.conversation_id]
         })).join('');
     }
+
     render();
 
     document.addEventListener('click', async (e) => {
@@ -207,9 +210,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const { data: updated, error: updateError } = await supabaseClient
                 .from('chat_messages')
-                .update({ isSeen: true })
+                .update({ is_seen: true })
                 .eq('conversation_id', conversationId)
-                .eq('isSeen', false);
+                .eq('is_seen', false);
 
             if (updateError) {
                 console.error('Error updating messages as seen:', updateError);
@@ -872,12 +875,7 @@ document.addEventListener("DOMContentLoaded", () => {
         chatBody.style.overflowY = 'auto';
         chatBody.style.maxHeight = 'calc(100vh - 200px)';
 
-        // Scroll to bottom when new content is added
-        const observer = new MutationObserver(() => {
-            scrollToBottom();
-        });
 
-        observer.observe(chatBody, { childList: true, subtree: true });
     }
 
     /* -------------------------------------------
@@ -1003,7 +1001,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 .update({
                     latest_message: originalText || (currentMediaFile ? `Shared ${currentMediaType}` : ''),
                     created_at: new Date().toISOString(),
-                    isSeen: false
                 })
                 .eq('conversation_id', currentConversation.id)
                 .eq('user_id', currentUserId);
