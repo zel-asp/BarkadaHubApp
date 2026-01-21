@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function render() {
         /* -----------------------------------------
-           AUTH USER
+        AUTH USER
         ----------------------------------------- */
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError) {
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'You';
 
         /* -----------------------------------------
-           FETCH ALL USER MESSAGES
+        FETCH ALL USER MESSAGES
         ----------------------------------------- */
         const { data: messages, error } = await supabaseClient
             .from('message')
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /* -----------------------------------------
-           FETCH UNREAD CHAT MESSAGES
+        FETCH UNREAD CHAT MESSAGES
         ----------------------------------------- */
         const { data: unreadRows, error: unreadError } = await supabaseClient
             .from('chat_messages')
@@ -92,14 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         /* -----------------------------------------
-           SPLIT BY RELATION
+        SPLIT BY RELATION
         ----------------------------------------- */
         const friendMessages = messages.filter(m => m.relation === 'friend');
         const clubMessages = messages.filter(m => m.relation === 'club');
         const lostFoundMessages = messages.filter(m => m.relation === 'lost & found');
 
         /* -----------------------------------------
-           CLUB MEMBER COUNTS
+        CLUB MEMBER COUNTS
         ----------------------------------------- */
         const membersCountMap = {};
         const clubIds = [...new Set(clubMessages.map(m => m.friends_id).filter(Boolean))];
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /* -----------------------------------------
-           HELPER FUNCTIONS
+        HELPER FUNCTIONS
         ----------------------------------------- */
         const formatTime = date =>
             new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
             new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
         /* -----------------------------------------
-           RENDER FRIENDS
+        RENDER FRIENDS
         ----------------------------------------- */
         friendsMessage.innerHTML = friendMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })).join('');
 
         /* -----------------------------------------
-           RENDER CLUBS
+        RENDER CLUBS
         ----------------------------------------- */
         clubMessage.innerHTML = clubMessages.map(mes => messageItem({
             relation: mes.relation,
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })).join('');
 
         /* -----------------------------------------
-           RENDER LOST & FOUND
+        RENDER LOST & FOUND
         ----------------------------------------- */
         lostMessage.innerHTML = lostFoundMessages.map(mes => messageItem({
             relation: mes.relation,
