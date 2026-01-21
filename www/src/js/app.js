@@ -222,18 +222,8 @@ const renderComponents = async () => {
                 updateNotificationBadge(notifications);
             }
 
-            // Fetch unread messages
-            const { data: messages } = await supabaseClient
-                .from('chat_messages')
-                .select('id')
-                .eq('conversation_id', user.data.user.id)
-                .eq('is_read', false)
-                .order('created_at', { ascending: false });
-
-            if (messages) {
-                updateMessageBadge(messages);
-            }
         }
+
     } catch (error) {
         console.error('Failed to update badges:', error);
     }
@@ -266,6 +256,8 @@ const initializeApp = async () => {
         const user = await checkUserSession();
         if (user) {
             await renderComponents();
+            await messageCount();
+            await subscribeToUnreadMessages();
         }
 
         // Ensure loading shows for at least 1 second
@@ -345,7 +337,7 @@ const messageCount = async () => {
         const { data, count, error: chatError } = await supabaseClient
             .from('chat_messages')
             .select('id', { count: 'exact', head: true })
-            .eq('isSeen', false)
+            .eq('is_seen', false)
             .neq('sender_id', userId)
             .in('conversation_id', conversationIds);
 
@@ -423,9 +415,6 @@ const subscribeToUnreadMessages = async () => {
     }
 };
 
-messageCount();               // Load initial unread count
-subscribeToUnreadMessages();  // Start listening for new messages
-
 
 // ===================== PAGE LOAD =====================
 // When page loads
@@ -434,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showLoading();
     initializeApp();
-    messageCount();
 
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
