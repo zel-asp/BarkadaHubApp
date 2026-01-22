@@ -7,57 +7,80 @@
         <title>BarkadaHub - Edit Profile</title>
         <link rel="stylesheet" href="../../dist/output.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet">
     </head>
 
-    <body class="bg-gray-50 min-h-screen" data-page="protected">
+    <body class="min-h-screen bg-linear-to-b from-gray-50 to-gray-100" data-page="protected">
         <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
 
         <div class="max-w-4xl mx-auto px-4 py-8" id="app">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 animate-fade-in">
-                <div class="mb-6 sm:mb-0">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit Profile</h1>
-                    <p class="text-gray-600">Update your personal information and profile settings</p>
+            <header class="mb-10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-user-edit mr-3 text-primary"></i>
+                            Edit Profile
+                        </h1>
+                    </div>
+                    <a href="profile.html"
+                        class="flex items-center gap-2 px-4 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Profile</span>
+                    </a>
                 </div>
-                <a href="profile.html"
-                    class="inline-flex items-center gap-2 text-gray-700 hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-gray-100">
-                    <i class="fas fa-arrow-left"></i>
-                    <span class="font-medium">Back to Profile</span>
-                </a>
-            </div>
+            </header>
 
             <!-- Main form container -->
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <!-- Profile header with avatar -->
-                <div class="bg-primary px-6 py-8 sm:px-8 sm:py-10">
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-                        <div class="flex flex-col sm:flex-row items-center gap-6">
-                            <!-- Avatar as image input -->
-                            <div class="relative group">
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-8">
+                <!-- Profile header -->
+                <div class="px-8 py-6"
+                    style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Profile Settings</h2>
+                            <p class="text-white opacity-90">Edit your BarkadaHub profile</p>
+                        </div>
+                        <div class="bg-white text-gray-800 px-4 py-2 rounded-xl font-medium flex items-center">
+                            <span class="status-indicator bg-yellow-500"></span>
+                            Editing Mode
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Avatar Section -->
+                <div class="p-8">
+                    <div class="mb-10 p-6 rounded-xl" style="background-color: var(--color-secondary);">
+                        <div class="flex flex-col md:flex-row md:items-center gap-6">
+                            <!-- Avatar Upload -->
+                            <div class="shrink-0">
                                 <label for="avatar-upload" class="cursor-pointer block">
-                                    <div
-                                        class="w-24 h-24 rounded-full overflow-hidden border-4 border-white/90 shadow-2xl avatar-upload">
-                                        <img src="../images/defaultAvatar.jpg" alt="Profile"
-                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                            id="avatar-preview" loading="lazy">
-                                    </div>
-                                    <div
-                                        class="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                        <div class="bg-white w-10 h-10 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-camera text-primary"></i>
+                                    <div class="relative">
+                                        <div
+                                            class="w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden">
+                                            <img src="../images/defaultAvatar.jpg" alt="Profile"
+                                                class="w-full h-full object-cover" id="avatar-preview" loading="lazy">
                                         </div>
+                                        <div
+                                            class="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-lg border border-gray-200">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                                style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);">
+                                                <i class="fas fa-camera text-white text-sm"></i>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="avatar-upload" accept="image/*" class="hidden">
                                     </div>
-                                    <input type="file" id="avatar-upload" accept="image/*" class="hidden">
                                 </label>
                             </div>
 
-                            <div class="text-center sm:text-left">
-                                <h2 class="text-white text-2xl font-bold" id="userName"></h2>
-                                <p class="text-blue-100 mt-1" id="userAt"></p>
-                                <p
-                                    class="text-blue-100/80 text-sm mt-2 flex items-center justify-center sm:justify-start gap-2">
-                                    <i class="fas fa-user-edit"></i>
-                                    <span>Edit your profile information</span>
+                            <!-- User Info -->
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800" id="userName"></h3>
+                                <p class="text-gray-600 mb-2" id="userAt"></p>
+                                <p class="text-sm text-gray-500 flex items-center gap-2">
+                                    <i class="fas fa-info-circle" style="color: var(--color-primary);"></i>
+                                    Click the camera icon to update your profile picture
                                 </p>
                             </div>
                         </div>
@@ -65,192 +88,213 @@
                 </div>
 
                 <!-- Form content -->
-                <form class="p-6 sm:p-8">
+                <form class="px-8 pb-8">
                     <!-- Personal Information Section -->
-                    <div class="mb-10 animate-fade-in" style="animation-delay: 0.1s">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user text-primary"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900">Personal Information</h3>
-                        </div>
+                    <div class="mb-10">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-user-circle mr-2" style="color: var(--color-primary);"></i>
+                            Personal Information
+                        </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Full Name Field -->
-                            <div>
-                                <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name <span class="text-red-500" id="name">*</span>
+                            <div class="space-y-2">
+                                <label for="fullName" class="block text-sm font-medium text-gray-700">
+                                    Full Name <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <input type="text" id="fullName"
-                                        class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
-                                        placeholder="Enter your full name" value="">
-                                    <div class="absolute left-3 top-3.5 text-gray-400">
-                                        <i class="fas fa-user"></i>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-user-tag mr-2 text-gray-500 text-sm"></i>
+                                        <span class="text-sm font-medium text-gray-500">Full Name</span>
                                     </div>
+                                    <input type="text" id="fullName"
+                                        class="w-full px-4 py-2 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 font-medium"
+                                        placeholder="Enter your full name" value="">
+                                    <p class="text-xs text-gray-500 mt-2">Legal name as it appears on your student ID
+                                    </p>
                                 </div>
                             </div>
 
                             <!-- Email Field -->
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            <div class="space-y-2">
+                                <label for="email" class="block text-sm font-medium text-gray-700">
                                     Email Address <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <input type="email" id="email"
-                                        class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50"
-                                        placeholder="Enter your email address" value="" readonly>
-
-                                    <div class=" absolute left-3 top-3.5 text-gray-400">
-                                        <i class="fas fa-envelope"></i>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-envelope mr-2 text-gray-500 text-sm"></i>
+                                        <span class="text-sm font-medium text-gray-500">Email Address</span>
                                     </div>
-                                    <div class="absolute right-3 top-3">
-                                        <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">Read
+                                    <div class="flex items-center justify-between">
+                                        <input type="email" id="email"
+                                            class="w-full px-4 py-2 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 font-medium"
+                                            placeholder="Enter your email address" value="" readonly>
+                                        <span class="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700 ml-2">Read
                                             Only</span>
                                     </div>
+                                    <p class="text-xs text-gray-500 mt-2">Email cannot be changed for security reasons
+                                    </p>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-2">Email cannot be changed for security reasons</p>
                             </div>
 
-                            <div>
-                                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Location(Optional) <span class="text-red-500" id="name">*</span>
+                            <!-- Location Field -->
+                            <div class="space-y-2 md:col-span-2">
+                                <label for="location" class="block text-sm font-medium text-gray-700">
+                                    Location (Optional)
                                 </label>
-                                <div class="relative">
-                                    <input type="text" id="location"
-                                        class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
-                                        placeholder="Enter your full name" value="Manila, Philippines">
-                                    <div class="absolute left-3 top-3.5 text-gray-400">
-                                        <i class="fas fa-user"></i>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-map-marker-alt mr-2 text-gray-500 text-sm"></i>
+                                        <span class="text-sm font-medium text-gray-500">Campus Location</span>
                                     </div>
+                                    <input type="text" id="location"
+                                        class="w-full px-4 py-2 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 font-medium"
+                                        placeholder="Enter your campus location" value="Manila, Philippines">
+                                    <p class="text-xs text-gray-500 mt-2">Your primary campus or study location</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Academic Information Section -->
-                    <div class="mb-10 p-6 bg-blue-50 rounded-xl border border-blue-100 animate-fade-in"
-                        style="animation-delay: 0.2s">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="bg-primary w-10 h-10 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-graduation-cap text-white"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900">Academic Information</h3>
-                        </div>
+                    <div class="mb-10 pt-8 border-t border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-graduation-cap mr-2" style="color: var(--color-primary);"></i>
+                            Academic Information
+                        </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Major Field -->
-                            <div>
-                                <label for="major" class="block text-sm font-medium text-gray-700 mb-2">
+                            <div class="space-y-2">
+                                <label for="major" class="block text-sm font-medium text-gray-700">
                                     Major <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <select id="major"
-                                        class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none bg-white">
-                                        <option value="">Select your major</option>
-                                        <option value="Bachelor of Science in Office Administration">BSOA</option>
-                                        <option value="Bachelor of Science in Information Technology" selected>BSIT
-                                        </option>
-                                        <option value="Bachelor of Science in Computer Engineering">BSCPe</option>
-                                        <option value="Bachelor of Science in Information System">BSIS</option>
-                                        <option value="Bachelor of Science in Business Administration">BSBA</option>
-                                    </select>
-                                    <div class="absolute left-3 top-3.5 text-gray-400">
-                                        <i class="fas fa-book"></i>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-book mr-2 text-gray-500 text-sm"></i>
+                                        <span class="text-sm font-medium text-gray-500">Academic Major</span>
                                     </div>
-                                    <div class="absolute right-3 top-3.5 text-gray-400 pointer-events-none">
-                                        <i class="fas fa-chevron-down"></i>
+                                    <div class="relative">
+                                        <select id="major"
+                                            class="w-full px-4 py-2 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 font-medium appearance-none">
+                                            <option value="">Select your major</option>
+                                            <option value="Bachelor of Science in Office Administration">BSOA</option>
+                                            <option value="Bachelor of Science in Information Technology" selected>BSIT
+                                            </option>
+                                            <option value="Bachelor of Science in Computer Engineering">BSCPe</option>
+                                            <option value="Bachelor of Science in Information System">BSIS</option>
+                                            <option value="Bachelor of Science in Business Administration">BSBA</option>
+                                        </select>
+                                        <div
+                                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
                                     </div>
+                                    <p class="text-xs text-gray-500 mt-2">Primary field of study</p>
                                 </div>
                             </div>
 
                             <!-- Year Level Field -->
-                            <div>
-                                <label for="yearLevel" class="block text-sm font-medium text-gray-700 mb-2">
+                            <div class="space-y-2">
+                                <label for="yearLevel" class="block text-sm font-medium text-gray-700">
                                     Year Level <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <select id="yearLevel"
-                                        class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none bg-white">
-                                        <option value="">Select your year level</option>
-                                        <option value="1st yr">1st Year</option>
-                                        <option value="2nd yr">2nd Year</option>
-                                        <option value="3rd yr" selected>3rd Year</option>
-                                        <option value="4th yr">4th Year</option>
-                                        <option value="5th yr">5th Year</option>
-                                        <option value="grad">Graduate</option>
-                                    </select>
-                                    <div class="absolute left-3 top-3.5 text-gray-400">
-                                        <i class="fas fa-calendar-alt"></i>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                    <div class="flex items-center mb-2">
+                                        <i class="fas fa-calendar-alt mr-2 text-gray-500 text-sm"></i>
+                                        <span class="text-sm font-medium text-gray-500">Year Level</span>
                                     </div>
-                                    <div class="absolute right-3 top-3.5 text-gray-400 pointer-events-none">
-                                        <i class="fas fa-chevron-down"></i>
+                                    <div class="relative">
+                                        <select id="yearLevel"
+                                            class="w-full px-4 py-2 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 font-medium appearance-none">
+                                            <option value="">Select your year level</option>
+                                            <option value="1st yr">1st Year</option>
+                                            <option value="2nd yr">2nd Year</option>
+                                            <option value="3rd yr" selected>3rd Year</option>
+                                            <option value="4th yr">4th Year</option>
+                                            <option value="5th yr">5th Year</option>
+                                            <option value="grad">Graduate</option>
+                                        </select>
+                                        <div
+                                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
                                     </div>
+                                    <p class="text-xs text-gray-500 mt-2">Current academic standing</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-6 p-4 bg-white/80 rounded-lg border border-blue-200">
+                        <!-- Info Note -->
+                        <div class="mt-6 p-4 rounded-xl border border-gray-200 bg-gray-50">
                             <div class="flex items-start gap-3">
-                                <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                                <p class="text-sm text-gray-700">Make changes to your profile details whenever you need.
+                                <i class="fas fa-info-circle mt-0.5" style="color: var(--color-primary);"></i>
+                                <p class="text-sm text-gray-700">
+                                    Your academic information helps connect you with classmates and relevant campus
+                                    activities.
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Bio Section -->
-                    <div class="mb-10 animate-fade-in" style="animation-delay: 0.3s">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="bg-purple-100 w-10 h-10 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-edit text-purple-600"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-900">Bio & About Me</h3>
-                        </div>
+                    <div class="mb-10 pt-8 border-t border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-quote-left mr-2" style="color: var(--color-primary);"></i>
+                            Bio & About Me
+                        </h3>
 
-                        <div>
-                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
+                        <div class="space-y-2">
+                            <label for="bio" class="block text-sm font-medium text-gray-700">
                                 About Me
                             </label>
-                            <div class="relative">
-                                <textarea id="bio" rows="4"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white resize-none"
-                                    placeholder="Tell everyone about yourself, your interests, and what you're passionate about"></textarea>
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-3">
-                                <div class="flex items-center gap-2 text-gray-500 mb-2 sm:mb-0">
-                                    <i class="fas fa-lightbulb text-yellow-500"></i>
-                                    <p class="text-xs sm:text-sm">This will be displayed on your public profile</p>
+                            <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                <div class="flex items-center mb-3">
+                                    <i class="fas fa-edit mr-2 text-gray-500 text-sm"></i>
+                                    <span class="text-sm font-medium text-gray-500">Personal Introduction</span>
                                 </div>
-                                <div class="text-sm text-gray-500">
-                                    <span id="char-count">120</span>/500 characters
+                                <textarea id="bio" rows="4"
+                                    class="w-full px-4 py-3 border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-800 resize-none"
+                                    placeholder="Tell everyone about yourself, your interests, and what you're passionate about"></textarea>
+
+                                <div
+                                    class="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                    <div class="flex items-center gap-2 text-gray-500 mb-2 sm:mb-0">
+                                        <i class="fas fa-lightbulb" style="color: var(--color-warning);"></i>
+                                        <p class="text-xs">This will be displayed on your public profile</p>
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span id="char-count">120</span>/500 characters
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-gray-200 animate-fade-in"
-                        style="animation-delay: 0.4s">
-                        <div class="text-sm text-gray-500">
-                            <p class="flex items-center gap-2">
-                                <i class="fas fa-info-circle"></i>
-                                Fields marked with <span class="text-red-500">*</span> are required
-                            </p>
-                        </div>
+                    <div class="pt-8 border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div class="text-sm text-gray-500">
+                                <p class="flex items-center gap-2">
+                                    <i class="fas fa-info-circle"></i>
+                                    Fields marked with <span class="text-red-500">*</span> are required
+                                </p>
+                            </div>
 
-                        <div class="flex items-center justify-center gap-4 w-full sm:w-auto">
-                            <a href="./profile.html"
-                                class=" sm:flex-none px-6 py-3 bg-danger text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow hover:shadow-md">
-                                <i class="fas fa-cancel mr-2"></i>
-                                Cancel
-                            </a>
-                            <button type="submit"
-                                class="flex-1 sm:flex-none px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow hover:shadow-md">
-                                <i class="fas fa-save mr-2"></i>
-                                Save
-                            </button>
+                            <div class="flex items-center gap-4 w-full sm:w-auto">
+                                <a href="./profile.html"
+                                    class="px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex-1 sm:flex-none text-center"
+                                    style="background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%); color: white;">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Cancel
+                                </a>
+                                <button type="submit"
+                                    class="px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex-1 sm:flex-none"
+                                    style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%); color: white;">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -260,16 +304,17 @@
 
             <!-- Success Toast -->
             <div id="successToast"
-                class="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl hidden transform translate-y-10 opacity-0 transition-all duration-300">
+                class="fixed bottom-6 right-6 bg-white rounded-xl card-shadow p-6 hidden transform translate-y-10 opacity-0 transition-all duration-300 max-w-sm">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                        <i class="fas fa-check text-xl"></i>
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                        style="background: linear-gradient(135deg, var(--color-success) 0%, #66bb6a 100%);">
+                        <i class="fas fa-check text-white text-xl"></i>
                     </div>
                     <div>
-                        <p class="font-bold">Profile Updated Successfully!</p>
-                        <p class="text-sm opacity-90 mt-1">Your changes have been saved</p>
+                        <p class="font-bold text-gray-800">Profile Updated!</p>
+                        <p class="text-sm text-gray-600 mt-1">Your changes have been saved successfully</p>
                     </div>
-                    <button id="closeToast" class="ml-4 text-white/70 hover:text-white">
+                    <button id="closeToast" class="ml-4 text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
