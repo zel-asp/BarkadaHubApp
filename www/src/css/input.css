@@ -7,7 +7,6 @@ html {
 
 
 :root {
-    --main-font: 'Poppins', sans-serif;
     --color-primary: #71C9CE;
     --color-secondary: #CBF1F5;
     --color-accent: #4cc9f0;
@@ -36,7 +35,7 @@ html {
 }
 
 body{
-    font-family: var(--main-font);
+    font-family: 'Poppins', sans-serif;
 }
 
 .scrollbar-hide {
@@ -144,6 +143,7 @@ input{
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
+
 
 /* videos */
 @keyframes modalSlideUp {
@@ -500,6 +500,17 @@ input{
     background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+.card-shadow {
+    box-shadow: 0 10px 25px rgba(113, 201, 206, 0.15);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
 }
 
 /* edit pofile */
