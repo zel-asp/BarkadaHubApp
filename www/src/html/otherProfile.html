@@ -25,37 +25,54 @@
 
                         <!-- Profile Page -->
                         <div class="page-section" id="profile-page">
-                            <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-                                <div class="h-48 bg-primary overflow-hidden relative">
-                                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-                                        alt="Profile Banner" class="w-full h-full object-cover">
-                                </div>
-                                <div class="p-6 relative">
-                                    <div
-                                        class="w-24 h-24 rounded-full border-4 border-white absolute -top-12 left-1/2 -translate-x-1/2 overflow-hidden bg-gray-200">
-                                        <img src="" alt="User Avatar" class="w-full h-full object-cover"
-                                            id="userAvatar">
-                                    </div>
-
-                                    <div class="profile-details  md:mt-0 md:ml-32">
-                                        <h1 class="text-2xl font-bold mb-1 mt-5" id="username"></h1>
-                                        <p class="text-gray-600 mb-4"><i class="fas fa-map-marker-alt mr-1"></i><span
-                                                id="location"></span></p>
-
-                                        <div class="profile-stats flex gap-6 mb-4">
-                                            <div class="stat text-center">
-                                                <div class="stat-value font-bold text-xl">245</div>
-                                                <div class="stat-label text-sm text-gray-500">Friends</div>
-                                            </div>
-                                            <div class="stat text-center">
-                                                <div class="stat-value font-bold text-xl">47</div>
-                                                <div class="stat-label text-sm text-gray-500">Posts</div>
-                                            </div>
+                            <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-8">
+                                <!-- Gradient Header -->
+                                <div class="px-8 py-6"
+                                    style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-white">Profile</h2>
+                                            <p class="text-white opacity-90">BarkadaHub User Data</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
+                                <!-- Profile Content -->
+                                <div class="p-8">
+                                    <!-- Student Info Card -->
+                                    <div class="mb-10 p-6 rounded-xl" style="background-color: var(--color-secondary);">
+                                        <div class="flex flex-col md:flex-row md:items-center">
+                                            <!-- Avatar Container -->
+                                            <div class="shrink-0 mb-4 md:mb-0 md:mr-6">
+                                                <div
+                                                    class="w-24 h-24 rounded-full bg-white flex items-center justify-center border-4 border-white shadow-lg">
+                                                    <img src="" alt="User Avatar"
+                                                        class="w-full h-full object-cover rounded-full" id="userAvatar">
+                                                    <i class="fas fa-user text-4xl absolute"
+                                                        style="color: var(--color-primary); display: none;"
+                                                        id="avatarFallback"></i>
+                                                </div>
+                                            </div>
+
+                                            <!-- User Info -->
+                                            <div>
+                                                <h3 class="text-2xl font-bold text-gray-800" id="username"></h3>
+                                                <p class="text-gray-600 mb-2 flex items-center">
+                                                    <i class="fas fa-graduation-cap mr-2"
+                                                        style="color: var(--color-primary);"></i>
+                                                    <span id="majorYear">Student</span>
+                                                </p>
+                                                <p class="text-gray-600 mb-4 flex items-center">
+                                                    <i class="fas fa-map-marker-alt mr-2"
+                                                        style="color: var(--color-primary);"></i>
+                                                    <span id="location"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
 
                             <!-- Profile Information Card -->
                             <div
