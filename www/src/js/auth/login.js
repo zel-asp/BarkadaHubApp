@@ -80,7 +80,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+
+        // Disable button immediately
         submitBtn.disabled = true;
+        submitBtn.textContent = 'Logging in...';
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
         try {
             // Sign in
@@ -120,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     name: userName,
                     email: email
                 }, { onConflict: 'id', ignoreDuplicates: true });
+
             // Success alert
             alertSystem.show('Login successful', 'success', 1500);
 
@@ -131,7 +137,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Unexpected error:', err);
             alertSystem.show('Login Failed, please try again', 'error');
         } finally {
+            // Always re-enable button
             submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     });
 });
