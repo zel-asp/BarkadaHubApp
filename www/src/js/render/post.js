@@ -51,7 +51,7 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
 
     return `
     <div class="bg-white rounded-lg shadow-sm p-5 mb-6 post" data-post-id="${postId}" data-file-path="${filePath}" id='${postId}' data-user-id="${userId}">
-        <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
                     <a href="${postOwner ? './profile.html' : `./otherProfile.html?user=${userId}`}">
                         <div class="avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
@@ -128,6 +128,40 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
         </div>
     </div>
 `;
+}
+
+export function searchUser(userId, avatarUrl, name) {
+    const avatarContent = avatarUrl
+        ? `<img src="${avatarUrl}" alt="${name}" class="w-10 h-10 rounded-full object-cover" />`
+        : name[0]; // fallback to first letter if no avatar
+
+    return `
+    <div class="px-4 py-3 hover:bg-gray-50/80 transition-colors cursor-pointer active:bg-gray-100" data-user-id="${userId}">
+        <div class="flex items-center gap-3">
+            <!-- Avatar -->
+            <div class="relative shrink-0 flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 font-medium rounded-full">
+                ${avatarContent}
+            </div>
+
+            <!-- User Info -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                    <h3 class="font-medium text-gray-900 truncate text-sm">
+                        ${name}
+                    </h3>
+                </div>
+                <p class="text-xs text-gray-500 truncate">@${name.toLowerCase().replace(/\s+/g, '')}</p>
+            </div>
+
+            <!-- Action Button -->
+            <div class="shrink-0">
+                <a href="./otherProfile.html?user=${userId}" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors border border-blue-100">
+                    View profile
+                </a>
+            </div>
+        </div>
+    </div>
+    `;
 }
 
 
