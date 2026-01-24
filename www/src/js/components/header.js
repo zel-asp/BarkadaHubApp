@@ -19,11 +19,11 @@ const NotificationBadge = ({ count, position = 'default', hidden = false, id = '
 
 
 // Reusable icon link component
-const IconLink = ({ href, icon, badge = null, ariaLabel = '' }) => {
+const IconLink = ({ href, icon, badge = null, ariaLabel = '', id = null }) => {
     return `
         <div class="relative cursor-pointer">
             <a href="${href}" class="block relative" aria-label="${ariaLabel}">
-                <i class="${icon} text-primary text-xl"></i>
+                <i class="${icon} text-primary text-xl" id = "${id}"></i>
                 ${badge || ''}
             </a>
         </div>
@@ -38,7 +38,7 @@ export default function HeaderComponent(isAdmin = false) {
             icon: 'fas fa-search',
             badge: null,
             ariaLabel: 'Search',
-            onClick: 'openSearchModal()'
+            id: 'search'
         },
 
         ...(isAdmin ? [{
@@ -55,8 +55,6 @@ export default function HeaderComponent(isAdmin = false) {
             badge: NotificationBadge({ position: 'default', id: 'notificationBadge' }),
             ariaLabel: 'View notifications'
         },
-
-
 
         // Messages
         {
