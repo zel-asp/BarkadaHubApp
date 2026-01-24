@@ -1,9 +1,10 @@
 import { checkConnection } from './functions.js';
-import HeaderComponent, { NotificationBadge } from "./components/header.js";
+import HeaderComponent from "./components/header.js";
 import { updateNotificationBadge, updateMessageBadge } from './render/notification.js';
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
 import offline, { Loading } from './render/offline.js';
+import { searchUser } from './render/post.js';
 import { mobileNavigations, leftSideBar } from "./components/navigations.js";
 
 // Admin user IDs
@@ -204,7 +205,7 @@ const renderComponents = async () => {
             element.insertAdjacentHTML('afterbegin', html);
         }
     });
-
+    openSearchModal();
     updateNavigationActiveState();
 
     // Update notification badge after header is in DOM
@@ -415,12 +416,72 @@ const subscribeToUnreadMessages = async () => {
     }
 };
 
+// ===================== SEARCH MODAL =====================
+const openSearchModal = () => {
+    const search = document.getElementById('search');
+    const searchModal = document.getElementById('searchModal');
+    const closeSearchModal = document.getElementById('closeSearchModal');
+    if (!searchModal || !search) return;
+
+    search.addEventListener('click', () => {
+        searchModal.classList.remove('hidden');
+        document.getElementById('searchInput')?.focus();
+
+        handleUserSearch();
+    });
+
+    if (!closeSearchModal) return;
+    closeSearchModal.addEventListener('click', () => {
+        searchModal.classList.add('hidden');
+    })
+};
+
+const handleUserSearch = async () => {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    if (!searchInput || !searchResults) return;
+
+    searchInput.addEventListener('input', async (e) => {
+        const query = e.target.value.trim();
+
+        // Clear previous results
+        searchResults.innerHTML = '';
+
+        if (!query) return;
+
+        try {
+            const { data: users, error } = await supabaseClient
+                .from('profile')
+                .select('id, avatar_url, name')
+                .ilike('name', `%${query}%`); // case-insensitive search
+
+            if (error) throw error;
+
+            if (!users || users.length === 0) {
+                searchResults.innerHTML = `<p class="text-gray-400 text-center py-4">No users found</p>`;
+                return;
+            }
+
+            users.forEach(user => {
+                searchResults.insertAdjacentHTML(
+                    'beforeend',
+                    searchUser(user.id, user.avatar_url || user.name[0], user.name)
+                );
+            });
+
+        } catch (err) {
+            console.error('Search error:', err);
+            searchResults.innerHTML = `<p class="text-red-500 text-center py-4">Error searching users</p>`;
+        }
+    });
+};
+
 
 // ===================== PAGE LOAD =====================
 // When page loads
 document.addEventListener('DOMContentLoaded', () => {
     supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
-
     showLoading();
     initializeApp();
 
