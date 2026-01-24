@@ -637,66 +637,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const postButton = postForm.querySelector('button[type="submit"]');
+        if (!postButton) return;
+
         const { data: userData } = await supabaseClient.auth.getUser();
         const userId = userData?.user?.id;
         const userName = userData?.user.user_metadata.display_name || "User";
 
         if (!userId) return alertSystem.show("You must be logged in.", 'error');
 
-        const loadingId = alertSystem.show("Posting...", 'loading');
+        try {
+            // 🔥 Disable button and show posting state
+            postButton.disabled = true;
+            const originalText = postButton.textContent;
+            postButton.textContent = 'Posting...';
+            postButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-        let mediaUrl = null;
-        let mediaType = null;
-        let filePath = null;
+            const loadingId = alertSystem.show("Posting...", 'loading');
 
-        if (selectedMedia) {
-            const file = selectedMedia.file;
-            const ext = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${ext}`;
-            filePath = `${userId}/${fileName}`;
-            const { error: uploadError } = await supabaseClient.storage.from("post-media").upload(filePath, file);
-            if (uploadError) {
-                alertSystem.hide(loadingId);
-                return alertSystem.show("Media upload failed!", 'error');
+            let mediaUrl = null;
+            let mediaType = null;
+            let filePath = null;
+
+            if (selectedMedia) {
+                const file = selectedMedia.file;
+                const ext = file.name.split('.').pop();
+                const fileName = `${Date.now()}.${ext}`;
+                filePath = `${userId}/${fileName}`;
+                const { error: uploadError } = await supabaseClient.storage
+                    .from("post-media")
+                    .upload(filePath, file);
+                if (uploadError) throw new Error("Media upload failed!");
+
+                const { data } = supabaseClient.storage.from("post-media").getPublicUrl(filePath);
+                mediaUrl = data.publicUrl;
+                mediaType = selectedMedia.type;
             }
-            const { data } = supabaseClient.storage.from("post-media").getPublicUrl(filePath);
-            mediaUrl = data.publicUrl;
-            mediaType = selectedMedia.type;
+
+            let avatar = '../images/defaultAvatar.jpg';
+            const { data: profile } = await supabaseClient
+                .from('profile')
+                .select('avatar_url')
+                .eq('id', userId)
+                .maybeSingle();
+
+            if (profile?.avatar_url) avatar = profile.avatar_url;
+
+            const { data: newPost, error } = await supabaseClient
+                .from("posts")
+                .insert({
+                    user_id: userId,
+                    user_name: userName,
+                    content: postContent.value,
+                    media_url: mediaUrl,
+                    media_type: mediaType,
+                    avatar_url: avatar,
+                    file_path: filePath
+                })
+                .select('*, post_comments(*)')
+                .maybeSingle();
+
+            alertSystem.hide(loadingId);
+            if (error) throw new Error("Failed to publish post!");
+
+            postForm.reset();
+            selectedMedia = null;
+            mediaPreview.classList.add('hidden');
+            charCount.textContent = "0";
+
+            alertSystem.show("Post created successfully!", 'success');
+
+            // Restore button
+            postButton.textContent = 'Posted!';
+            postButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            setTimeout(() => {
+                postButton.textContent = originalText;
+                postButton.disabled = true; // re-disable until new content
+            }, 2000);
+
+        } catch (err) {
+            console.error(err);
+
+            // ❌ Rollback button on error
+            postButton.disabled = false;
+            postButton.textContent = 'Post';
+            postButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            alertSystem.show(err.message || "Failed to publish post!", 'error');
         }
-
-        let avatar = '../images/defaultAvatar.jpg';
-        const { data: profile } = await supabaseClient
-            .from('profile')
-            .select('avatar_url')
-            .eq('id', userId)
-            .maybeSingle();
-
-        if (profile?.avatar_url) avatar = profile.avatar_url;
-
-        const { data: newPost, error } = await supabaseClient
-            .from("posts")
-            .insert({
-                user_id: userId,
-                user_name: userName,
-                content: postContent.value,
-                media_url: mediaUrl,
-                media_type: mediaType,
-                avatar_url: avatar,
-                file_path: filePath
-            })
-            .select('*, post_comments(*)')
-            .maybeSingle();
-
-        alertSystem.hide(loadingId);
-        if (error) return alertSystem.show("Failed to publish post!", 'error');
-
-        postForm.reset();
-        selectedMedia = null;
-        mediaPreview.classList.add('hidden');
-        charCount.textContent = "0";
-        postButton.disabled = true;
-
-        alertSystem.show("Post created successfully!", 'success');
     });
 
     // =======================
@@ -910,44 +938,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             const commentText = commentInput.value.trim();
             if (!commentText) return;
 
-            const { data: userData } = await supabaseClient.auth.getUser();
-            const userId = userData?.user?.id;
-            const userName = userData?.user.user_metadata.display_name || "User";
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true; // disable immediately
 
-            if (!userId) return alertSystem.show("You must be logged in to comment.", "error");
+            try {
+                const { data: userData } = await supabaseClient.auth.getUser();
+                const userId = userData?.user?.id;
+                const userName = userData?.user.user_metadata.display_name || "User";
 
-            let avatar = '../images/defaultAvatar.jpg';
-            const { data: profile } = await supabaseClient
-                .from('profile')
-                .select('avatar_url')
-                .eq('id', userId)
-                .maybeSingle();
+                if (!userId) throw new Error("You must be logged in to comment.");
 
-            if (profile?.avatar_url) avatar = profile.avatar_url;
+                let avatar = '../images/defaultAvatar.jpg';
+                const { data: profile } = await supabaseClient
+                    .from('profile')
+                    .select('avatar_url')
+                    .eq('id', userId)
+                    .maybeSingle();
 
-            const { error: insertError } = await supabaseClient
-                .from('post_comments')
-                .insert({
-                    post_id: currentPostId,
-                    user_id: userId,
-                    user_name: userName,
-                    comment: commentText,
-                    avatar: avatar
-                });
+                if (profile?.avatar_url) avatar = profile.avatar_url;
 
-            console.log('Commenting on postId:', currentPostId, typeof currentPostId);
+                const { error: insertError } = await supabaseClient
+                    .from('post_comments')
+                    .insert({
+                        post_id: currentPostId,
+                        user_id: userId,
+                        user_name: userName,
+                        comment: commentText,
+                        avatar: avatar
+                    });
 
-            if (insertError) {
-                console.error(insertError);
-                return alertSystem.show('Failed to post comment.', 'error');
+                if (insertError) throw insertError;
+
+                await commentPost(currentPostId, userId);
+
+                // Reset input
+                commentInput.value = '';
+                charCounter.innerHTML = '0/250';
+                await loadComments(currentPostId);
+
+            } catch (err) {
+                console.error(err);
+                alertSystem.show(err.message || "Failed to post comment.", "error");
+            } finally {
+                sendBtn.disabled = false; // always re-enable after
             }
-
-            await commentPost(currentPostId, userId);
-
-            commentInput.value = '';
-            charCounter.innerHTML = '0/250';
-            sendBtn.disabled = true;
-            await loadComments(currentPostId);
         });
     }
 
