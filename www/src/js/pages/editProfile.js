@@ -125,8 +125,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     ------------------------------------------- */
     form?.addEventListener('submit', async e => {
         e.preventDefault();
-        await saveProfile();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (!submitBtn) return;
+
+        try {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            await saveProfile();
+
+            submitBtn.textContent = 'Saved!';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+
+        } catch (err) {
+            console.error(err);
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            alertSystem.show('Failed to save profile.', 'error');
+        }
     });
+
 
     async function saveProfile() {
         const fullName = fullNameInput.value.trim();
