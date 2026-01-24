@@ -55,48 +55,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     lostFoundForm.addEventListener('submit', async e => {
         e.preventDefault();
 
-        const itemType = document.querySelector('input[name="itemType"]:checked')?.value;
-        const itemName = document.getElementById('itemName').value.trim();
-        const category = document.getElementById('category').value.trim();
-        const description = document.getElementById('description').value.trim();
-        const location = document.getElementById('location').value.trim();
-        const file = imageUpload.files[0];
+        const submitBtn = lostFoundForm.querySelector('button[type="submit"]');
+        if (!submitBtn) return;
 
-        let filePath = null;
+        try {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-        if (file) {
-            const ext = file.name.split('.').pop();
-            const fileName = `${userId}-${Date.now()}.${ext}`;
-            const { data: uploadData, error: uploadError } = await supabaseClient
-                .storage
+            const itemType = document.querySelector('input[name="itemType"]:checked')?.value;
+            const itemName = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('category').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const location = document.getElementById('location').value.trim();
+            const file = imageUpload.files[0];
+
+            let filePath = null;
+
+            if (file) {
+                const ext = file.name.split('.').pop();
+                const fileName = `${userId}-${Date.now()}.${ext}`;
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('lost_found')
+                    .upload(fileName, file);
+
+                if (uploadError) throw new Error("Failed to upload image!");
+                filePath = uploadData.path;
+            }
+
+            // Insert new lost & found record
+            const { data: insertedData, error: insertError } = await supabaseClient
                 .from('lost_found')
-                .upload(fileName, file);
+                .insert([{
+                    item_type: itemType,
+                    item_name: itemName,
+                    category,
+                    description,
+                    location,
+                    auth_id: userId,
+                    file_name: filePath,
+                    created_at: new Date()
+                }])
+                .select();
 
-            if (uploadError) return alertSystem.show("Failed to upload image!", 'error');
-            filePath = uploadData.path;
+            if (insertError) throw new Error("Failed to submit report!");
+
+            alertSystem.show("Report submitted successfully!", 'success');
+            closeModal();
+            renderLostFoundSingle(insertedData[0], true);
+
+            // Reset button
+            submitBtn.textContent = 'Submitted!';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            setTimeout(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+
+        } catch (err) {
+            console.error(err);
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            alertSystem.show(err.message || "Failed to submit report!", 'error');
         }
-
-        // Insert new lost & found record
-        const { data: insertedData, error: insertError } = await supabaseClient
-            .from('lost_found')
-            .insert([{
-                item_type: itemType,
-                item_name: itemName,
-                category,
-                description,
-                location,
-                auth_id: userId,
-                file_name: filePath,
-                created_at: new Date()
-            }])
-            .select();
-
-        if (insertError) return alertSystem.show("Failed to submit report!", 'error');
-
-        alertSystem.show("Report submitted successfully!", 'success');
-        closeModal();
-        renderLostFoundSingle(insertedData[0], true);
     });
+
 
     /* ------------------------------
     RENDER FUNCTIONS
@@ -232,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const postId = msgBtn.dataset.postId;
         const messageAdded = msgBtn.dataset.messageAdded === 'true';
 
-        // If already has message → just go
+        // Already has message → just go
         if (messageAdded) {
             window.location.href = `./messages.html`;
             return;
@@ -242,6 +269,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
 
         try {
+            msgBtn.disabled = true;
+            msgBtn.textContent = 'Sending...';
+            msgBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
             await addToMessageTable(friendId, postId);
 
             msgBtn.dataset.messageAdded = 'true';
@@ -251,13 +282,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
             msgBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             msgBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            msgBtn.disabled = false; // re-enable if you want clickable after
 
+            // Go to messages page
             window.location.href = `./messages.html`;
 
         } catch (err) {
             console.error(err.message);
+
+            msgBtn.disabled = false;
+            msgBtn.textContent = 'Send Message';
+            msgBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     });
+
 
 
     async function addToMessageTable(friendId, postId) {
