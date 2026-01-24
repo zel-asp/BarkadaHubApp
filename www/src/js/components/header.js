@@ -33,6 +33,14 @@ const IconLink = ({ href, icon, badge = null, ariaLabel = '' }) => {
 // Main Header Component
 export default function HeaderComponent(isAdmin = false) {
     const userActions = [
+        {
+            href: 'javascript:void(0)',
+            icon: 'fas fa-search',
+            badge: null,
+            ariaLabel: 'Search',
+            onClick: 'openSearchModal()'
+        },
+
         ...(isAdmin ? [{
             href: './auth-log.html',
             icon: 'fas fa-chart-line',
@@ -47,6 +55,7 @@ export default function HeaderComponent(isAdmin = false) {
             badge: NotificationBadge({ position: 'default', id: 'notificationBadge' }),
             ariaLabel: 'View notifications'
         },
+
 
 
         // Messages
