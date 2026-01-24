@@ -15,6 +15,53 @@
         <div id="alertContainer" class="fixed top-5 right-5 z-40 max-w-md"></div>
         <div id="header"></div>
 
+        <!-- Search Modal -->
+        <div id="searchModal" class="fixed inset-0 z-50 hidden" aria-labelledby="search-modal-title" aria-modal="true"
+            role="dialog">
+
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-200" aria-hidden="true">
+            </div>
+
+            <!-- Modal Container -->
+            <div class="flex min-h-full items-start justify-center p-4 pt-20">
+                <!-- Modal Content -->
+                <div
+                    class="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100">
+
+                    <!-- Modal Header -->
+                    <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-5 py-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 id="search-modal-title" class="text-lg font-semibold text-gray-900">
+                                Search
+                            </h2>
+                            <button type="button" id="closeSearchModal"
+                                class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg transition-colors"
+                                aria-label="Close search">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Search users..."
+                                class="w-full pl-10 pr-10 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-900 placeholder-gray-500"
+                                autocomplete="off" autofocus aria-label="Search users">
+                        </div>
+                    </div>
+
+                    <!-- Modal Body - Search Results -->
+                    <div class="overflow-y-auto" style="max-height: 400px;">
+                        <div id="searchResults" class="py-2">
+
+                            <!-- Sample User 1 -->
+                            <div id="searchUser"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="container mx-auto px-4 py-8 max-w-6xl" id="app">
 
             <!-- Header Section -->
