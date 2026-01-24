@@ -1,250 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BarkadaHub - Videos</title>
-        <link rel="stylesheet" href="../../dist/output.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    </head>
-
-    <body class="bg-primary" data-page="protected">
-        <div id="alertContainer" class="fixed top-5 right-5 z-100 max-w-md"></div>
-
-        <!-- Search Modal -->
-        <div id="searchModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="search-modal-title"
-            aria-modal="true" role="dialog">
-
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" aria-hidden="true"
-                onclick="closeSearchModal()"></div>
-
-            <!-- Modal Container -->
-            <div class="flex min-h-full items-center justify-center p-4">
-                <!-- Modal Content -->
-                <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-
-                    <!-- Modal Header -->
-                    <div class="sticky top-0 bg-white border-b px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <h2 id="search-modal-title" class="text-xl font-semibold text-gray-900">
-                                    Search Users
-                                </h2>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Find users by name, username, or email
-                                </p>
-                            </div>
-                            <button type="button" onclick="closeSearchModal()"
-                                class="text-gray-400 hover:text-gray-500 p-2 rounded-full hover:bg-gray-100"
-                                aria-label="Close search modal">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-
-                        <!-- Search Input -->
-                        <div class="mt-4 relative">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="searchInput" placeholder="Search for users..."
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                                    oninput="handleSearchInput(event)" onkeydown="handleSearchKeydown(event)"
-                                    autocomplete="off" aria-label="Search input">
-                                <button id="clearSearch" onclick="clearSearch()"
-                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
-                                    aria-label="Clear search">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal Body - Search Results -->
-                    <div class="overflow-y-auto" style="max-height: 60vh;">
-                        <!-- Static Sample Data Results -->
-                        <div id="searchResults" class="divide-y">
-                            <!-- Sample User 1 -->
-                            <div class="user-result p-4 hover:bg-gray-50 transition cursor-pointer"
-                                onclick="navigateToUser('user1')" data-user-id="user1">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-12 h-12 rounded-full bg--to-r from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                            J
-                                        </div>
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2">
-                                            <h3 class="font-semibold text-gray-900 truncate">John Doe</h3>
-                                            <i class="fas fa-check-circle text-blue-500" title="Verified"></i>
-                                        </div>
-                                        <p class="text-sm text-gray-500 truncate">@johndoe</p>
-                                        <p class="text-sm text-gray-600 mt-1 truncate">Software Developer & Tech
-                                            Enthusiast</p>
-                                    </div>
-
-                                    <div class="flex-shrink-0">
-                                        <button
-                                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-                                            View Profile
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Sample User 2 -->
-                            <div class="user-result p-4 hover:bg-gray-50 transition cursor-pointer"
-                                onclick="navigateToUser('user2')" data-user-id="user2">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-12 h-12 rounded-full bg--to-r from-blue-400 to-cyan-500 flex items-center justify-center text-white font-semibold">
-                                            <img src="https://i.pravatar.cc/150?img=5" alt="Jane Smith"
-                                                class="w-full h-full rounded-full object-cover">
-                                        </div>
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2">
-                                            <h3 class="font-semibold text-gray-900 truncate">Jane Smith</h3>
-                                        </div>
-                                        <p class="text-sm text-gray-500 truncate">@janesmith</p>
-                                        <p class="text-sm text-gray-600 mt-1 truncate">UI/UX Designer passionate about
-                                            creating beautiful experiences</p>
-                                    </div>
-
-                                    <div class="flex-shrink-0">
-                                        <button
-                                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-                                            View Profile
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Sample User 3 -->
-                            <div class="user-result p-4 hover:bg-gray-50 transition cursor-pointer"
-                                onclick="navigateToUser('user3')" data-user-id="user3">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="w-12 h-12 rounded-full bg--to-r from-green-400 to-emerald-500 flex items-center justify-center text-white font-semibold">
-                                            M
-                                        </div>
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2">
-                                            <h3 class="font-semibold text-gray-900 truncate">Mike Johnson</h3>
-                                            <i class="fas fa-check-circle text-blue-500" title="Verified"></i>
-                                        </div>
-                                        <p class="text-sm text-gray-500 truncate">@mikej</p>
-                                        <p class="text-sm text-gray-600 mt-1 truncate">Project Manager at BarkadaHub</p>
-                                    </div>
-
-                                    <div class="flex-shrink-0">
-                                        <button
-                                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-                                            View Profile
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="sticky bottom-0 bg-gray-50 border-t px-6 py-4">
-                        <div class="flex justify-between items-center text-sm text-gray-500">
-                            <span id="searchResultsCount">3 results</span>
-                            <button onclick="closeSearchModal()"
-                                class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
+<div class="px-4 py-3 hover:bg-gray-50/80 transition-colors cursor-pointer active:bg-gray-100" data-user-id="user1">
+    <div class="flex items-center gap-3">
+        <!-- Avatar -->
+        <div class="relative shrink-0">
+            <div
+                class="w-10 h-10 rounded-full bg-linear-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-medium">
+                J
             </div>
         </div>
+        <!-- User Info -->
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+                <h3 class="font-medium text-gray-900 truncate text-sm">
+                    John Doe
+                </h3>
+            </div>
+            <p class="text-xs text-gray-500 truncate">@johndoe • Software Engineer</p>
+        </div>
 
-        <script>
-            // Modal functions
-            function openSearchModal() {
-                const modal = document.getElementById('searchModal');
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-
-                // Focus on search input
-                setTimeout(() => {
-                    const searchInput = document.getElementById('searchInput');
-                    searchInput.focus();
-                }, 100);
-            }
-
-            function closeSearchModal() {
-                const modal = document.getElementById('searchModal');
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-
-                // Clear search
-                const searchInput = document.getElementById('searchInput');
-                searchInput.value = '';
-                clearSearch();
-            }
-
-            function clearSearch() {
-                const searchInput = document.getElementById('searchInput');
-                const clearBtn = document.getElementById('clearSearch');
-
-                searchInput.value = '';
-                clearBtn.classList.add('hidden');
-                searchInput.focus();
-            }
-
-            function handleSearchInput(event) {
-                const searchTerm = event.target.value;
-                const clearBtn = document.getElementById('clearSearch');
-
-                // Show/hide clear button
-                if (searchTerm.length > 0) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
-
-                // In a real app, you would make an API call here
-                console.log('Searching for:', searchTerm);
-            }
-
-            function handleSearchKeydown(event) {
-                if (event.key === 'Escape') {
-                    closeSearchModal();
-                }
-            }
-
-            function navigateToUser(userId) {
-                console.log('Navigating to user:', userId);
-                // In a real app, navigate to user profile
-                alert('Navigating to user profile: ' + userId);
-                closeSearchModal();
-            }
-
-            // Close modal when clicking outside
-            document.getElementById('searchModal').addEventListener('click', function (e) {
-                if (e.target.id === 'searchModal') {
-                    closeSearchModal();
-                }
-            });
-        </script>
-
-        <div id="offlinePage" class="hidden"></div>
-
-
-        <script type="module" src="../js/app.js"></script>
-        <script type="module" src="../js/pages/videos.js"></script>
-    </body>
-
-</html>
+        <!-- Action Button -->
+        <div class="shrink-0">
+            <a href="./otherProfile.html?user=${userId}">
+                class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-medium
+                transition-colors border border-blue-100">
+                View profile
+            </a>
+        </div>
+    </div>
+</div>
