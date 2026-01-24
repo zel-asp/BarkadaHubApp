@@ -40,23 +40,24 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                 <div class="absolute inset-0 z-20 flex flex-col justify-end pb-10">
                     <!-- User Profile & Caption -->
                     <div class="px-6 mb-8">
-                        <div class="flex items-center gap-3 mb-4">
-                            <!-- Avatar with glass effect -->
-                            <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 backdrop-blur-sm bg-white/10 shadow-lg">
-                                <img src="${avatar}" alt="${username}" class="w-full h-full object-cover" loading="lazy">
-                            </div>
-                            
-                            <!-- User Info -->
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="font-bold text-white text-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">${username}</h3>
-                                    <span class="text-white/80 text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                                        @${username.toLowerCase().replace(/\s+/g, '')}
-                                    </span>
+                        <a href="./otherProfile.html?user=${userId}">
+                            <div class="flex items-center gap-3 mb-4">
+                                <!-- Avatar with glass effect -->
+                                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 backdrop-blur-sm bg-white/10 shadow-lg">
+                                        <img src="${avatar}" alt="${username}" class="w-full h-full object-cover" loading="lazy">
+                                    </div> 
+                                <!-- User Info -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-bold text-white text-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">${username}</h3>
+                                        <span class="text-white/80 text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                                            @${username.toLowerCase().replace(/\s+/g, '')}
+                                        </span>
+                                    </div>
+                                    <p class="text-white/95 text-md leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-justify break-all w-60 ">${caption}</p>
                                 </div>
-                                <p class="text-white/95 text-md leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-justify break-all w-60 ">${caption}</p>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
 
