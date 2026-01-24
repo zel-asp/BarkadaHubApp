@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (createClubBtn && !adminIds.includes(userId)) createClubBtn.classList.add('hidden');
 
     /* =====================================================
-       ELEMENT REFERENCES
+    ELEMENT REFERENCES
     ===================================================== */
     const elements = {
         modal: document.getElementById("createClubModal"),
@@ -226,9 +226,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 try {
-                    /* ===============================
-                    INSERT club membership
-                    =============================== */
+                    btn.disabled = true;
+                    btn.textContent = 'Joining...';
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+
                     const { data: member, error: memberError } =
                         await supabaseClient
                             .from('club_members')
