@@ -183,51 +183,11 @@
                             class="bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition-colors">
                             <i class="fas fa-trash mr-2"></i>Delete Post
                         </button>
-                        <button id="banUserBtn"
-                            class="col-span-3 bg-purple-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-purple-700 transition-colors">
-                            <i class="fas fa-user-slash mr-2"></i>Ban User
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Ban User Confirmation Modal -->
-        <div id="banUserModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-            <div
-                class="bg-white rounded-xl max-w-md w-full p-6 transform transition-all duration-300 scale-95 ban-card">
-                <div class="text-center">
-                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                        <i class="fas fa-user-slash text-red-600 text-xl"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Ban User?</h3>
-                    <p class="text-sm text-gray-500 mb-4">
-                        This will permanently remove all content from <span id="banUserName"
-                            class="font-semibold"></span> including:
-                    </p>
-                    <ul class="text-xs text-gray-600 text-left mb-6 space-y-1">
-                        <li class="flex items-center"><i class="fas fa-check text-red-500 mr-2 text-xs"></i> All posts
-                            and media</li>
-                        <li class="flex items-center"><i class="fas fa-check text-red-500 mr-2 text-xs"></i> All
-                            comments</li>
-                        <li class="flex items-center"><i class="fas fa-check text-red-500 mr-2 text-xs"></i> All likes
-                        </li>
-                        <li class="flex items-center"><i class="fas fa-check text-red-500 mr-2 text-xs"></i> All friend
-                            connections</li>
-                    </ul>
-                    <div class="flex gap-3">
-                        <button id="cancelBanBtn"
-                            class="flex-1 border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                            Cancel
-                        </button>
-                        <button id="confirmBanBtn"
-                            class="flex-1 bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition-colors">
-                            Ban User
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Delete Confirmation Modal -->
         <div id="deleteConfirmationModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
