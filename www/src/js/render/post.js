@@ -1,9 +1,10 @@
-export default function uploadedPost(avatar = hi, postOwner = false, name, date, content, file, media_type, postId = 1, likes = 0, comments = 0, isLiked = false, filePath = null, userId, friendStatus = null) {
+export default function uploadedPost(avatar = hi, postOwner = false, name, date, content, file, media_type, postId = 1, likes = 0, comments = 0, isLiked = false, filePath = null, userId, friendStatus = null, isReported = false) {
     const likeIconClass = isLiked ? 'fas fa-heart text-red-600' : 'fas fa-heart text-gray-400';
     const likeBtnClass = isLiked ? 'text-red-600' : '';
     const likeText = isLiked ? 'Liked' : 'Like';
 
     let followButtonHTML = '';
+    let reportButtonHTML = '';
 
     if (!postOwner) {
         switch (friendStatus) {
@@ -73,10 +74,21 @@ export default function uploadedPost(avatar = hi, postOwner = false, name, date,
                 </button>`
             : ''}
             ${!postOwner ?
-            `<button class="report-btn group ml-2 px-3 py-1.5 text-xs font-medium rounded-full border bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
-                    data-post-id="${postId}" data-user-id="${userId}">
-                    <i class="fas fa-flag mr-1"></i>
-                </button>`
+            `
+            ${isReported ?
+                // Already reported - show disabled button
+                `<button class="report-btn group ml-2 px-3 py-1.5 text-xs font-medium rounded-full border bg-gray-400 text-white cursor-not-allowed"
+            data-post-id="${postId}" data-user-id="${userId}" disabled title="Already reported">
+            <i class="fas fa-flag-checkered mr-1"></i>
+        </button>`
+                :
+                // Not reported yet - show active button
+                `<button class="report-btn group ml-2 px-3 py-1.5 text-xs font-medium rounded-full border bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+            data-post-id="${postId}" data-user-id="${userId}">
+            <i class="fas fa-flag mr-1"></i>
+        </button>`
+            }
+    `
             : ''}
         </div>
     </div>
