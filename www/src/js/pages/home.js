@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
 
+    const bannedWords = [
+        "stupid", "idiot", "dumb", "fool", "bastard", "ass", "shit", "fuck", "damn", "crap",
+        "sex", "porn", "nude", "fuck", "bitch", "slut", "whore", "horny", "naked", "cock", "pussy",
+        "tanga", "bobo", "ulol", "gago", "putangina", "pakshet", "tangina", "tarantado", "peste", "hayop",
+        "sex", "kantot", "ligawan", "hubad", "malandi", "puki", "titi", "pepe", "kantutan", "tukso"
+    ];
+
+
     async function loadProfilePic(userId, userAvatarElement) {
         let avatar = '../images/defaultAvatar.jpg';
 
@@ -647,11 +655,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!userId) return alertSystem.show("You must be logged in.", 'error');
 
         try {
-            // 🔥 Disable button and show posting state
             postButton.disabled = true;
             const originalText = postButton.textContent;
             postButton.textContent = 'Posting...';
             postButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            let content = postContent.value;
+            let foundBanned = false;
+
+            bannedWords.forEach(word => {
+                const pattern = new RegExp(`\\b${word}\\b[.,!?;:]*`, 'gi');
+                if (pattern.test(content)) {
+                    content = content.replace(pattern, match => '*'.repeat(match.length));
+                    foundBanned = true;
+                }
+            });
+
+            if (foundBanned) {
+                alertSystem.show("Some inappropriate words were filtered.", 'info');
+            }
+
 
             const loadingId = alertSystem.show("Posting...", 'loading');
 
@@ -683,12 +706,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (profile?.avatar_url) avatar = profile.avatar_url;
 
+
+
             const { data: newPost, error } = await supabaseClient
                 .from("posts")
                 .insert({
                     user_id: userId,
                     user_name: userName,
-                    content: postContent.value,
+                    content: content,
                     media_url: mediaUrl,
                     media_type: mediaType,
                     avatar_url: avatar,
@@ -718,7 +743,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             console.error(err);
 
-            // ❌ Rollback button on error
             postButton.disabled = false;
             postButton.textContent = 'Post';
             postButton.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -948,6 +972,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (!userId) throw new Error("You must be logged in to comment.");
 
+                let commentInputValue = commentInput.value;
+                let foundBanned = false;
+
+                bannedWords.forEach(word => {
+                    // Match word with optional punctuation after, global and case-insensitive
+                    const pattern = new RegExp(`\\b${word}\\b[.,!?:;|<>@#$%^&()\\-_=+*]*`, 'gi');
+                    if (pattern.test(commentInputValue)) {
+                        commentInputValue = commentInputValue.replace(pattern, match => '*'.repeat(match.length));
+                        foundBanned = true;
+                    }
+                });
+
+                if (foundBanned) {
+                    alertSystem.show("Some inappropriate words were filtered.", 'info');
+                }
+
                 let avatar = '../images/defaultAvatar.jpg';
                 const { data: profile } = await supabaseClient
                     .from('profile')
@@ -963,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         post_id: currentPostId,
                         user_id: userId,
                         user_name: userName,
-                        comment: commentText,
+                        comment: commentInputValue,
                         avatar: avatar
                     });
 
