@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <!-- Report Reason -->
                 <div class="p-4 border-b border-gray-100">
                     <div class="flex items-start gap-2">
-                        <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
                             <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
                         </div>
                         <div class="flex-1">
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <span>Contains media</span>
                             </div>
                         ` : ''}
-                        <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-gray-50 to-transparent"></div>
                     </div>
                 </div>
             </div>
