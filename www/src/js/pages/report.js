@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Modals
     const reportDetailsModal = document.getElementById('reportDetailsModal');
     const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
-    const banUserModal = document.getElementById('banUserModal');
 
     // Filters
     const statusFilter = document.getElementById('statusFilter');
@@ -47,34 +46,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =======================
     async function sendNotification(userId, type, message, entityId = null, senderId = null) {
         try {
-            // Get sender info (admin)
-            let senderProfile = null;
-            if (senderId) {
-                const { data } = await supabaseClient
-                    .from('profile')
-                    .select('name, avatar_url')
-                    .eq('id', senderId)
-                    .maybeSingle();
-                senderProfile = data;
+            const notificationData = {
+                user_id: userId,
+                sender_id: senderId || adminUserId,
+                type: type,
+                message: message,
+                username: adminUserName,
+                avatar_url: '../images/defaultAvatar.jpg',
+                created_at: new Date().toISOString(),
+                is_read: false
+            };
+
+            // For banning actions, don't include entity_id since post was deleted
+            if (entityId && !type.includes('user_banned') && !type.includes('post_deleted')) {
+                notificationData.entity_id = entityId;
+                notificationData.entity_type = 'post';
             }
 
             const { error } = await supabaseClient
                 .from('notifications')
-                .insert({
-                    user_id: userId,
-                    sender_id: senderId || adminUserId,
-                    type: type,
-                    entity_id: entityId,
-                    message: message,
-                    username: senderProfile?.name || adminUserName,
-                    avatar_url: senderProfile?.avatar_url || '../images/defaultAvatar.jpg'
-                });
+                .insert(notificationData);
 
             if (error) {
+                // If it's a foreign key violation, try without entity_id
+                if (error.code === '23503') {
+                    console.log('Foreign key violation, retrying without entity_id...');
+                    delete notificationData.entity_id;
+                    delete notificationData.entity_type;
+
+                    const { error: retryError } = await supabaseClient
+                        .from('notifications')
+                        .insert(notificationData);
+
+                    if (retryError) {
+                        console.error('Failed to send notification even without entity_id:', retryError);
+                        return false;
+                    }
+                    return true;
+                }
                 console.error('Failed to send notification:', error);
                 return false;
             }
-            console.log('Notification created for user:', userId, 'Type:', type);
+
+            console.log('Notification created for user:', userId);
             return true;
         } catch (error) {
             console.error('Error sending notification:', error);
@@ -739,70 +753,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // BAN USER
-    // =======================
-    async function banUser() {
-        if (!currentUserId || !currentReporterId) {
-            alertSystem.show('No user selected for banning', 'error');
-            return;
-        }
-
-        try {
-            const alertId = alertSystem.show('Banning user...', 'loading');
-
-            // 1. DELETE USER FROM SUPABASE AUTH
-            const { error: authError } = await supabaseClient.auth.admin.deleteUser(currentUserId);
-
-            if (authError) {
-                console.warn('Auth deletion failed, marking as banned:', authError);
-                const { error: updateError } = await supabaseClient.auth.admin.updateUserById(
-                    currentUserId,
-                    {
-                        user_metadata: {
-                            banned: true,
-                            banned_at: new Date().toISOString(),
-                            banned_by: adminUserId,
-                            banned_reason: 'Content violations'
-                        },
-                        ban_duration: 'permanent'
-                    }
-                );
-
-                if (updateError) {
-                    console.warn('Could not update user metadata:', updateError);
-                }
-            }
-
-            // 2. Delete user's content
-            const deleteOperations = [
-                supabaseClient.from('posts').delete().eq('user_id', currentUserId),
-                supabaseClient.from('post_likes').delete().eq('user_id', currentUserId),
-                supabaseClient.from('post_comments').delete().eq('user_id', currentUserId),
-                supabaseClient.from('friends_request').delete().or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`),
-                supabaseClient.from('profile').delete().eq('id', currentUserId),
-                supabaseClient.from('reports').delete().eq('who_reported', currentUserId)
-            ];
-
-            await Promise.allSettled(deleteOperations);
-
-            // 3. Send notifications (reporter gets notified, banned user doesn't get notification)
-            await sendReportNotifications('user_banned');
-
-            alertSystem.hide(alertId);
-            alertSystem.show(`User ${currentUserName || currentUserId.substring(0, 8)} has been banned. Notification sent to reporter.`, 'success');
-
-            // Close modal and refresh
-            hideBanConfirmation();
-            closeReportDetails();
-            await loadReports();
-
-        } catch (error) {
-            console.error('Error banning user:', error);
-            alertSystem.show('Failed to ban user: ' + error.message, 'error');
-        }
-    }
-
-    // =======================
     // CLOSE REPORT DETAILS
     // =======================
     function closeReportDetails() {
@@ -833,25 +783,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =======================
-    // BAN USER CONFIRMATION
-    // =======================
-    function showBanConfirmation() {
-        const modal = document.getElementById('banUserModal');
-        const card = modal.querySelector('.ban-card');
-
-        document.getElementById('banUserName').textContent = currentUserName || 'this user';
-        modal.classList.remove('hidden');
-        setTimeout(() => card.classList.add('scale-100'));
-    }
-
-    function hideBanConfirmation() {
-        const modal = document.getElementById('banUserModal');
-        const card = modal.querySelector('.ban-card');
-        card.classList.remove('scale-100');
-        setTimeout(() => modal.classList.add('hidden'), 150);
-    }
-
-    // =======================
     // EVENT LISTENERS
     // =======================
     // Close report details
@@ -866,16 +797,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Delete post
     document.getElementById('deletePostBtn').addEventListener('click', showDeleteConfirmation);
 
-    // Ban user
-    document.getElementById('banUserBtn').addEventListener('click', showBanConfirmation);
-
     // Delete confirmation
     document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteConfirmation);
     document.getElementById('confirmDeleteBtn').addEventListener('click', deletePost);
-
-    // Ban confirmation
-    document.getElementById('cancelBanBtn').addEventListener('click', hideBanConfirmation);
-    document.getElementById('confirmBanBtn').addEventListener('click', banUser);
 
     // Filters
     statusFilter.addEventListener('change', applyFilters);
@@ -894,11 +818,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     deleteConfirmationModal.addEventListener('click', (e) => {
         if (e.target === deleteConfirmationModal) hideDeleteConfirmation();
     });
-
-    banUserModal.addEventListener('click', (e) => {
-        if (e.target === banUserModal) hideBanConfirmation();
-    });
-
     // =======================
     // INITIALIZE
     // =======================
