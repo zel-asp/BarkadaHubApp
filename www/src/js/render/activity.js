@@ -1,12 +1,34 @@
 export default function summary(active, totalLogin, totalLogout) {
     return `
-        <div class="mb-6">
-            <a href="./home.html">
-                <h1 class="text-2xl font-bold text-gray-900">
-                    <i class="fas fa-sign-in-alt text-primary mr-2"></i>User Activity Log
-                </h1>
-                <p class="text-gray-600 mt-1">Track login and logout activities across devices</p>
-            </a>
+           <div class="mb-8">
+    <div class="flex items-center justify-between">
+        <!-- Title with Icon -->
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-10 h-10 bg-linear-to-br from-primary/10 to-blue-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt text-primary"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">User Activity Log</h1>
+                    <p class="text-gray-500 text-sm">Monitoring system access and security</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Quick Action -->
+        <a href="./testUI.html" class="relative">
+            <div class="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-white to-gray-50 border border-gray-200 rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-200 group">
+                <div class="relative">
+                    <i class="fas fa-flag text-gray-500 group-hover:text-red-500"></i>
+                    <span id="urgentBadge" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </div>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900">Reports</span>
+            </div>
+        </a>
+    </div>
+</div>
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
