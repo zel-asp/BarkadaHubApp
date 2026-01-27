@@ -1,21 +1,24 @@
 export default function summary(active, totalLogin, totalLogout) {
     return `
-           <div class="mb-8">
+<div class="mb-8">
     <div class="flex items-center justify-between">
         <!-- Title with Icon -->
-        <div>
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <div class="w-10 h-10 bg-linear-to-br from-primary/10 to-blue-100 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-sign-in-alt text-primary"></i>
+        <a href="./home.html">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div
+                            class="w-10 h-10 bg-linear-to-br from-primary/10 to-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-sign-in-alt text-primary"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Activity Log</h1>
+                        <p class="text-gray-500 text-sm">Monitoring system access and security</p>
                     </div>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">User Activity Log</h1>
-                    <p class="text-gray-500 text-sm">Monitoring system access and security</p>
-                </div>
             </div>
-        </div>
+        </a>
         
         <!-- Reports Quick Action -->
         <a href="./testUI.html" class="relative">
