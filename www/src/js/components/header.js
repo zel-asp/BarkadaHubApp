@@ -100,6 +100,7 @@ export default function HeaderComponent(isAdmin = false) {
 // Export individual components if needed elsewhere
 export { NotificationBadge, IconLink };
 
+
 export function info() {
     return `
     <a href="./developers.html" class="fixed bottom-20 right-5 z-50 p-3 rounded-full shadow-lg 
