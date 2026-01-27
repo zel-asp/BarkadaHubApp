@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lostMessage = document.getElementById('lost-message');
     const messageContainer = document.getElementById('messagesContainer');
     const app = document.getElementById('app');
+    const searchInput = document.querySelector('input[type="text"]');
 
     // Store current conversation data
     let currentConversation = null;
@@ -29,6 +30,18 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentMessages = [];
     let activeSubscription = null;
     let isSendingMessage = false;
+
+    // Store all messages for search functionality
+    let allMessages = {
+        friends: [],
+        clubs: [],
+        lost: []
+    };
+    let filteredMessages = {
+        friends: [],
+        clubs: [],
+        lost: []
+    };
 
     async function render() {
         /* -----------------------------------------
@@ -98,6 +111,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const clubMessages = messages.filter(m => m.relation === 'club');
         const lostFoundMessages = messages.filter(m => m.relation === 'lost & found');
 
+        // Store all messages for search
+        allMessages.friends = friendMessages;
+        allMessages.clubs = clubMessages;
+        allMessages.lost = lostFoundMessages;
+
+        // Initially show all messages
+        filteredMessages.friends = friendMessages;
+        filteredMessages.clubs = clubMessages;
+        filteredMessages.lost = lostFoundMessages;
+
         /* -----------------------------------------
         CLUB MEMBER COUNTS
         ----------------------------------------- */
@@ -128,57 +151,226 @@ document.addEventListener("DOMContentLoaded", () => {
             new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
         /* -----------------------------------------
-        RENDER FRIENDS
+        RENDER MESSAGES FUNCTION
         ----------------------------------------- */
-        friendsMessage.innerHTML = friendMessages.map(mes => messageItem({
-            relation: mes.relation,
-            name: mes.friend_name,
-            avatar: mes.friend_avatar,
-            timestamp: formatTime(mes.created_at),
-            badgeText: mes.relation,
-            subtitle: 'Tap to chat',
-            conversationId: mes.conversation_id,
-            firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at),
-            isSeen: !unreadMap[mes.conversation_id] // true = seen, false = unread
-        })).join('');
+        function renderMessages() {
+            // Clear existing messages
+            friendsMessage.innerHTML = '';
+            clubMessage.innerHTML = '';
+            lostMessage.innerHTML = '';
+
+            // Show/hide sections based on whether they have messages
+            const friendsSection = document.querySelector('#friends-message').parentElement;
+            const clubSection = document.querySelector('#club-message').parentElement;
+            const lostSection = document.querySelector('#lost-message').parentElement;
+
+            // Render friends messages
+            if (filteredMessages.friends.length > 0) {
+                friendsSection.classList.remove('hidden');
+                friendsMessage.innerHTML = filteredMessages.friends.map(mes => messageItem({
+                    relation: mes.relation,
+                    name: mes.friend_name,
+                    avatar: mes.friend_avatar,
+                    timestamp: formatTime(mes.created_at),
+                    badgeText: mes.relation,
+                    subtitle: 'Tap to chat',
+                    conversationId: mes.conversation_id,
+                    firendId: mes.friends_id,
+                    formatDate: formatDate(mes.created_at),
+                    isSeen: !unreadMap[mes.conversation_id] // true = seen, false = unread
+                })).join('');
+            } else {
+                friendsSection.classList.add('hidden');
+            }
+
+            // Render club messages
+            if (filteredMessages.clubs.length > 0) {
+                clubSection.classList.remove('hidden');
+                clubMessage.innerHTML = filteredMessages.clubs.map(mes => messageItem({
+                    relation: mes.relation,
+                    name: mes.friend_name,
+                    avatar: mes.friend_avatar,
+                    timestamp: formatTime(mes.created_at),
+                    badgeText: mes.relation,
+                    members: membersCountMap[mes.friends_id] || 0,
+                    subtitle: 'Tap to chat',
+                    conversationId: mes.conversation_id,
+                    firendId: mes.friends_id,
+                    formatDate: formatDate(mes.created_at),
+                    isSeen: !unreadMap[mes.conversation_id]
+                })).join('');
+            } else {
+                clubSection.classList.add('hidden');
+            }
+
+            // Render lost & found messages
+            if (filteredMessages.lost.length > 0) {
+                lostSection.classList.remove('hidden');
+                lostMessage.innerHTML = filteredMessages.lost.map(mes => messageItem({
+                    relation: mes.relation,
+                    name: mes.friend_name,
+                    avatar: mes.friend_avatar,
+                    timestamp: formatTime(mes.created_at),
+                    badgeText: mes.relation,
+                    subtitle: mes.latest_message || 'Tap to chat',
+                    conversationId: mes.conversation_id,
+                    firendId: mes.friends_id,
+                    formatDate: formatDate(mes.created_at),
+                    isSeen: !unreadMap[mes.conversation_id]
+                })).join('');
+            } else {
+                lostSection.classList.add('hidden');
+            }
+
+            // Show "no results" message if all sections are hidden and search is active
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm &&
+                filteredMessages.friends.length === 0 &&
+                filteredMessages.clubs.length === 0 &&
+                filteredMessages.lost.length === 0) {
+                showNoResultsMessage(searchTerm);
+            } else {
+                hideNoResultsMessage();
+            }
+        }
 
         /* -----------------------------------------
-        RENDER CLUBS
+        SEARCH FUNCTIONALITY
         ----------------------------------------- */
-        clubMessage.innerHTML = clubMessages.map(mes => messageItem({
-            relation: mes.relation,
-            name: mes.friend_name,
-            avatar: mes.friend_avatar,
-            timestamp: formatTime(mes.created_at),
-            badgeText: mes.relation,
-            members: membersCountMap[mes.friends_id] || 0,
-            subtitle: 'Tap to chat',
-            conversationId: mes.conversation_id,
-            firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at),
-            isSeen: !unreadMap[mes.conversation_id]
-        })).join('');
+        function performSearch(searchTerm) {
+            if (!searchTerm) {
+                // Reset to show all messages
+                filteredMessages = {
+                    friends: allMessages.friends,
+                    clubs: allMessages.clubs,
+                    lost: allMessages.lost
+                };
+                renderMessages();
+                return;
+            }
+
+            const lowerSearchTerm = searchTerm.toLowerCase();
+
+            // Filter friends messages
+            filteredMessages.friends = allMessages.friends.filter(message =>
+                message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
+                message.relation?.toLowerCase().includes(lowerSearchTerm) ||
+                message.latest_message?.toLowerCase().includes(lowerSearchTerm)
+            );
+
+            // Filter club messages
+            filteredMessages.clubs = allMessages.clubs.filter(message =>
+                message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
+                message.relation?.toLowerCase().includes(lowerSearchTerm) ||
+                message.latest_message?.toLowerCase().includes(lowerSearchTerm) ||
+                membersCountMap[message.friends_id]?.toString().includes(searchTerm) // Search by member count
+            );
+
+            // Filter lost & found messages
+            filteredMessages.lost = allMessages.lost.filter(message =>
+                message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
+                message.relation?.toLowerCase().includes(lowerSearchTerm) ||
+                message.latest_message?.toLowerCase().includes(lowerSearchTerm)
+            );
+
+            renderMessages();
+        }
 
         /* -----------------------------------------
-        RENDER LOST & FOUND
+        SHOW NO RESULTS MESSAGE
         ----------------------------------------- */
-        lostMessage.innerHTML = lostFoundMessages.map(mes => messageItem({
-            relation: mes.relation,
-            name: mes.friend_name,
-            avatar: mes.friend_avatar,
-            timestamp: formatTime(mes.created_at),
-            badgeText: mes.relation,
-            subtitle: mes.latest_message || 'Tap to chat',
-            conversationId: mes.conversation_id,
-            firendId: mes.friends_id,
-            formatDate: formatDate(mes.created_at),
-            isSeen: !unreadMap[mes.conversation_id]
-        })).join('');
+        function showNoResultsMessage(searchTerm) {
+            let noResultsDiv = document.getElementById('no-results-message');
+
+            if (!noResultsDiv) {
+                noResultsDiv = document.createElement('div');
+                noResultsDiv.id = 'no-results-message';
+                noResultsDiv.className = 'text-center py-10';
+
+                const messagesContainer = document.querySelector('#messagesContainer');
+                if (messagesContainer) {
+                    // Insert after the sections
+                    messagesContainer.appendChild(noResultsDiv);
+                }
+            }
+
+            noResultsDiv.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-8">
+                    <div class="mb-4 p-4 rounded-full bg-gray-100">
+                        <i class="fas fa-search text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">No results found</h3>
+                    <p class="text-gray-500 mb-4 max-w-md">
+                        No messages found for "<span class="font-semibold text-primary">${escapeHtml(searchTerm)}</span>"
+                    </p>
+                    <p class="text-gray-400 text-sm">
+                        Try searching by name, relation, or message content
+                    </p>
+                </div>
+            `;
+        }
+
+        /* -----------------------------------------
+        HIDE NO RESULTS MESSAGE
+        ----------------------------------------- */
+        function hideNoResultsMessage() {
+            const noResultsDiv = document.getElementById('no-results-message');
+            if (noResultsDiv) {
+                noResultsDiv.remove();
+            }
+        }
+
+        /* -----------------------------------------
+        ESCAPE HTML HELPER
+        ----------------------------------------- */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial render
+        renderMessages();
+
+        /* -----------------------------------------
+        SETUP SEARCH EVENT LISTENERS
+        ----------------------------------------- */
+        if (searchInput) {
+            // Search on input with debounce
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    performSearch(e.target.value.trim());
+                }, 300); // 300ms debounce
+            });
+
+            // Clear search on escape
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    performSearch('');
+                    searchInput.blur();
+                }
+            });
+
+            // Clear search on clear button click (if you add one)
+            const searchClearBtn = searchInput.parentElement.querySelector('.search-clear');
+            if (searchClearBtn) {
+                searchClearBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    performSearch('');
+                    searchInput.focus();
+                });
+            }
+        }
     }
 
     render();
 
+    /* -------------------------------------------
+        REST OF YOUR EXISTING CODE (UNCHANGED)
+        ------------------------------------------- */
     document.addEventListener('click', async (e) => {
         const selectedChat = e.target.closest('.selectedMessage');
         if (!selectedChat) return;
@@ -261,10 +453,9 @@ document.addEventListener("DOMContentLoaded", () => {
         initEllipsisButtons();
     });
 
-
     /* -------------------------------------------
         DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
-    ------------------------------------------- */
+        ------------------------------------------- */
     const videoBtn = document.getElementById('videoBtn');
     const cameraBtn = document.getElementById('cameraBtn');
     const messageInput = document.getElementById('messageInput');
@@ -305,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         CAMERA BUTTON HANDLER - SIMPLIFIED
-    ------------------------------------------- */
+        ------------------------------------------- */
     cameraBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -324,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         VIDEO BUTTON HANDLER
-    ------------------------------------------- */
+        ------------------------------------------- */
     videoBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -344,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SHOW MEDIA PREVIEW
-    ------------------------------------------- */
+        ------------------------------------------- */
     function showMediaPreview(file, type) {
         previewContainer.innerHTML = '';
 
@@ -374,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         REMOVE MEDIA PREVIEW
-    ------------------------------------------- */
+        ------------------------------------------- */
     function removeMediaPreview() {
         previewContainer.innerHTML = '';
         mediaPreviewArea.classList.add('hidden');
@@ -385,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         UPDATE SEND BUTTON STATE
-    ------------------------------------------- */
+        ------------------------------------------- */
     function updateSendButtonState() {
         const hasContent = messageInput.value.trim().length > 0 || currentMediaFile;
         sendBtn.disabled = isSendingMessage || !hasContent;
@@ -404,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         FETCH MESSAGES FUNCTION
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function fetchMessages(conversationId) {
         return await supabaseClient
             .from('chat_messages')
@@ -415,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         UPLOAD FILE TO STORAGE
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function uploadFileToStorage(file, conversationId) {
         try {
             // Create a folder structure: chat-media/{conversationId}/{timestamp_filename}
@@ -479,7 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         DELETE FILE FROM STORAGE
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function deleteFileFromStorage(filePath) {
         try {
             if (!filePath) return;
@@ -506,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         EXTRACT FILE PATH FROM MESSAGE CONTENT
-    ------------------------------------------- */
+        ------------------------------------------- */
     function extractFilePathFromContent(content) {
         try {
             // Check if content contains Supabase storage URL
@@ -526,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         DELETE MESSAGE FUNCTION
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function deleteMessage(messageId, content, senderId) {
         // Check if current user is the sender
         if (senderId !== currentUserId) {
@@ -571,7 +762,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         INITIALIZE ELLIPSIS BUTTONS FOR DELETE
-    ------------------------------------------- */
+        ------------------------------------------- */
     function initEllipsisButtons() {
         // Add click event to message containers to show ellipsis
         document.addEventListener('click', (e) => {
@@ -600,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SHOW ELLIPSIS BUTTON ON MESSAGE CLICK
-    ------------------------------------------- */
+        ------------------------------------------- */
     function showEllipsisButton(messageContainer) {
         // Hide any existing ellipsis buttons first
         hideAllEllipsisButtons();
@@ -635,7 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         HIDE ALL ELLIPSIS BUTTONS
-    ------------------------------------------- */
+        ------------------------------------------- */
     function hideAllEllipsisButtons() {
         document.querySelectorAll('.message-ellipsis-btn').forEach(btn => {
             btn.classList.add('hidden');
@@ -644,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SHOW ELLIPSIS MENU
-    ------------------------------------------- */
+        ------------------------------------------- */
     function showEllipsisMenu(messageId, senderId, content, event) {
         // Hide any existing menus first
         hideAllEllipsisMenus();
@@ -729,7 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         HIDE ALL ELLIPSIS MENUS
-    ------------------------------------------- */
+        ------------------------------------------- */
     function hideAllEllipsisMenus() {
         const menus = document.querySelectorAll('.fixed.bg-white.rounded-lg.shadow-lg.py-2');
         menus.forEach(menu => {
@@ -741,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         GET USER DISPLAY NAME
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function getUserDisplayName(userId) {
         // If it's the current user, return cached name
         if (userId === currentUserId) {
@@ -780,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         FORMAT MESSAGE FOR DISPLAY - WITH SENDER NAME AND DELETE OPTION
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function formatMessageForDisplay(msg) {
         const isCurrentUser = msg.sender_id === currentUserId;
         const messageDate = new Date(msg.created_at);
@@ -845,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         HELPER FUNCTIONS
-    ------------------------------------------- */
+        ------------------------------------------- */
     function getVideoMimeType(url) {
         const ext = url.split('.').pop().split('?')[0].toLowerCase();
         const mimeTypes = {
@@ -866,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SETUP CHAT SCROLLING
-    ------------------------------------------- */
+        ------------------------------------------- */
     function setupChatScrolling() {
         const chatBody = document.querySelector('#directMessage .overflow-y-auto');
         if (!chatBody) return;
@@ -880,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SEND MESSAGE HANDLER
-    ------------------------------------------- */
+        ------------------------------------------- */
     sendBtn.addEventListener('click', async () => {
         if (isSendingMessage) return;
 
@@ -975,7 +1166,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SEND MESSAGE TO DATABASE - WITH SENDER NAME
-    ------------------------------------------- */
+        ------------------------------------------- */
     async function sendMessageToDatabase(finalContent, originalText) {
         try {
             // Insert message into chat_messages table with sender name
@@ -1013,7 +1204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SETUP REAL-TIME SUBSCRIPTION WITH DELETE HANDLING
-    ------------------------------------------- */
+        ------------------------------------------- */
     function setupRealtimeSubscription(conversationId) {
         // Unsubscribe from previous subscription if exists
         if (activeSubscription) {
@@ -1100,7 +1291,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         UPDATE MESSAGES LIST
-    ------------------------------------------- */
+        ------------------------------------------- */
     function updateMessagesList(newMessage) {
         // Update the conversation in the messages list
         const conversationElements = document.querySelectorAll(`[data-conversation-id="${newMessage.conversation_id}"]`);
@@ -1135,7 +1326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SCROLL CHAT TO BOTTOM
-    ------------------------------------------- */
+        ------------------------------------------- */
     function scrollToBottom() {
         const chatBody = document.querySelector('#directMessage .overflow-y-auto');
         if (chatBody) {
@@ -1148,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         SEND MESSAGE ON ENTER KEY
-    ------------------------------------------- */
+        ------------------------------------------- */
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -1160,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* -------------------------------------------
         UPDATE SEND BUTTON ON INPUT
-    ------------------------------------------- */
+        ------------------------------------------- */
     messageInput.addEventListener('input', () => {
         updateSendButtonState();
     });
