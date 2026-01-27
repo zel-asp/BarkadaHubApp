@@ -1,5 +1,5 @@
 import { checkConnection } from './functions.js';
-import HeaderComponent from "./components/header.js";
+import HeaderComponent, { info } from "./components/header.js";
 import { updateNotificationBadge, updateMessageBadge } from './render/notification.js';
 import supabaseClient from './supabase.js';
 import AlertSystem from './render/Alerts.js';
@@ -479,8 +479,10 @@ const handleUserSearch = async () => {
 
 
 // ===================== PAGE LOAD =====================
-// When page loads
 document.addEventListener('DOMContentLoaded', () => {
+    const infoLink = document.getElementById('infoLink');
+    infoLink?.insertAdjacentHTML('beforeend', info());
+
     supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
     showLoading();
     initializeApp();
