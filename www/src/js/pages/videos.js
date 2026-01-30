@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     /* ------------------------------------------------------
         ADD NEW VIDEO (INSTEAD OF FULL RE-RENDER)
     ------------------------------------------------------ */
+    /* ------------------------------------------------------
+        ADD NEW VIDEO (INSTEAD OF FULL RE-RENDER)
+    ------------------------------------------------------ */
     async function addNewVideo(videoId) {
         // Fetch only the new video
         const { data: video, error } = await supabaseClient
@@ -91,11 +94,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             userLiked
         };
 
+        // Handle null avatar URL - use default image
+        const avatarUrl = video.avatar_url || '../images/image.png';
+
         // Create the HTML for the new video
         const postOwner = userId === video.user_id;
         const newVideoHTML = createVideoItem(
             videoWithData.video_url,
-            videoWithData.avatar_url || '../images/image.png',
+            avatarUrl,
             videoWithData.auth_name,
             videoWithData.user_id,
             videoWithData.caption,
@@ -106,21 +112,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             videoWithData.userLiked
         );
 
-        // Store current scroll position before adding new video
-        const isUserNearTop = window.scrollY < 100; // Check if user is near top of page
-        const currentActiveVideo = document.querySelector('.video-barkadahub-item video:not([paused])');
-
         // Insert new video at the top
         videoContainer.insertAdjacentHTML('afterbegin', newVideoHTML);
 
-        // Reinitialize playback for the new video only
-        const newVideoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
-        if (newVideoElement && window.userInteracted) {
-            const video = newVideoElement.querySelector('video');
-            if (video && isUserNearTop) {
-                video.play().catch(() => { });
+        // Initialize controls for the new video
+        setTimeout(() => {
+            const newVideoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
+            if (newVideoElement) {
+                // Get the videoPlayback instance from the render function
+                if (window.videoPlayback && window.videoPlayback.initializeVideoControlsForElement) {
+                    window.videoPlayback.initializeVideoControlsForElement(newVideoElement);
+                }
+
+                // Auto-play if near top and user has interacted
+                if (window.userInteracted && window.scrollY < 100) {
+                    const video = newVideoElement.querySelector('video');
+                    if (video) {
+                        video.play().catch(() => { });
+                    }
+                }
             }
-        }
+        }, 100);
     }
 
     /* ------------------------------------------------------
@@ -239,10 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             alertSystem.show('Video uploaded successfully!', 'success');
             closeVideoModal();
 
-            // Add the new video to the top instead of re-rendering everything
-            if (newVideo) {
-                await addNewVideo(newVideo.id);
-            }
         } catch (err) {
             console.error(err);
             alertSystem.show(err.message, 'error');
@@ -570,10 +578,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /* ------------------------------------------------------
-        VIDEO PLAY / PAUSE
+        VIDEO PLAY / PAUSE - TikTok Style with Smart Mute
     ------------------------------------------------------ */
     function initVideoPlayback() {
         window.userInteracted = false;
+
+        // Store video state
+        const videoStates = new Map();
 
         function unlockVideos() {
             if (window.userInteracted) return;
@@ -586,27 +597,423 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener('click', unlockVideos);
         document.addEventListener('touchstart', unlockVideos);
 
-        document.addEventListener('click', e => {
-            if (e.target.closest('.likeBtn, .openEllipsisMenuBtn, .followBtn, button, .action-icon')) return;
+        // Initialize controls for a single video element
+        function initializeVideoControlsForElement(item) {
+            const video = item.querySelector('video');
+            if (!video) return;
+
+            const videoId = item.dataset.id;
+
+            // Store initial state
+            videoStates.set(videoId, {
+                muted: true,
+                playing: false,
+                volume: 0,
+                currentTime: 0
+            });
+
+            // Set initial muted state
+            video.muted = true;
+            video.volume = 0;
+
+            // Get control elements
+            const playPauseBtn = item.querySelector('.play-pause-btn');
+            const volumeBtn = item.querySelector('.volume-btn');
+            const progressContainer = item.querySelector('.progress-container');
+            const progressBar = item.querySelector('.progress-bar');
+            const currentTimeSpan = item.querySelector('.current-time');
+            const durationSpan = item.querySelector('.duration');
+            const playOverlay = item.querySelector('.play-overlay');
+            const playOverlayBtn = item.querySelector('.play-pause-overlay-btn');
+
+            // Format time function
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            };
+
+            // Update duration on load
+            video.addEventListener('loadedmetadata', () => {
+                if (durationSpan) {
+                    durationSpan.textContent = formatTime(video.duration);
+                }
+            });
+
+            // Update time and progress
+            video.addEventListener('timeupdate', () => {
+                if (currentTimeSpan) {
+                    currentTimeSpan.textContent = formatTime(video.currentTime);
+                }
+                if (durationSpan && video.duration && (!durationSpan.textContent || durationSpan.textContent === '0:00')) {
+                    durationSpan.textContent = formatTime(video.duration);
+                }
+                if (progressBar && video.duration) {
+                    const percent = (video.currentTime / video.duration) * 100;
+                    progressBar.style.width = `${percent}%`;
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.currentTime = video.currentTime;
+                    videoStates.set(videoId, state);
+                }
+            });
+
+            // Play/Pause button
+            if (playPauseBtn) {
+                const icon = playPauseBtn.querySelector('i');
+                playPauseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    togglePlayPause(video, icon, playOverlay, videoId);
+                });
+            }
+
+            // Play overlay button (large center button)
+            if (playOverlayBtn) {
+                const overlayIcon = playOverlayBtn.querySelector('i');
+                playOverlayBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    togglePlayPause(video, playPauseBtn?.querySelector('i'), playOverlay, videoId);
+                    if (overlayIcon) {
+                        overlayIcon.classList.remove('fa-play', 'fa-pause');
+                        overlayIcon.classList.add(video.paused ? 'fa-play' : 'fa-pause');
+                    }
+                });
+            }
+
+            // Volume button
+            if (volumeBtn) {
+                const icon = volumeBtn.querySelector('i');
+                volumeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleVolume(video, icon, videoId);
+                });
+            }
+
+            // Progress bar
+            if (progressContainer) {
+                progressContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (video.duration) {
+                        const rect = progressContainer.getBoundingClientRect();
+                        const percent = (e.clientX - rect.left) / rect.width;
+                        video.currentTime = percent * video.duration;
+                    }
+                });
+            }
+
+            // Show/hide play overlay on video click
+            video.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePlayOverlay(playOverlay, video);
+            });
+
+            // Update play/pause icon
+            video.addEventListener('play', () => {
+                const icon = playPauseBtn?.querySelector('i');
+                const overlayIcon = playOverlayBtn?.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause');
+                }
+                if (overlayIcon) {
+                    overlayIcon.classList.remove('fa-play');
+                    overlayIcon.classList.add('fa-pause');
+                }
+                if (playOverlay) {
+                    playOverlay.classList.add('opacity-0');
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.playing = true;
+                    videoStates.set(videoId, state);
+                }
+            });
+
+            video.addEventListener('pause', () => {
+                const icon = playPauseBtn?.querySelector('i');
+                const overlayIcon = playOverlayBtn?.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-pause');
+                    icon.classList.add('fa-play');
+                }
+                if (overlayIcon) {
+                    overlayIcon.classList.remove('fa-pause');
+                    overlayIcon.classList.add('fa-play');
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.playing = false;
+                    videoStates.set(videoId, state);
+                }
+            });
+
+            // Update volume icon
+            video.addEventListener('volumechange', () => {
+                const icon = volumeBtn?.querySelector('i');
+                if (icon) {
+                    if (video.muted || video.volume === 0) {
+                        icon.classList.remove('fa-volume-up');
+                        icon.classList.add('fa-volume-mute');
+                    } else {
+                        icon.classList.remove('fa-volume-mute');
+                        icon.classList.add('fa-volume-up');
+                    }
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.muted = video.muted;
+                    state.volume = video.volume;
+                    videoStates.set(videoId, state);
+                }
+            });
+
+            // Handle video end
+            video.addEventListener('ended', () => {
+                const icon = playPauseBtn?.querySelector('i');
+                const overlayIcon = playOverlayBtn?.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-pause');
+                    icon.classList.add('fa-play');
+                }
+                if (overlayIcon) {
+                    overlayIcon.classList.remove('fa-pause');
+                    overlayIcon.classList.add('fa-play');
+                }
+                if (playOverlay) {
+                    playOverlay.classList.remove('opacity-0');
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.playing = false;
+                    videoStates.set(videoId, state);
+                }
+            });
+
+            // Initial icon setup
+            const volumeIcon = volumeBtn?.querySelector('i');
+            if (volumeIcon && video.muted) {
+                volumeIcon.classList.add('fa-volume-mute');
+                volumeIcon.classList.remove('fa-volume-up');
+            }
+
+            const playIcon = playPauseBtn?.querySelector('i');
+            if (playIcon && video.paused) {
+                playIcon.classList.add('fa-play');
+                playIcon.classList.remove('fa-pause');
+            } else if (playIcon && !video.paused) {
+                playIcon.classList.add('fa-pause');
+                playIcon.classList.remove('fa-play');
+            }
+
+            const overlayIcon = playOverlayBtn?.querySelector('i');
+            if (overlayIcon && video.paused) {
+                overlayIcon.classList.add('fa-play');
+                overlayIcon.classList.remove('fa-pause');
+            } else if (overlayIcon && !video.paused) {
+                overlayIcon.classList.add('fa-pause');
+                overlayIcon.classList.remove('fa-play');
+            }
+        }
+
+        // Initialize controls for all videos
+        function initializeVideoControls() {
+            document.querySelectorAll('.video-barkadahub-item').forEach(item => {
+                initializeVideoControlsForElement(item);
+            });
+        }
+
+        // Helper functions
+        function togglePlayPause(video, icon, playOverlay, videoId) {
+            if (video.paused) {
+                video.play().catch(err => console.log('Play failed:', err));
+                if (icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause');
+                }
+                if (playOverlay) {
+                    playOverlay.classList.add('opacity-0');
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.playing = true;
+                    videoStates.set(videoId, state);
+                }
+            } else {
+                video.pause();
+                if (icon) {
+                    icon.classList.remove('fa-pause');
+                    icon.classList.add('fa-play');
+                }
+                if (playOverlay) {
+                    playOverlay.classList.remove('opacity-0');
+                }
+
+                // Update stored state
+                const state = videoStates.get(videoId);
+                if (state) {
+                    state.playing = false;
+                    videoStates.set(videoId, state);
+                }
+            }
+        }
+
+        function toggleVolume(video, icon, videoId) {
+            if (video.muted || video.volume === 0) {
+                video.muted = false;
+                video.volume = 0.5;
+                if (icon) {
+                    icon.classList.remove('fa-volume-mute');
+                    icon.classList.add('fa-volume-up');
+                }
+            } else {
+                video.muted = true;
+                video.volume = 0;
+                if (icon) {
+                    icon.classList.remove('fa-volume-up');
+                    icon.classList.add('fa-volume-mute');
+                }
+            }
+
+            // Update stored state
+            const state = videoStates.get(videoId);
+            if (state) {
+                state.muted = video.muted;
+                state.volume = video.volume;
+                videoStates.set(videoId, state);
+            }
+        }
+
+        function togglePlayOverlay(playOverlay, video) {
+            if (!playOverlay) return;
+
+            if (video.paused) {
+                playOverlay.classList.remove('opacity-0');
+            } else {
+                playOverlay.classList.add('opacity-0');
+                // Show briefly then hide
+                setTimeout(() => {
+                    if (!video.paused) {
+                        playOverlay.classList.add('opacity-0');
+                    }
+                }, 1000);
+            }
+        }
+
+        // Click anywhere on video to play/pause (excluding controls)
+        document.addEventListener('click', (e) => {
+            // Don't trigger if clicking controls
+            if (e.target.closest('.play-pause-btn, .volume-btn, .progress-container, ' +
+                '.play-pause-overlay-btn, .likeBtn, .openEllipsisMenuBtn, .followBtn, button, .action-icon')) {
+                return;
+            }
 
             const videoItem = e.target.closest('.video-barkadahub-item');
             if (!videoItem) return;
 
             const video = videoItem.querySelector('video');
-            video.paused ? video.play() : video.pause();
+            const playPauseIcon = videoItem.querySelector('.play-pause-btn i');
+            const playOverlay = videoItem.querySelector('.play-overlay');
+            const playOverlayIcon = videoItem.querySelector('.play-pause-overlay-btn i');
+            const videoId = videoItem.dataset.id;
+
+            if (video) {
+                if (video.paused) {
+                    video.play().catch(err => console.log('Play failed:', err));
+                    if (playPauseIcon) {
+                        playPauseIcon.classList.remove('fa-play');
+                        playPauseIcon.classList.add('fa-pause');
+                    }
+                    if (playOverlayIcon) {
+                        playOverlayIcon.classList.remove('fa-play');
+                        playOverlayIcon.classList.add('fa-pause');
+                    }
+                    if (playOverlay) {
+                        playOverlay.classList.add('opacity-0');
+                    }
+
+                    // Update stored state
+                    const state = videoStates.get(videoId);
+                    if (state) {
+                        state.playing = true;
+                        videoStates.set(videoId, state);
+                    }
+                } else {
+                    video.pause();
+                    if (playPauseIcon) {
+                        playPauseIcon.classList.remove('fa-pause');
+                        playPauseIcon.classList.add('fa-play');
+                    }
+                    if (playOverlayIcon) {
+                        playOverlayIcon.classList.remove('fa-pause');
+                        playOverlayIcon.classList.add('fa-play');
+                    }
+                    if (playOverlay) {
+                        playOverlay.classList.remove('opacity-0');
+                    }
+
+                    // Update stored state
+                    const state = videoStates.get(videoId);
+                    if (state) {
+                        state.playing = false;
+                        videoStates.set(videoId, state);
+                    }
+                }
+            }
         });
 
-        // AUTOPLAY ON SCROLL
+        // AUTOPLAY ON SCROLL with mute management
         function initAutoPlayOnSnap() {
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
-                    const video = entry.target.querySelector('video');
+                    const videoItem = entry.target;
+                    const video = videoItem.querySelector('video');
                     if (!video) return;
-                    entry.isIntersecting && window.userInteracted
-                        ? video.play().catch(() => { })
-                        : video.pause();
+
+                    const videoId = videoItem.dataset.id;
+                    const state = videoStates.get(videoId);
+
+                    if (entry.isIntersecting && window.userInteracted) {
+                        // Play video and restore previous volume state
+                        if (state && !state.muted) {
+                            video.muted = false;
+                            video.volume = state.volume || 0.5;
+                        } else {
+                            video.muted = true;
+                            video.volume = 0;
+                        }
+
+                        video.play().catch(err => console.log('Autoplay failed:', err));
+                    } else {
+                        // Pause and mute when not visible
+                        video.pause();
+                        video.muted = true;
+                        video.volume = 0;
+
+                        // Save current state before muting
+                        const currentState = videoStates.get(videoId);
+                        if (currentState) {
+                            currentState.playing = false;
+                            videoStates.set(videoId, currentState);
+                        }
+                    }
                 });
-            }, { threshold: 0.8 });
+            }, {
+                threshold: 0.8,
+                rootMargin: '0px 0px -10% 0px' // Adjust this to control when videos become "visible"
+            });
 
             document.querySelectorAll('.video-barkadahub-item')
                 .forEach(item => observer.observe(item));
@@ -617,15 +1024,46 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const rect = item.getBoundingClientRect();
                 const video = item.querySelector('video');
                 if (!video) return;
-                rect.top >= 0 && rect.top < window.innerHeight / 2
-                    ? video.play().catch(() => { })
-                    : video.pause();
+
+                const videoId = item.dataset.id;
+                const state = videoStates.get(videoId);
+
+                // Check if video is mostly in viewport
+                const isVisible = (
+                    rect.top >= -rect.height * 0.3 &&
+                    rect.top <= window.innerHeight * 0.7
+                );
+
+                if (isVisible && window.userInteracted) {
+                    if (state && !state.muted) {
+                        video.muted = false;
+                        video.volume = state.volume || 0.5;
+                    } else {
+                        video.muted = true;
+                        video.volume = 0;
+                    }
+
+                    video.play().catch(err => console.log('Play visible failed:', err));
+                } else {
+                    video.pause();
+                    video.muted = true;
+                    video.volume = 0;
+
+                    // Save state
+                    const currentState = videoStates.get(videoId);
+                    if (currentState) {
+                        currentState.playing = false;
+                        videoStates.set(videoId, currentState);
+                    }
+                }
             });
         }
 
-        return { initAutoPlayOnSnap, playVisibleVideo };
-    }
+        // Initialize controls after videos are loaded
+        setTimeout(initializeVideoControls, 100);
 
+        return { initAutoPlayOnSnap, playVisibleVideo, videoStates, initializeVideoControlsForElement };
+    }
     /* ------------------------------------------------------
         LIKE VIDEO
     ------------------------------------------------------ */
@@ -711,6 +1149,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     /* ------------------------------------------------------
         RENDER VIDEOS (INITIAL LOAD)
     ------------------------------------------------------ */
+    /* ------------------------------------------------------
+        RENDER VIDEOS (INITIAL LOAD)
+    ------------------------------------------------------ */
     async function render() {
         const { data: videos, error } = await supabaseClient
             .from('videos')
@@ -750,9 +1191,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         videoContainer.innerHTML = videosWithData.map(video => {
             const postOwner = userId === video.user_id;
+            // Handle null avatar URL
+            const avatarUrl = video.avatar_url || '../images/image.png';
             return createVideoItem(
                 video.video_url,
-                video.avatar_url || '../images/image.png',
+                avatarUrl,
                 video.auth_name,
                 video.user_id,
                 video.caption,
@@ -765,7 +1208,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
 
         const videoPlayback = initVideoPlayback();
+        // Store globally so addNewVideo can access it
+        window.videoPlayback = videoPlayback;
         videoPlayback.initAutoPlayOnSnap();
+
+        // Add CSS for the controls
+        const style = document.createElement('style');
+        style.textContent = `
+        /* Make sure control buttons are clickable */
+        .play-pause-btn,
+        .volume-btn {
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            z-index: 100 !important;
+            position: relative !important;
+        }
+        
+        .play-overlay {
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .play-overlay:not(.opacity-0) {
+            pointer-events: auto;
+        }
+        
+        .play-pause-overlay-btn {
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        
+        .play-pause-overlay-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .progress-container:hover .progress-bar {
+            background-color: #3b82f6;
+        }
+        
+        /* Ensure video controls don't interfere with other elements */
+        video {
+            pointer-events: none;
+        }
+        
+        /* Make the video container clickable for play/pause */
+        .video-barkadahub-item > div:first-child {
+            cursor: pointer;
+        }
+        
+        /* Controls container styling */
+        .video-barkadahub-item > div:first-child > div:last-child {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+    `;
+        document.head.appendChild(style);
 
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
@@ -787,7 +1285,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
-
     /* ------------------------------------------------------
         INITIALIZE EVERYTHING
     ------------------------------------------------------ */
@@ -800,7 +1297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initLikeButtons();
     await render();
 
-    // Realtime for new videos - UPDATED VERSION
+    // Realtime for new videos
     supabaseClient
         .channel('videos-realtime')
         .on(
