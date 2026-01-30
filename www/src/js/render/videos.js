@@ -25,15 +25,52 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
 
     return `
         <div class="video-barkadahub-container h-screen w-full snap-start">
-            <div class="video-barkadahub-item relative" data-id="${postId}" >
+            <div class="video-barkadahub-item relative" data-id="${postId}" data-video-id="${postId}">
                 <!-- Video Container -->
                 <div class="w-screen h-full bg-black flex items-center justify-center relative">
-                    <video class="w-full h-full object-contain" loop playsinline>
+                    <video class="w-full h-full object-contain" loop playsinline muted preload="metadata">
                         <source src="${video}" type="video/mp4">
                     </video>
                     
                     <!-- Subtle linear overlay at bottom for better text readability -->
                     <div class="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-black/70 via-black/30 to-transparent pointer-events-none"></div>
+                    
+                    <!-- TikTok-style Play/Pause Overlay -->
+                    <div class="absolute inset-0 z-10 flex items-center justify-center play-overlay opacity-0 transition-opacity duration-200">
+                        <div class="play-pause-overlay-btn w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border-2 border-white/30 cursor-pointer">
+                            <i class="fas fa-play text-white text-3xl"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Controls Bar (TikTok Style) -->
+                    <div class="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        <!-- Progress Bar -->
+                        <div class="progress-container mb-3">
+                            <div class="w-full h-1 bg-gray-600/50 rounded-full overflow-hidden cursor-pointer">
+                                <div class="progress-bar h-full bg-white rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="flex items-center justify-between">
+                            <!-- Left: Play/Pause & Time -->
+                            <div class="flex items-center gap-4">
+                                <button class="play-pause-btn text-white hover:scale-110 transition-transform duration-200 bg-transparent border-none cursor-pointer" type="button">
+                                    <i class="fas fa-pause text-xl"></i>
+                                </button>
+                                <div class="time-display text-white text-sm font-medium">
+                                    <span class="current-time">0:00</span> / <span class="duration">0:00</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Volume -->
+                            <div class="flex items-center gap-4">
+                                <button class="volume-btn text-white hover:scale-110 transition-transform duration-200 bg-transparent border-none cursor-pointer" type="button">
+                                    <i class="fas fa-volume-mute text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Content Overlay - Positioned higher to avoid dynamic header -->
@@ -43,9 +80,9 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                         <a href="./otherProfile.html?user=${userId}">
                             <div class="flex items-center gap-3 mb-4">
                                 <!-- Avatar with glass effect -->
-                                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 backdrop-blur-sm bg-white/10 shadow-lg">
-                                        <img src="${avatar}" alt="${username}" class="w-full h-full object-cover" loading="lazy">
-                                    </div> 
+                                <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30 backdrop-blur-sm bg-white/10 shadow-lg">
+                                    <img src="${avatar}" alt="${username}" class="w-full h-full object-cover" loading="lazy">
+                                </div> 
                                 <!-- User Info -->
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
@@ -62,7 +99,7 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                 </div>
 
                 <!-- Action Buttons - Sidebar positioned higher -->
-                <div class="absolute right-6 bottom-20 z-30 flex flex-col items-center gap-7">
+                <div class="absolute right-6 bottom-20 z-40 flex flex-col items-center gap-7">
                     <!-- Like button with circle badge -->
                     <div class="action-button likeBtn group ${userLiked ? 'liked' : ''}" 
                          data-video-id="${postId}" 
