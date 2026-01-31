@@ -34,12 +34,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userId = data?.user?.id;
 
     const bannedWords = [
-        "stupid", "idiot", "dumb", "fool", "bastard", "ass", "shit", "fuck", "damn", "crap",
-        "sex", "porn", "nude", "fuck", "bitch", "slut", "whore", "horny", "naked", "cock", "pussy",
         "tanga", "bobo", "ulol", "gago", "putangina", "pakshet", "tangina", "tarantado", "peste", "hayop",
-        "sex", "kantot", "ligawan", "hubad", "malandi", "puki", "titi", "pepe", "kantutan", "tukso"
+        "sex", "kantot", "ligawan", "hubad", "malandi", "puki", "titi", "pepe", "kantutan", "libog", "nigga",
+        "puta", "pota", "potangina", "punyeta", "leche", "lintik", "buwisit", "siraulo", "hinayupak",
+        "inutil", "bunganga", "kupal", "buang", "gagu", "linta", "saksakan", "gaga", "engot", "bangag",
+        "lintik", "yawa", "bwisit", "shet", "animal", "bilat", "betlog", "etits", "tungaw", "tikol",
+        "jakol", "tamod", "bulbol", "tite", "burat", "kiki", "puday", "bulin", "bakla", "tomboy",
+        "binabae", "baklang", "salsal", "kantotero", "kantotera", "manyak", "bastos", "walanghiya",
+        "salot", "sintu-sinto", "hinamak", "suklam", "supot", "ungas", "unggoy", "utong", "suso",
+        "pekpek", "dede", "pwet", "puwet", "pimpoy", "kantotray", "kolokoy", "sinturon", "bulok",
+        "hinubdan", "hinubdan", "pokpok", "kalapating", "mabaho", "maut", "utot", "tae", "ipis",
+        "demonyo", "impakto", "aswang", "tikbalang", "duwende", "kapre", "tiyanak", "manananggal",
+        "bampira", "multo", "pugot", "maligno", "satanas", "diyablo", "demonyo", "bwisit na",
+        "napakabobo", "napakatanga", "napakagago", "napakasira", "napakabastos",
+        "sinungaling", "magnanakaw", "sinungaling", "dayo",
+        "ulikba", "ungol", "ungas", "unggoy", "tamod", "tamuran",
+        "kadiri", "kadiri", "kasuklam-suklam", "nakakadiri", "nakakasuka",
+        "pakshet", "pakyu", "pakyu", "pakyo", "pakyaw", "pakyawan",
+        "sinturon", "sinulid", "sinungaling", "sinungaling", "amputa",
+        "tarantadu", "tampal", "tampalasan", "tampalasan", "bembang", "bembangan",
+        "yawa", "yagit", "iyot", "nipple", "panget", "pangit", "panot", "hairline", "sipunin", "tuwad", "dogstyle", "kadyot"
     ];
-
 
     async function loadProfilePic(userId, userAvatarElement) {
         let avatar = '../images/defaultAvatar.jpg';
@@ -538,7 +553,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             console.error('Failed to create message entries:', messageErr);
                         }
 
-                        btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                         btn.disabled = true;
                         btn.classList.remove('bg-green-500', 'hover:bg-green-600');
                         btn.classList.add('bg-gray-400', 'cursor-not-allowed');
@@ -568,8 +582,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                     if (insertError) throw insertError;
-
-                    btn.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i><span>Requested</span>`;
                     btn.disabled = true;
                     btn.classList.remove('bg-primary', 'hover:bg-blue-500');
                     btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600', 'cursor-not-allowed');
@@ -619,7 +631,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll(
                 `.follow-btn[data-user-post-id="${row.sender_id}"]`
             ).forEach(btn => {
-                btn.innerHTML = `<i class="fas fa-user-check mr-1"></i><span>Accept</span>`;
                 btn.disabled = false;
                 btn.className = btn.className.replace(/bg-\S+/g, '');
                 btn.classList.add('bg-green-500', 'hover:bg-green-600');
@@ -731,7 +742,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            alert('Report submitted successfully!');
+            alertSystem.show('Report submitted successfully!', 'success');
 
             // DISABLE THE REPORT BUTTON
             const reportBtn = document.querySelector(`.report-btn[data-post-id="${postId}"]`);
