@@ -43,7 +43,7 @@ export function createVideoItem(video, avatar, username, userId, caption, postId
                     </div>
                     
                     <!-- Bottom Controls Bar (TikTok Style) -->
-                    <div class="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <div class="absolute bottom-0 left-0 right-0 z-30 bg-linear-to-t from-black/80 to-transparent p-4">
                         <!-- Progress Bar -->
                         <div class="progress-container mb-3">
                             <div class="w-full h-1 bg-gray-600/50 rounded-full overflow-hidden cursor-pointer">

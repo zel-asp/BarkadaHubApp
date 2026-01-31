@@ -25,7 +25,7 @@ export default function messageItem({
             data-date='${formatDate}'
             data-members='${members}'>
 
-            <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200 rounded-full mb-2 border border-gray-100 hover:shadow-md
+            <div class="chat-list-item group relative p-4 cursor-pointer transition-all duration-200  mb-2 border border-gray-100 hover:shadow-md
                 ${isSeen
             ? (isClub
                 ? 'hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 hover:border-green-200'
