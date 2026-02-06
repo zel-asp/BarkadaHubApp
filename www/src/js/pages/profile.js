@@ -151,12 +151,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Elements
         const userAvatar = document.getElementById('userAvatar');
         const fullImageModal = document.getElementById('fullImageModal');
-        const viewAvatar = document.getElementById('viewAvatar');
+        const viewAvatar = document.getElementById('fullImageContent');
         const closeFullImage = document.getElementById('closeFullImage');
 
         // Set data
         userAvatar.src = avatarUrl;
         viewAvatar.src = avatarUrl;
+
+        // =======================
+        // FULL IMAGE MODAL
+        // =======================
+        window.viewFullImage = (url) => {
+            if (!url) return;
+
+            fullImageContent.src = url;
+            fullImageModal.classList.remove('hidden');
+
+            // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+        };
+
+        closeFullImage.addEventListener('click', () => {
+            fullImageModal.classList.add('hidden');
+            fullImageContent.src = '';
+            document.body.style.overflow = '';
+        });
 
         document.getElementById('displayBio').innerHTML = displayBio(bioText);
         document.getElementById('location').textContent = profile?.location || '';
