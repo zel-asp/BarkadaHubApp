@@ -73,7 +73,7 @@ export default function messageItem({
 
                                 <span class="px-2.5 py-0.5 text-white text-xs font-semibold rounded-full
                                     ${isClub ? '' : 'bg-linear-to-r from-purple-500 to-blue-500'}">
-                                    ${badgeText}
+                                    ${isClub ? '' : `${badgeText}`}
                                 </span>
                             </div>
 
@@ -89,7 +89,7 @@ export default function messageItem({
                 </div>
 
                 <!-- HOVER OVERLAY -->
-                <div class="absolute inset-0 rounded-full transition-all duration-300
+                <div class="absolute inset-0 transition-all duration-300
                     ${isClub
             ? 'group-hover:bg-linear-to-r group-hover:from-emerald-500/5 group-hover:to-green-500/5'
             : 'group-hover:bg-linear-to-r group-hover:from-purple-500/5 group-hover:to-pink-500/5'}">
