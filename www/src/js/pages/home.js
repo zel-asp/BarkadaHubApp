@@ -644,7 +644,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `.follow-btn[data-user-post-id="${row.sender_id}"],
             .follow-btn[data-user-post-id="${row.receiver_id}"]`
             ).forEach(btn => {
-                btn.innerHTML = `<i class="fas fa-user-friends mr-1"></i><span>Friends</span>`;
                 btn.disabled = true;
                 btn.className = btn.className.replace(/bg-\S+/g, '');
                 btn.classList.add('bg-gray-400');
