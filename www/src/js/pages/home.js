@@ -1197,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 commentsContainer.insertAdjacentHTML(
                     'beforeend',
-                    comments(comment.user_name, comment.comment, comment.avatar, commentDate, comment.id, comment.user_id, isOwner, comment.post_id)
+                    comments(comment.user_name, comment.comment, comment.avatar, commentDate, parseInt(comment.id), comment.user_id, isOwner, comment.post_id)
                 );
             });
         }
@@ -1265,7 +1265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-
     function insertAtCursor(el, html) {
         el.focus();
         const sel = window.getSelection();
@@ -1283,19 +1282,148 @@ document.addEventListener('DOMContentLoaded', async () => {
         sel.removeAllRanges();
         sel.addRange(range);
     }
-
-
-
-
     // =======================
-    // INITIALIZE
+    // DELETE COMMENT FUNCTIONALITY
     // =======================
-    await loadUser();
-    deletePermanently();
-    mentionUser();
-    openComments();
-    initFollowButtons();
-    setTimeout(updateLikeButtonStates, 500);
+    async function initDeleteComment() {
+        document.addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.delete-btn');
+            if (!deleteBtn) return;
+
+            // Prevent if it's the mention button
+            if (deleteBtn.classList.contains('mention-btn')) return;
+
+            e.preventDefault();
+
+            // Parse commentId as number since it's bigint in the table
+            const commentId = parseInt(deleteBtn.dataset.commentId);
+            const postId = deleteBtn.dataset.postId;
+
+            if (!commentId || isNaN(commentId)) {
+                console.error('Invalid comment ID:', deleteBtn.dataset.commentId);
+                alertSystem.show('Invalid comment ID', 'error');
+                return;
+            }
+
+            // Confirm deletion
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+
+            // Store original button state
+            const originalHTML = deleteBtn.innerHTML;
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Deleting...';
+
+            try {
+                // Get current user to verify ownership
+                const { data: userData } = await supabaseClient.auth.getUser();
+                const currentUserId = userData?.user?.id;
+
+                if (!currentUserId) {
+                    alertSystem.show('You must be logged in to delete comments', 'error');
+                    return;
+                }
+
+                // First, check if the user owns this comment
+                const { data: comment, error: fetchError } = await supabaseClient
+                    .from('post_comments')
+                    .select('user_id')
+                    .eq('id', commentId)
+                    .maybeSingle();
+
+                if (fetchError) {
+                    console.error('Error fetching comment:', fetchError);
+                    alertSystem.show('Failed to verify comment ownership', 'error');
+                    return;
+                }
+
+                if (!comment) {
+                    alertSystem.show('Comment not found', 'error');
+                    return;
+                }
+
+                // Verify ownership
+                if (comment.user_id !== currentUserId) {
+                    alertSystem.show('You can only delete your own comments', 'error');
+                    return;
+                }
+
+                // Delete the comment - make sure commentId is a number
+                const { error: deleteError } = await supabaseClient
+                    .from('post_comments')
+                    .delete()
+                    .eq('id', commentId)
+                    .eq('user_id', userId);
+
+                if (deleteError) {
+                    console.error('Delete error:', deleteError);
+                    throw deleteError;
+                }
+
+                // Find and remove the comment container
+                const commentContainer = deleteBtn.closest('.comment-container');
+                if (commentContainer) {
+                    // Add fade-out animation
+                    commentContainer.style.transition = 'opacity 0.3s ease';
+                    commentContainer.style.opacity = '0';
+
+                    setTimeout(() => {
+                        // Remove the comment container and the spacer div after it
+                        const nextElement = commentContainer.nextElementSibling;
+                        if (nextElement && nextElement.classList.contains('h-4')) {
+                            nextElement.remove();
+                        }
+                        commentContainer.remove();
+
+                        // Check if there are any comments left
+                        const commentsContainer = document.getElementById('comments');
+                        if (commentsContainer && commentsContainer.children.length === 0) {
+                            commentsContainer.innerHTML = emptyComments();
+                        }
+                    }, 300);
+                }
+
+                alertSystem.show('Comment deleted successfully!', 'success');
+
+            } catch (err) {
+                console.error('Error deleting comment:', err);
+                alertSystem.show(err.message || 'Failed to delete comment', 'error');
+
+                // Restore button
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalHTML;
+            }
+        });
+    }
+    // Realtime comment deletion
+    function initCommentRealtime() {
+        supabaseClient
+            .channel('public:post_comments')
+            .on('postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'post_comments'
+                },
+                (payload) => {
+                    // Remove comment from UI in realtime
+                    const commentContainer = document.querySelector(`.comment-container[data-comment-id="${payload.old.id}"]`);
+                    if (commentContainer) {
+                        const nextElement = commentContainer.nextElementSibling;
+                        if (nextElement && nextElement.classList.contains('h-4')) {
+                            nextElement.remove();
+                        }
+                        commentContainer.remove();
+
+                        // Check if comments container is empty
+                        const commentsContainer = document.getElementById('comments');
+                        if (commentsContainer && commentsContainer.children.length === 0) {
+                            commentsContainer.innerHTML = emptyComments();
+                        }
+                    }
+                }
+            )
+            .subscribe();
+    }
 
     // Realtime posts updates
     supabaseClient
@@ -1314,6 +1442,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .subscribe();
 
+    // =======================
+    // INITIALIZE
+    // =======================
+    await loadUser();
     await getPosts();
+    deletePermanently();
+    mentionUser();
+    openComments();
+    initFollowButtons();
+    initDeleteComment();
+    initCommentRealtime();
+    setTimeout(updateLikeButtonStates, 500);
 
 });
