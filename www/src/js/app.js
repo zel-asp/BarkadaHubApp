@@ -27,7 +27,7 @@ const state = {
     isAdmin: false,
     userId: null,
     isOnline: false,
-    isLoading: true  // Start in loading state
+    isLoading: true
 };
 
 // Initialize notification system
