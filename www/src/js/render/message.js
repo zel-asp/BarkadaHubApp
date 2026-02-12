@@ -10,7 +10,7 @@ export default function messageItem({
     conversationId,
     firendId,
     formatDate,
-    isSeen = false
+    isSeen = false,
 }) {
 
     const isClub = relation === 'club';
