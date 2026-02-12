@@ -130,7 +130,6 @@ export async function renderNotifications(notifications) {
         container.insertAdjacentHTML('beforeend', html);
     });
 
-    // Attach additional listeners if you have them
     attachNotificationListeners?.();
     setupClickMarkRead();
     updateNotificationBadge(notifications);
@@ -204,7 +203,7 @@ export function updateNotificationBadge(notifications = null) {
 
 export function updateMessageBadge(messages = null) {
     const badge = document.getElementById('messageBadge');
-    
+
     if (!badge) {
         console.warn('Message badge element not found in DOM');
         return;
