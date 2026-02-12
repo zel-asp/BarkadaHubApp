@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: signupEmail,
                 password: password,
                 options: {
+                    emailRedirectTo: 'https://confirmed-email.netlify.app/',
                     data: {
                         display_name: signupName
                     }
