@@ -29,13 +29,13 @@ export default function comments(
                 <i class="far fa-at"></i>
                 Mention
         </button>`
-        : `<button class="delete-btn text-xs font-medium text-danger hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}">
+        : `<button class="delete-btn text-xs font-medium text-danger hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}" data-post-id="${postId}">
                 <i class="fa fa-trash"></i>
                 Delete
         </button>`;
 
     return `
-        <div class="comment-container bg-gray-50/80 backdrop-blur-sm rounded-xl p-2 mb-1 transition-all duration-200 border border-gray-100 hover:border-gray-200 hover:bg-gray-50 group" data-userId="${userId}">
+        <div class="comment-container bg-gray-50/80 backdrop-blur-sm rounded-xl p-2 mb-1 transition-all duration-200 border border-gray-100 hover:border-gray-200 hover:bg-gray-50 group" data-userId="${userId}" data-comment-id="${commentId}">
             <div class="flex gap-3">
                 <!-- Avatar -->
                 <div class="shrink-0">
