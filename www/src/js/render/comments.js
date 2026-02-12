@@ -5,7 +5,8 @@ export default function comments(
     timeAgo = "2 minutes ago",
     commentId = 0,
     userId = 0,
-    isOwner = true
+    isOwner = true,
+    postId = 0
 ) {
     // Sanitize text to prevent XSS
     const sanitize = (str) =>
@@ -24,7 +25,7 @@ export default function comments(
 
     // Dynamic action button
     const actionButton = !isOwner
-        ? `<button class="mention-btn text-xs font-medium text-primary hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}" data-user-id="${userId}">
+        ? `<button class="mention-btn text-xs font-medium text-primary hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}" data-user-id="${userId}" data-post-id="${postId}">
                 <i class="far fa-at"></i>
                 Mention
         </button>`
