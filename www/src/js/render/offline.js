@@ -63,7 +63,6 @@ export function Loading() {
             <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div class="h-full bg-primary rounded-full animate-progress"></div>
             </div>
-            <p class="text-xs text-gray-500 mt-2 font-medium"><span class="loading-dots">...</span></p>
         </div>
     </div>
 </div>
