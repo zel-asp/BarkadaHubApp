@@ -1043,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const commentBackBtn = document.getElementById('commentBackBtn');
         const app = document.getElementById('app');
         const commentForm = document.getElementById('commentForm');
-        const commentInput = document.getElementById('commentInput');
+        const commentInput = document.getElementById('commentInput'); // contenteditable div
         const charCounter = document.querySelector('#charCounter');
         const sendBtn = document.getElementById('sendBtn');
         let commentLength = 0;
@@ -1072,22 +1072,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             app.classList.add('hidden');
         });
 
+        // Contenteditable input handling
         commentInput.addEventListener('input', () => {
-            commentLength = commentInput.value.length;
+            // Use innerText to get plain text, ignore HTML tags
+            const commentText = commentInput.innerText || '';
+            commentLength = commentText.length;
 
-            charCounter.innerHTML = `${commentLength}/250`
+            // Enforce max length
+            if (commentLength > 250) {
+                // Trim excess characters
+                commentInput.innerText = commentText.substring(0, 250);
+                commentLength = 250;
+
+                // Move cursor to end
+                placeCursorAtEnd(commentInput);
+            }
+
+            charCounter.innerHTML = `${commentLength}/250`;
             sendBtn.disabled = commentLength === 0;
-        })
+        });
 
         commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentPostId) return alertSystem.show("No post selected!", "error");
 
-            const commentText = commentInput.value.trim();
+            // Get plain text for submission
+            let commentText = commentInput.innerText.trim();
             if (!commentText) return;
 
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = true; // disable immediately
+            sendBtn.disabled = true;
 
             try {
                 const { data: userData } = await supabaseClient.auth.getUser();
@@ -1096,47 +1109,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (!userId) throw new Error("You must be logged in to comment.");
 
-                let commentInputValue = commentInput.value;
+                // Filter banned words
                 let foundBanned = false;
-
                 bannedWords.forEach(word => {
-                    // Match word with optional punctuation after, global and case-insensitive
                     const pattern = new RegExp(`\\b${word}\\b[.,!?:;|<>@#$%^&()\\-_=+*]*`, 'gi');
-                    if (pattern.test(commentInputValue)) {
-                        commentInputValue = commentInputValue.replace(pattern, match => '*'.repeat(match.length));
+                    if (pattern.test(commentText)) {
+                        commentText = commentText.replace(pattern, match => '*'.repeat(match.length));
                         foundBanned = true;
                     }
                 });
+                if (foundBanned) alertSystem.show("Some inappropriate words were filtered.", 'info');
 
-                if (foundBanned) {
-                    alertSystem.show("Some inappropriate words were filtered.", 'info');
-                }
-
+                // Get avatar
                 let avatar = '../images/defaultAvatar.jpg';
                 const { data: profile } = await supabaseClient
                     .from('profile')
                     .select('avatar_url')
                     .eq('id', userId)
                     .maybeSingle();
-
                 if (profile?.avatar_url) avatar = profile.avatar_url;
 
+                // Insert comment
                 const { error: insertError } = await supabaseClient
                     .from('post_comments')
                     .insert({
                         post_id: currentPostId,
                         user_id: userId,
                         user_name: userName,
-                        comment: commentInputValue,
+                        comment: commentText,
                         avatar: avatar
                     });
-
                 if (insertError) throw insertError;
 
                 await commentPost(currentPostId, userId);
 
                 // Reset input
-                commentInput.value = '';
+                commentInput.innerHTML = '';
                 charCounter.innerHTML = '0/250';
                 await loadComments(currentPostId);
 
@@ -1144,10 +1152,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error(err);
                 alertSystem.show(err.message || "Failed to post comment.", "error");
             } finally {
-                sendBtn.disabled = false; // always re-enable after
+                sendBtn.disabled = false;
             }
         });
+
+        // Helper: move cursor to end after trimming
+        function placeCursorAtEnd(el) {
+            el.focus();
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
     }
+
 
     // =======================
     // LOAD COMMENTS
@@ -1174,10 +1194,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             commentsData.forEach(comment => {
                 const commentDate = formatRelativeTime(comment.created_at);
+                let isOwner = comment.user_id === userId;
 
                 commentsContainer.insertAdjacentHTML(
                     'beforeend',
-                    comments(comment.user_name, comment.comment, comment.avatar, commentDate)
+                    comments(comment.user_name, comment.comment, comment.avatar, commentDate, comment.id, comment.user_id, isOwner)
                 );
             });
         }
@@ -1185,11 +1206,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         commentsContainer.scrollTop = commentsContainer.scrollHeight;
     }
 
+    async function mentionUser() {
+        const commentInput = document.getElementById('commentInput');
+
+        document.addEventListener('click', async (e) => {
+            const mentionBtn = e.target.closest('.mention-btn');
+            if (!mentionBtn) return;
+
+            const targetUserId = mentionBtn.dataset.userId;
+
+            const { data: user, error } = await supabaseClient
+                .from('profile')
+                .select('name')
+                .eq('id', targetUserId)
+                .single();
+
+            if (!user || !user.name) return;
+
+            // Create a styled mention span
+            const mentionHTML = `<span contenteditable="false" class="text-blue-500">@${user.name}</span>&nbsp;`;
+
+            insertAtCursor(commentInput, mentionHTML);
+
+            // trigger input event to update counter
+            commentInput.dispatchEvent(new Event('input'));
+        });
+    }
+
+    function insertAtCursor(el, html) {
+        el.focus();
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+
+        // Convert HTML string to document fragment
+        const frag = range.createContextualFragment(html);
+        range.insertNode(frag);
+
+        // Move cursor after inserted node
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+
+
+
     // =======================
     // INITIALIZE
     // =======================
     await loadUser();
     deletePermanently();
+    mentionUser();
     openComments();
     initFollowButtons();
     setTimeout(updateLikeButtonStates, 500);
