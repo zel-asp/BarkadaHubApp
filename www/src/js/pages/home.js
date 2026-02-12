@@ -1168,7 +1168,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-
     // =======================
     // LOAD COMMENTS
     // =======================
@@ -1198,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 commentsContainer.insertAdjacentHTML(
                     'beforeend',
-                    comments(comment.user_name, comment.comment, comment.avatar, commentDate, comment.id, comment.user_id, isOwner)
+                    comments(comment.user_name, comment.comment, comment.avatar, commentDate, comment.id, comment.user_id, isOwner, comment.post_id)
                 );
             });
         }
@@ -1214,24 +1213,58 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!mentionBtn) return;
 
             const targetUserId = mentionBtn.dataset.userId;
+            const commentId = mentionBtn.dataset.commentId;
+            const postId = mentionBtn.dataset.postId;
 
+            // Fetch the mentioned user
             const { data: user, error } = await supabaseClient
                 .from('profile')
-                .select('name')
+                .select('id, name, avatar_url')
                 .eq('id', targetUserId)
                 .single();
 
             if (!user || !user.name) return;
 
-            // Create a styled mention span
+            // Insert the styled mention in the comment input
             const mentionHTML = `<span contenteditable="false" class="text-blue-500">@${user.name}</span>&nbsp;`;
-
             insertAtCursor(commentInput, mentionHTML);
 
-            // trigger input event to update counter
+            // Trigger input event to update counter
             commentInput.dispatchEvent(new Event('input'));
+
+            // Create a notification for the mentioned user
+            try {
+                const { data: currentUser } = await supabaseClient.auth.getUser();
+                const senderId = currentUser?.user?.id;
+                const senderName = currentUser?.user?.user_metadata.display_name || 'User';
+                const senderAvatar = currentUser?.user?.user_metadata.avatar_url || '../images/defaultAvatar.jpg';
+
+                if (!senderId) return; // not logged in
+
+                // Construct notification message
+                const message = `${senderName} mentioned you in a comment`;
+
+                // Insert into notifications table
+                const { error: notifError } = await supabaseClient
+                    .from('notifications')
+                    .insert({
+                        user_id: targetUserId,
+                        sender_id: senderId,
+                        type: 'comment',
+                        entity_type: 'post',
+                        entity_id: postId,
+                        message: message,
+                        username: senderName,
+                        avatar_url: senderAvatar
+                    });
+
+                if (notifError) console.error('Notification error:', notifError);
+            } catch (err) {
+                console.error('Failed to create notification:', err);
+            }
         });
     }
+
 
     function insertAtCursor(el, html) {
         el.focus();
@@ -1250,6 +1283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sel.removeAllRanges();
         sel.addRange(range);
     }
+
 
 
 
