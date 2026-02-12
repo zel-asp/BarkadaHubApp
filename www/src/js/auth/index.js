@@ -134,13 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Close when clicking outside
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            timeout(modal, brand, slogan);
-        }
-    });
-
     // Switch forms
     loginSwitchLink.addEventListener('click', (e) => {
         e.preventDefault();
