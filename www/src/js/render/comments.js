@@ -1,49 +1,71 @@
-export default function comments(name, comment, avatar, timeAgo = "2 minutes ago") {
+export default function comments(
+    name,
+    comment,
+    avatar,
+    timeAgo = "2 minutes ago",
+    commentId = 0,
+    userId = 0,
+    isOwner = true
+) {
+    // Sanitize text to prevent XSS
+    const sanitize = (str) =>
+        String(str)
+            .replace(/[&<>"'`]/g, (match) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+                "`": "&#96;",
+            }[match]));
+
+    const safeName = sanitize(name);
+    const safeComment = sanitize(comment);
+
+    // Dynamic action button
+    const actionButton = !isOwner
+        ? `<button class="mention-btn text-xs font-medium text-primary hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}" data-user-id="${userId}">
+                <i class="far fa-at"></i>
+                Mention
+        </button>`
+        : `<button class="delete-btn text-xs font-medium text-danger hover:text-blue-600 transition-colors duration-200 flex items-center gap-1" data-comment-id="${commentId}">
+                <i class="fa fa-trash"></i>
+                Delete
+        </button>`;
+
     return `
-        <div class="comment-container bg-linear-to-br from-white to-gray-50/80 backdrop-blur-md rounded-2xl p-5 mb-4 transition-all duration-300 border border-white/50 shadow-sm hover:shadow-xl hover:border-blue-100 group hover:scale-[1.002]">
-            <div class="flex gap-4">
-                <!-- Avatar with subtle animation -->
-                <div class="flex-0 relative">
-                    <div class="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-3 ring-white/90 group-hover:ring-blue-100 transition-all duration-500">
-                        <div class="absolute inset-0 bg-linear-to-br from-blue-100 to-teal-100 opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
-                        <img src="${avatar}" alt="${name}" 
-                            class="w-full h-full object-cover relative transform group-hover:scale-105 transition-transform duration-500 ease-out" 
+        <div class="comment-container bg-gray-50/80 backdrop-blur-sm rounded-xl p-2 mb-1 transition-all duration-200 border border-gray-100 hover:border-gray-200 hover:bg-gray-50 group" data-userId="${userId}">
+            <div class="flex gap-3">
+                <!-- Avatar -->
+                <div class="shrink-0">
+                    <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white">
+                        <img src="${avatar}" alt="${safeName}" title="${safeName}" 
+                            class="w-full h-full object-cover"
                             loading="eager"
-                            onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${name}'">
+                            onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${safeName}'">
                     </div>
-                    <!-- Online indicator dot -->
-                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white shadow-sm group-hover:scale-125 transition-transform duration-300"></div>
                 </div>
-                
-                <!-- Comment Content -->
+
+                <!-- Main content -->
                 <div class="flex-1 min-w-0">
-                    <!-- Header with enhanced typography -->
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center gap-3">
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-base tracking-tight">${name}</h4>
-                                <!-- Role badge (optional) -->
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <!-- Time with icon -->
-                            <i class="far fa-clock text-xs text-gray-400"></i>
-                            <span class="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-full">${timeAgo}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Comment Text with improved readability -->
-                    <div class="relative">
-                        <div class="absolute -left-3 top-0 bottom-0 w-0.5 bg-linear-to-b from-blue-200 to-teal-200 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <p class="text-gray-800 text-sm leading-relaxed wrap-break-word pl-1">
-                            ${comment}
+                    <div class="bg-white rounded-lg p-3 border border-gray-100">
+                        <h4 class="font-bold text-gray-900 text-sm mb-1.5">${safeName}</h4>
+                        <p class="text-gray-700 text-sm leading-relaxed wrap-break-word">
+                            ${safeComment}
                         </p>
+                    </div>
+
+                    <!-- Footer with timestamp and action button -->
+                    <div class="flex items-center gap-3 mt-2 ml-1">
+                        <span class="text-xs text-gray-500">${timeAgo}</span>
+                        ${actionButton}
                     </div>
                 </div>
             </div>
         </div>
+        <div class="h-4"></div>
     `;
-};
+}
 
 export function emptyComments() {
     return `
