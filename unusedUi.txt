@@ -1,5 +1,0 @@
-1. get the friends_id
-2. use those id to get the name and avatar in profile
-3. insert them in message table
-4. select * message
-5. display in ui
