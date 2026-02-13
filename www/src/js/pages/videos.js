@@ -55,12 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
 
-    /* ------------------------------------------------------
-        ADD NEW VIDEO (INSTEAD OF FULL RE-RENDER)
-    ------------------------------------------------------ */
-    /* ------------------------------------------------------
-        ADD NEW VIDEO (INSTEAD OF FULL RE-RENDER)
-    ------------------------------------------------------ */
     async function addNewVideo(videoId) {
         // Fetch only the new video
         const { data: video, error } = await supabaseClient
@@ -135,9 +129,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100);
     }
 
-    /* ------------------------------------------------------
-        DELETE VIDEO (INSTEAD OF FULL RE-RENDER)
-    ------------------------------------------------------ */
     function removeVideoFromDOM(videoId) {
         const videoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
         if (videoElement) {
@@ -145,9 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    /* ------------------------------------------------------
-        MODAL LOGIC
-    ------------------------------------------------------ */
     function resetVideoModal() {
         videoFileInput.value = '';
         videoPreviewPlayer.src = '';
@@ -197,7 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     videoCaption?.addEventListener('input', () => {
         const len = videoCaption.value.length;
         charCount.textContent = `${len}/150`;
-        postVideoBtn.disabled = !(len > 0 || videoFileInput.files.length > 0);
     });
 
     /* ------------------------------------------------------
@@ -209,15 +196,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const file = videoFileInput.files[0];
         const caption = videoCaption.value.trim();
 
-        if (!file && !caption) {
-            alertSystem.show('Please choose a video or enter a caption', 'error');
-            return;
+        if (!file || !caption) {
+            return alertSystem.show('Please choose a video or enter a caption', 'error');
         }
 
         const { data: userData } = await supabaseClient.auth.getUser();
         if (!userData?.user) {
-            alertSystem.show('User not authenticated', 'error');
-            return;
+            return alertSystem.show('User not authenticated', 'error');
         }
 
         const restore = startPostLoading();
