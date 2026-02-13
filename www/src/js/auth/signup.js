@@ -3,13 +3,16 @@ import AlertSystem from '../render/Alerts.js';
 import { students } from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+
     const signupForm = document.getElementById('signupForm');
     const lockIcons = document.querySelectorAll('.lockIcon');
     const alertSystem = new AlertSystem();
 
-    /* ------------------------------------
-        SECURE INPUT SANITIZER
-    ------------------------------------ */
+    if (!signupForm) return;
+
+    /* -----------------------------
+    helper: sanitize input
+    ----------------------------- */
     function sanitize(str) {
         return str.replace(/[&<>"'\/]/g, match => ({
             '&': '&amp;',
@@ -21,9 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }[match]));
     }
 
-    /* ------------------------------------
-        PASSWORD SHOW/HIDE
-    ------------------------------------ */
+    /* -----------------------------
+    password show/hide toggle
+    ----------------------------- */
     lockIcons.forEach(icon => {
         icon.addEventListener('click', () => {
             const input = icon.previousElementSibling;
@@ -37,29 +40,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* ------------------------------------
-        REAL-TIME STUDENT ID VALIDATION
-    ------------------------------------ */
+    /* -----------------------------
+    real-time student id validation
+    ----------------------------- */
     const studentNumberInput = document.getElementById('studentNumber');
+
     if (studentNumberInput) {
-        // Create feedback element
+
         const feedbackDiv = document.createElement('div');
         feedbackDiv.className = 'mt-2 text-sm font-medium flex items-center gap-2';
         feedbackDiv.id = 'studentNumberFeedback';
         feedbackDiv.style.display = 'none';
         studentNumberInput.parentElement.parentElement.appendChild(feedbackDiv);
 
-        // Check student ID as user types
         studentNumberInput.addEventListener('input', () => {
             const inputValue = studentNumberInput.value.trim();
-            
+
             if (!inputValue) {
                 feedbackDiv.style.display = 'none';
                 return;
             }
 
             const foundStudent = students.find(s => s.id === inputValue);
-            
+
             if (foundStudent) {
                 feedbackDiv.innerHTML = `<i class="fas fa-check-circle text-green-500"></i> <span class="text-green-600">✓ ${foundStudent.name}</span>`;
                 feedbackDiv.style.display = 'flex';
@@ -73,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Clear feedback on blur if empty
         studentNumberInput.addEventListener('blur', () => {
             if (!studentNumberInput.value.trim()) {
                 feedbackDiv.style.display = 'none';
@@ -82,74 +84,101 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ------------------------------------
-        SIGNUP EVENT
-    ------------------------------------ */
+    /* -----------------------------
+    signup form submit
+    ----------------------------- */
     signupForm.addEventListener('submit', async (e) => {
+
         e.preventDefault();
 
         const submitBtn = signupForm.querySelector('button[type="submit"]');
         if (!submitBtn) return;
 
-        // Disable button immediately
-        submitBtn.disabled = true;
         const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
         submitBtn.textContent = 'Signing up...';
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
         try {
-            // Raw inputs
+            // raw inputs
             let signupName = document.getElementById('signupName').value.trim();
             let signupEmail = document.getElementById('signupEmail').value.trim();
             let studentNumber = document.getElementById('studentNumber').value.trim();
-            const signupPassword = document.getElementById('signupPassword');
-            const signupConfirmPassword = document.getElementById('signupConfirmPassword');
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
 
-            const password = signupPassword.value;
-            const confirmPassword = signupConfirmPassword.value;
-
-            // Sanitize to prevent XSS
+            // sanitize
             signupName = sanitize(signupName);
             signupEmail = sanitize(signupEmail);
+            studentNumber = sanitize(studentNumber);
 
-            /* ------------------------------------
-                VALIDATION
-            ------------------------------------ */
 
-            // Required fields
+            /* -----------------------------
+            basic validation
+            ----------------------------- */
             if (!signupName || !signupEmail || !studentNumber || !password || !confirmPassword) {
                 alertSystem.show('Please fill out all fields', 'error');
                 return;
             }
 
-            /* ------------------------------------
-            VALIDATE STUDENT NUMBER
-            ------------------------------------ */
-            const foundStudent = students.find(student => student.id === studentNumber);
+            const { data: student, error: studentError } = await supabaseClient
+                .from('profile')
+                .select('student_id')
+                .eq('student_id', studentNumber)
+                .maybeSingle();
+
+            if (studentError && studentError.code !== 'PGRST116') {
+                console.error(studentError);
+                alertSystem.show('Failed to load profile', 'error');
+            }
+
+            if (student) {
+                return alertSystem.show('Student Number already in use', 'error');
+            }
+
+            // validate student
+            const foundStudent = students.find(s => s.id === studentNumber);
             let studentVerified = false;
             let officialStudentName = null;
             let studentYearLevel = null;
             let studentMajor = null;
-            
+
             if (foundStudent) {
-                // Student found - use their official data from the list
-                signupName = foundStudent.name;
                 studentVerified = true;
                 officialStudentName = foundStudent.name;
                 studentYearLevel = foundStudent.year_level || null;
                 studentMajor = foundStudent.major || null;
                 alertSystem.show(`Student verified! Welcome ${foundStudent.name}`, 'success');
             } else {
-                // Student not found - mark as unknown
                 alertSystem.show('Student number not found in our records. Registering as UNKNOWN student.', 'warning');
                 studentVerified = false;
             }
 
-            /* ------------------------------------
-            CHECK IF EMAIL EXISTS IN PROFILE
-            ------------------------------------ */
-            const sanitizedEmail = signupEmail.toLowerCase();
+            // email format
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail)) {
+                alertSystem.show('Invalid email format', 'error');
+                return;
+            }
 
+            // prevent script injection
+            if (/<|>|script/i.test(signupName) || /<|>|script/i.test(signupEmail)) {
+                alertSystem.show('Invalid characters detected', 'error');
+                return;
+            }
+
+            // password rules
+            if (password.length < 8) {
+                alertSystem.show('Password must be at least 8 characters long', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alertSystem.show("Passwords don't match", 'error');
+                return;
+            }
+
+            // check if email exists
+            const sanitizedEmail = signupEmail.toLowerCase();
             const { data: existingUser, error: emailError } = await supabaseClient
                 .from('profile')
                 .select('email')
@@ -166,47 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Name must contain letters & spaces only (skip for official names with special chars)
-            if (!foundStudent && !/^[a-zA-Z\s]+$/.test(signupName)) {
-                alertSystem.show('Name contains invalid characters', 'error');
-                return;
-            }
-
-            // Basic email format check
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail)) {
-                alertSystem.show('Invalid email format', 'error');
-                return;
-            }
-
-            // Prevent script injection
-            if (/<|>|script/i.test(signupName) || /<|>|script/i.test(signupEmail)) {
-                alertSystem.show('Invalid characters detected', 'error');
-                return;
-            }
-
-            // Password length
-            if (password.length < 8) {
-                alertSystem.show('Password must be at least 8 characters long', 'error');
-                return;
-            }
-
-            // Password match
-            if (password !== confirmPassword) {
-                alertSystem.show("Passwords don't match", 'error');
-                return;
-            }
-
-            /* ------------------------------------
-                SUPABASE SIGNUP
-            ------------------------------------ */
+            // signup with supabase
             const { data, error } = await supabaseClient.auth.signUp({
                 email: signupEmail,
                 password: password,
                 options: {
                     emailRedirectTo: 'https://confirmed-email.netlify.app/',
-                    data: {
-                        display_name: signupName
-                    }
+                    data: { display_name: signupName }
                 }
             });
 
@@ -218,26 +213,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Account created successfully! Check your email to verify your account.',
                     'success'
                 );
-                
-                // After successful signup, save student data to profile
+
                 const userId = data.user?.id;
-                
+
                 if (userId) {
-                    // Wait a moment for auth to fully complete
+                    // save student data to profile
                     setTimeout(async () => {
                         try {
-                            console.log('Attempting to save student data for user:', userId);
-                            console.log('Student Number:', studentNumber);
-                            console.log('Student Verified:', studentVerified);
-                            console.log('Official Name:', officialStudentName);
-                            
                             const { data: upsertData, error: profileError } = await supabaseClient
                                 .from('profile')
                                 .upsert({
                                     id: userId,
                                     name: signupName,
                                     email: signupEmail,
-                                    // Only save student_id if verified (found in students list)
                                     student_id: studentVerified ? studentNumber : null,
                                     student_verified: studentVerified,
                                     student_name_official: officialStudentName,
@@ -246,20 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }, { onConflict: 'id' });
 
                             if (profileError) {
-                                console.error('Profile upsert error:', profileError);
-                                console.error('Error details:', profileError.message, profileError.code);
-                            } else {
-                                console.log('Profile upsert successful:', upsertData);
-                                if (!studentVerified) {
-                                    console.warn('Student ID not found in records - saved as Unknown');
-                                }
+                                console.error('profile upsert error:', profileError);
                             }
                         } catch (err) {
-                            console.error('Profile insert exception:', err);
+                            console.error('profile insert exception:', err);
                         }
-                    }, 500); // Wait 500ms
+                    }, 500);
                 }
-                
+
                 signupForm.reset();
             }
 
@@ -267,10 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             alertSystem.show(err.message || 'Failed to create account', 'error');
         } finally {
-            // Always re-enable button
+            // re-enable button
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     });
+
 });
