@@ -26,7 +26,7 @@ export function displayBio(bio) {
 
 
 // Enhanced displayInformation function matching Supabase design
-export function displayInformation(name, email, major, year_level, owner = false, studentNumber = null, studentVerified = false) {
+export function displayInformation(name, email, major, year_level, owner = false, studentNumber = null, studentVerified = false, studentName = null) {
     return `
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-4">
@@ -46,9 +46,17 @@ export function displayInformation(name, email, major, year_level, owner = false
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <div class="flex items-center mb-2">
                                 <i class="fas fa-user-tag mr-2 text-gray-500 text-sm"></i>
-                                <span class="text-sm font-medium text-gray-500">Full Name</span>
+                                <span class="text-sm font-medium text-gray-500">User Name</span>
                             </div>
                             <p class="text-gray-800 font-medium">${name}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-user-tag mr-2 text-gray-500 text-sm"></i>
+                                <span class="text-sm font-medium text-gray-500">Student Name</span>
+                            </div>
+                            <p class="text-gray-800 font-medium">${studentName}</p>
                         </div>
 
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
