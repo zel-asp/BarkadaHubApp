@@ -1,5 +1,6 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
+import students from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -17,6 +18,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const emailInput = document.getElementById('email');
     const locationInput = document.getElementById('location');
     const userAt = document.getElementById('userAt');
+
+    const studentNumberInput = document.getElementById('studentNumber');
+    const feedback = document.getElementById('feedback');
+    const studentNumberInputContainer = document.getElementById('studentNumberInputContainer');
 
     const alertSystem = new AlertSystem();
 
@@ -120,6 +125,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function verifyStudentNumber() {
+
+        studentNumberInput.addEventListener('input', () => {
+
+            const studentNumberFromUser = studentNumberInput.value.trim();
+
+            const studentVerified = students.find(student =>
+                student.id === studentNumberFromUser
+            );
+
+            if (!studentVerified) {
+                studentNumberInputContainer.classList.add('ring-1', 'ring-orange-500');
+                studentNumberInputContainer.classList.remove('ring-green-500');
+
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `
+                <i class="fas fa-exclamation-circle text-orange-500"></i>
+                <span class="text-orange-600">Not found</span>
+            `;
+            } else {
+                studentNumberInputContainer.classList.add('ring-1', 'ring-green-500');
+                studentNumberInputContainer.classList.remove('ring-orange-500');
+
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `
+                <i class="fas fa-check-circle text-green-500"></i>
+                <span class="text-green-600">${studentVerified.name}</span>
+            `;
+            }
+        });
+
+    }
+
+    verifyStudentNumber();
     /* -------------------------------------------
         SAVE PROFILE
     ------------------------------------------- */
@@ -223,7 +262,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     /* -------------------------------------------
         REALTIME UPDATES (Optional - for when others update)
     ------------------------------------------- */
-    // This is optional - it will update the UI when other users update their profile
     supabaseClient
         .channel('profile-updates')
         .on(
