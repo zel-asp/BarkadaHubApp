@@ -7,6 +7,32 @@ import offline, { Loading } from './render/offline.js';
 import { searchUser } from './render/post.js';
 import { mobileNavigations, leftSideBar } from "./components/navigations.js";
 
+
+// Initialize notification system
+const alertSystem = new AlertSystem();
+// const App = window.Capacitor?.Plugins?.App || null;
+// if (App) {
+//     let lastBackTime = 0;
+
+//     App.addListener('backButton', ({ canGoBack }) => {
+//         const now = Date.now();
+
+//         if (canGoBack) {
+//             // Go to previous page inside your app
+//             window.history.back();
+//         } else {
+//             // Double press to exit
+//             if (now - lastBackTime < 2000) {
+//                 App.exitApp();
+//             } else {
+//                 lastBackTime = now;
+//                 alert('Press back again to exit');
+//             }
+//         }
+//     });
+// }
+
+
 // Admin user IDs
 const ADMIN_IDS = new Map([
     ['c1517366-9c04-41af-bf32-d0db2b2bab85', 1],
@@ -29,9 +55,6 @@ const state = {
     isOnline: false,
     isLoading: true
 };
-
-// Initialize notification system
-const alertSystem = new AlertSystem();
 
 // ===================== HELPER FUNCTIONS =====================
 // Save current page to localStorage
