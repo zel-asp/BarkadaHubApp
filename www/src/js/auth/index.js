@@ -109,22 +109,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     const signupSwitchLink = document.getElementById('signupSwitchLink');
     const closeModalBtn = document.querySelectorAll('.close-modal');
 
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-
     // Open modal
     openModalBtn.addEventListener('click', () => {
-        modal.classList.remove('hidden');
-        modal.classList.add('active', 'flex');
+
+        // show loading state
+        openModalBtn.disabled = true;
+        const originalText = openModalBtn.textContent;
+        openModalBtn.textContent = 'Loading...';
+        openModalBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        // wait at least 1 second
         setTimeout(() => {
+
+            modal.classList.remove('hidden');
+            modal.classList.add('active', 'flex');
+
             brand.classList.add('-translate-y-50');
             brand.classList.remove('translate-y-0');
             slogan.classList.add('hidden');
 
             const firstInput = modal.querySelector('input');
             if (firstInput) firstInput.focus();
-        }, 100);
+
+            // restore button
+            openModalBtn.disabled = false;
+            openModalBtn.textContent = originalText;
+            openModalBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        }, 1000); // 1 second loading
     });
+
 
     // Close modal
     closeModalBtn.forEach(btn => {
