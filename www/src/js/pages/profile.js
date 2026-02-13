@@ -150,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const major = profile?.major || nullData;
         const year_level = profile?.year_level || nullData;
         const studentId = profile?.student_id || nullData;
+        const studentName = profile?.student_name_official || nullData;
         const studentVerified = profile?.student_verified || false;
         const avatarUrl = profile?.avatar_url || '../images/defaultAvatar.jpg';
 
@@ -189,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('displayBio').innerHTML = displayBio(bioText);
         document.getElementById('location').textContent = profile?.location || '';
         document.getElementById('PersonalInfo').innerHTML =
-            displayInformation(name, email, major, year_level, true, studentId, studentVerified);
+            displayInformation(name, email, major, year_level, true, studentId, studentVerified, studentName);
 
         // =============================
         // OPEN FULL IMAGE MODAL
