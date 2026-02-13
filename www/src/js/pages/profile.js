@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Debug: log the fetched profile data
+        console.log('Fetched profile data:', profile);
+
         const nullData = "No information available";
 
         const bioText = profile?.about_me || nullData;
@@ -146,7 +149,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = profile?.email || nullData;
         const major = profile?.major || nullData;
         const year_level = profile?.year_level || nullData;
+        const studentId = profile?.student_id || nullData;
+        const studentVerified = profile?.student_verified || false;
         const avatarUrl = profile?.avatar_url || '../images/defaultAvatar.jpg';
+
+        // Debug: log student data specifically
+        console.log('Student ID from profile:', studentId);
+        console.log('Student Verified:', studentVerified);
 
         // Elements
         const userAvatar = document.getElementById('userAvatar');
@@ -180,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('displayBio').innerHTML = displayBio(bioText);
         document.getElementById('location').textContent = profile?.location || '';
         document.getElementById('PersonalInfo').innerHTML =
-            displayInformation(name, email, major, year_level, true);
+            displayInformation(name, email, major, year_level, true, studentId, studentVerified);
 
         // =============================
         // OPEN FULL IMAGE MODAL

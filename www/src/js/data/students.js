@@ -37,7 +37,7 @@ const students = [
     { id: '230107547', name: 'Rosalejos, Rianmar I.' },
     { id: '230108793', name: 'Rosas, Aron O.' },
     { id: '230112815', name: 'Salvadico, Jeremae A.' },
-    { id: '23010312', name: 'Sierra, Joshua Arncel A.' },
+    { id: '23010312', name: 'Sierra, Joshua Arncel o.' },
     { id: '230106474', name: 'Solis, Claro Gerardo M. JR.' },
     { id: '230116836', name: 'Subsuban, Christian Kim C.' },
     { id: '230117656', name: 'Tiu, Roldan Rexis L.' },
@@ -49,3 +49,4 @@ const students = [
 ];
 
 export default students;
+export { students };

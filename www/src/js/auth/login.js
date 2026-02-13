@@ -1,5 +1,6 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
+import { students } from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
@@ -118,13 +119,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // Profile: insert/update only ONCE
+            // First check if profile already has student data
+            const { data: existingProfile } = await supabaseClient
+                .from('profile')
+                .select('student_id, student_verified, student_name_official')
+                .eq('id', userId)
+                .maybeSingle();
+
+            // Use existing student data if available, otherwise set to null
             await supabaseClient
                 .from('profile')
                 .upsert({
                     id: userId,
                     name: userName,
-                    email: email
-                }, { onConflict: 'id', ignoreDuplicates: true });
+                    email: email,
+                    student_id: existingProfile?.student_id || null,
+                    student_verified: existingProfile?.student_verified || false,
+                    student_name_official: existingProfile?.student_name_official || null
+                }, { onConflict: 'id' });
 
             // Success alert
             alertSystem.show('Login successful', 'success', 1500);
