@@ -56,10 +56,19 @@ export function displayInformation(name, email, major, year_level, owner = false
                                 <i class="fas fa-id-card mr-2 text-gray-500 text-sm"></i>
                                 <span class="text-sm font-medium text-gray-500">Student Number</span>
                             </div>
-                            <p class="text-gray-800 font-medium">${studentNumber}</p>
+                            <div class="flex items-center justify-between gap-4">
+                                <p class="text-gray-800 font-medium flex-1">${studentNumber}</p>
+                                ${!studentVerified ? `
+                                <a href="editProfile.html#studentNumberInput" class="inline-flex shrink-0">
+                                    <button class="bg-primary text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-200 cursor-pointer">
+                                        Verify
+                                    </button>
+                                </a> ` : ''}
+                            </div>
                         </div>
+
                         
-                        <!-- Email Field -->
+                        <!--Email Field-->
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <div class="flex items-center mb-2">
                                 <i class="fas fa-envelope mr-2 text-gray-500 text-sm"></i>
@@ -68,7 +77,7 @@ export function displayInformation(name, email, major, year_level, owner = false
                             <p class="text-gray-800 font-medium text-sm">${email}</p>
                         </div>
                         
-                        <!-- Major Field -->
+                        <!--Major Field-- >
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <div class="flex items-center mb-2">
                                 <i class="fas fa-book mr-2 text-gray-500 text-sm"></i>
@@ -77,15 +86,15 @@ export function displayInformation(name, email, major, year_level, owner = false
                             <p class="text-gray-800 font-medium">${major}</p>
                         </div>
                         
-                        <!-- Year Level Field -->
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-500 text-sm"></i>
-                                <span class="text-sm font-medium text-gray-500">Year Level</span>
-                            </div>
-                            <p class="text-gray-800 font-medium">${year_level}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
+                        <!--Year Level Field-- >
+    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+        <div class="flex items-center mb-2">
+            <i class="fas fa-calendar-alt mr-2 text-gray-500 text-sm"></i>
+            <span class="text-sm font-medium text-gray-500">Year Level</span>
+        </div>
+        <p class="text-gray-800 font-medium">${year_level}</p>
+    </div>
+                    </div >
+                </div >
+    `;
 }
