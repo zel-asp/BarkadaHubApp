@@ -4,9 +4,6 @@ import students from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-    /* -------------------------------------------
-        CACHED DOM ELEMENTS
-    ------------------------------------------- */
     const avatarUpload = document.getElementById('avatar-upload');
     const avatarPreview = document.getElementById('avatar-preview');
     const bioTextarea = document.getElementById('bio');
@@ -25,11 +22,106 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const alertSystem = new AlertSystem();
 
-    /* -------------------------------------------
-        LOAD USER AUTH INFO
-    ------------------------------------------- */
+    let isVerified = false;
+    let studentId = null;
+    let studentName = null;
+
+    // update @username preview
+    function updateUserAt(name) {
+        userAt.innerHTML = `@${name.trim().toLowerCase().replace(/\s/g, '')}`;
+    }
+
+    // update bio character counter
+    function updateCharCount() {
+        const remaining = 500 - (bioTextarea?.value.length || 0);
+        charCount.textContent = remaining;
+
+        charCount.classList.toggle('text-red-500', remaining < 50);
+        charCount.classList.toggle('text-gray-500', remaining >= 50);
+    }
+
+    // preview avatar before upload
+    function handleAvatarPreview() {
+        avatarUpload?.addEventListener('change', e => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = evt => (avatarPreview.src = evt.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // verify student id from local list
+    function verifyStudentNumber() {
+        studentNumberInput.addEventListener('input', () => {
+
+            const studentNumberFromUser = studentNumberInput.value.trim();
+
+            const studentVerified = students.find(student =>
+                student.id === studentNumberFromUser
+            );
+
+            if (!studentVerified) {
+                studentNumberInputContainer.classList.add('ring-1', 'ring-orange-500');
+                studentNumberInputContainer.classList.remove('ring-green-500');
+
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `
+                    <i class="fas fa-exclamation-circle text-orange-500"></i>
+                    <span class="text-orange-600">Not found</span>
+                `;
+
+                isVerified = false;
+                studentId = null;
+                studentName = null;
+
+            } else {
+                studentNumberInputContainer.classList.add('ring-1', 'ring-green-500');
+                studentNumberInputContainer.classList.remove('ring-orange-500');
+
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span class="text-green-600">${studentVerified.name}</span>
+                `;
+
+                isVerified = true;
+                studentId = studentVerified.id;
+                studentName = studentVerified.name;
+            }
+        });
+    }
+
+    // update friend avatar in messages table
+    async function updateFriendAvatarInMessages(userId, newAvatarUrl, newName) {
+        try {
+            const { error } = await supabaseClient
+                .from('message')
+                .update({
+                    friend_avatar: newAvatarUrl,
+                    friend_name: newName || undefined
+                })
+                .eq('friends_id', userId);
+
+            if (error) {
+                console.error(error);
+                return false;
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) return alertSystem.show('User not logged in', 'error');
+
+    if (userError || !user) {
+        return alertSystem.show('User not logged in', 'error');
+    }
 
     const userId = user.id;
     const metaName = user.user_metadata?.display_name || "";
@@ -37,15 +129,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     emailInput.value = user.email;
     fullNameInput.value = metaName || "User";
 
-    // generate @username
-    function updateUserAt(name) {
-        userAt.innerHTML = `@${name.trim().toLowerCase().replace(/\s/g, '')}`;
-    }
     updateUserAt(fullNameInput.value);
 
-    /* -------------------------------------------
-        LOAD PROFILE FROM DATABASE
-    ------------------------------------------- */
+
+    /* -----------------------------
+    load profile from database
+    ----------------------------- */
     const { data: profile, error: profileError } = await supabaseClient
         .from('profile')
         .select('*')
@@ -63,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         majorSelect.value = profile.major || '';
         locationInput.value = profile.location || '';
         yearLevelSelect.value = profile.year_level || '';
+        studentNumberInput.value = profile.student_id || '';
 
         if (profile.avatar_url) {
             avatarPreview.src = profile.avatar_url;
@@ -71,98 +161,104 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUserAt(fullNameInput.value);
     }
 
-    /* -------------------------------------------
-        AVATAR PREVIEW
-    ------------------------------------------- */
-    avatarUpload?.addEventListener('change', e => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = evt => (avatarPreview.src = evt.target.result);
-        reader.readAsDataURL(file);
-    });
+    /* -----------------------------
+    save profile
+    ----------------------------- */
+    async function saveProfile() {
 
-    /* -------------------------------------------
-        BIO CHARACTER COUNTER
-    ------------------------------------------- */
-    function updateCharCount() {
-        const remaining = 500 - (bioTextarea?.value.length || 0);
-        charCount.textContent = remaining;
+        const fullName = fullNameInput.value.trim();
+        const location = locationInput.value;
+        const major = majorSelect.value;
+        const yearLevel = yearLevelSelect.value;
+        const bio = bioTextarea.value.trim();
+        const avatarFile = avatarUpload.files?.[0];
 
-        charCount.classList.toggle('text-red-500', remaining < 50);
-        charCount.classList.toggle('text-gray-500', remaining >= 50);
-    }
-    bioTextarea?.addEventListener('input', updateCharCount);
-    updateCharCount();
+        let studentNumberFromUser = null;
 
-    /* -------------------------------------------
-        FUNCTION TO UPDATE FRIEND AVATAR IN MESSAGES
-    ------------------------------------------- */
-    async function updateFriendAvatarInMessages(userId, newAvatarUrl, newName) {
-        try {
-            console.log('Updating friend avatar in messages for user:', userId);
-
-            // Update messages where this user is the friend
-            const { error: updateError } = await supabaseClient
-                .from('message')
-                .update({
-                    friend_avatar: newAvatarUrl,
-                    friend_name: newName || undefined // Only update name if provided
-                })
-                .eq('friends_id', userId); // Where this user is the friend
-
-            if (updateError) {
-                console.error('Error updating friend avatar in messages:', updateError);
-                return false;
-            }
-
-            console.log('Successfully updated friend avatar in messages');
-            return true;
-        } catch (error) {
-            console.error('Failed to update friend avatar in messages:', error);
-            return false;
+        if (isVerified) {
+            studentNumberFromUser = studentNumberInput.value.trim();
         }
-    }
 
-    function verifyStudentNumber() {
+        const { data: student, error: studentError } = await supabaseClient
+            .from('profile')
+            .select('student_id')
+            .eq('student_id', studentNumberFromUser)
+            .maybeSingle();
 
-        studentNumberInput.addEventListener('input', () => {
+        if (studentError && studentError.code !== 'PGRST116') {
+            console.error(studentError);
+            alertSystem.show('Failed to load profile', 'error');
+        }
 
-            const studentNumberFromUser = studentNumberInput.value.trim();
+        if (student) {
+            return alertSystem.show('Student Number already in use', 'error');
+        }
 
-            const studentVerified = students.find(student =>
-                student.id === studentNumberFromUser
-            );
+        let avatarUrl = profile?.avatar_url ?? '../images/defaultAvatar.jpg';
 
-            if (!studentVerified) {
-                studentNumberInputContainer.classList.add('ring-1', 'ring-orange-500');
-                studentNumberInputContainer.classList.remove('ring-green-500');
-
-                feedback.classList.remove('hidden');
-                feedback.innerHTML = `
-                <i class="fas fa-exclamation-circle text-orange-500"></i>
-                <span class="text-orange-600">Not found</span>
-            `;
-            } else {
-                studentNumberInputContainer.classList.add('ring-1', 'ring-green-500');
-                studentNumberInputContainer.classList.remove('ring-orange-500');
-
-                feedback.classList.remove('hidden');
-                feedback.innerHTML = `
-                <i class="fas fa-check-circle text-green-500"></i>
-                <span class="text-green-600">${studentVerified.name}</span>
-            `;
-            }
+        // update auth metadata
+        await supabaseClient.auth.updateUser({
+            data: { display_name: fullName }
         });
 
+        // upload avatar if changed
+        if (avatarFile) {
+
+            const fileExt = avatarFile.name.split('.').pop();
+            const filePath = `${userId}/avatar.${fileExt}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+                .from('avatars')
+                .upload(filePath, avatarFile, { upsert: true });
+
+            if (uploadError) {
+                alertSystem.show("Avatar upload failed", "error");
+                return;
+            }
+
+            const { data: urlData } = supabaseClient
+                .storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            avatarUrl = urlData.publicUrl + `?t=${Date.now()}`;
+        }
+
+        // upsert profile row
+        const { error: upsertError } = await supabaseClient
+            .from('profile')
+            .upsert({
+                id: userId,
+                name: fullName,
+                major,
+                location,
+                year_level: yearLevel,
+                about_me: bio,
+                avatar_url: avatarUrl,
+                student_id: studentNumberFromUser,
+                student_verified: isVerified,
+                student_name_official: studentName
+            });
+
+        if (upsertError) {
+            return alertSystem.show('Failed to update profile', 'error');
+        }
+
+        await updateFriendAvatarInMessages(userId, avatarUrl, fullName);
+
+        avatarPreview.src = avatarUrl;
+        updateUserAt(fullName);
+
+        alertSystem.show('Profile updated successfully', 'success');
     }
 
-    verifyStudentNumber();
-    /* -------------------------------------------
-        SAVE PROFILE
-    ------------------------------------------- */
+
+    /* -----------------------------
+    form submit handler
+    ----------------------------- */
     form?.addEventListener('submit', async e => {
+
         e.preventDefault();
 
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -170,7 +266,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             submitBtn.disabled = true;
+
             const originalText = submitBtn.textContent;
+
             submitBtn.textContent = 'Saving...';
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -190,105 +288,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Save';
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
             alertSystem.show('Failed to save profile.', 'error');
         }
     });
 
-
-    async function saveProfile() {
-        const fullName = fullNameInput.value.trim();
-        const location = locationInput.value;
-        const major = majorSelect.value;
-        const yearLevel = yearLevelSelect.value;
-        const bio = bioTextarea.value.trim();
-        const avatarFile = avatarUpload.files?.[0];
-
-        let avatarUrl = profile?.avatar_url ?? '../images/defaultAvatar.jpg';
-
-        /* Update Auth Metadata */
-        await supabaseClient.auth.updateUser({
-            data: { display_name: fullName }
-        });
-
-        /* Upload Avatar if New */
-        if (avatarFile) {
-            const fileExt = avatarFile.name.split('.').pop();
-            const filePath = `${userId}/avatar.${fileExt}`;
-
-            const { error: uploadError } = await supabaseClient.storage
-                .from('avatars')
-                .upload(filePath, avatarFile, { upsert: true });
-
-            if (uploadError) {
-                alertSystem.show("Avatar upload failed", "error");
-                return;
-            }
-
-            const { data: urlData } = supabaseClient
-                .storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            // Add cache-buster
-            avatarUrl = urlData.publicUrl + `?t=${Date.now()}`;
-        }
-
-        /* Upsert Profile Row */
-        const { error: upsertError } = await supabaseClient
-            .from('profile')
-            .upsert({
-                id: userId,
-                name: fullName,
-                major,
-                location,
-                year_level: yearLevel,
-                about_me: bio,
-                avatar_url: avatarUrl
-            });
-
-        if (upsertError) {
-            return alertSystem.show('Failed to update profile', 'error');
-        }
-
-        await updateFriendAvatarInMessages(userId, avatarUrl, fullName);
-
-        // Update preview
-        avatarPreview.src = `${avatarUrl}`;
-        updateUserAt(fullName);
-
-        alertSystem.show('Profile updated successfully', 'success');
-    }
-
-    /* -------------------------------------------
-        REALTIME UPDATES (Optional - for when others update)
-    ------------------------------------------- */
-    supabaseClient
-        .channel('profile-updates')
-        .on(
-            'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'profile', filter: `id=neq.${userId}` },
-            async (payload) => {
-                const friendId = payload.new.id;
-
-                const { data: existingMessage } = await supabaseClient
-                    .from('message')
-                    .select('id')
-                    .eq('user_id', userId)
-                    .eq('friends_id', friendId)
-                    .maybeSingle();
-
-                if (existingMessage) {
-                    await supabaseClient
-                        .from('message')
-                        .update({
-                            friend_avatar: payload.new.avatar_url,
-                            friend_name: payload.new.name
-                        })
-                        .eq('user_id', userId)
-                        .eq('friends_id', friendId);
-                }
-            }
-        )
-        .subscribe();
+    handleAvatarPreview();
+    verifyStudentNumber();
+    bioTextarea?.addEventListener('input', updateCharCount);
+    updateCharCount();
 
 });
