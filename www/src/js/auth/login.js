@@ -118,15 +118,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 user_email: userEmail
             });
 
-            // Profile: insert/update only ONCE
-            // First check if profile already has student data
             const { data: existingProfile } = await supabaseClient
                 .from('profile')
                 .select('student_id, student_verified, student_name_official')
                 .eq('id', userId)
                 .maybeSingle();
 
-            // Use existing student data if available, otherwise set to null
             await supabaseClient
                 .from('profile')
                 .upsert({
