@@ -1,5 +1,9 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
+import sanitize from '../utils/sanitize.js';
+
+
+console.log(sanitize);
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -11,20 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('loginForm');
 
     if (!loginForm) return;
-
-
-
-    // sanitize input to prevent xss
-    function sanitize(str) {
-        return str.replace(/[&<>"'\/]/g, match => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '/': '&#x2F;'
-        }[match]));
-    }
 
     // toggle password visibility
     function initPasswordToggle() {
