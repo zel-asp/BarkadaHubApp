@@ -3,6 +3,7 @@ import AlertSystem from '../render/Alerts.js';
 import { createVideoItem, createEmptyVideoState } from '../render/videos.js';
 import { videoLike } from './notification.js';
 import { renderNotifications, setupClickMarkRead } from '../render/notification.js';
+import sanitize from '../utils/sanitize.js';
 
 async function initNotifications() {
     const notifications = await fetchNotifications();
@@ -194,7 +195,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
 
         const file = videoFileInput.files[0];
-        const caption = videoCaption.value.trim();
+        let caption = videoCaption.value.trim();
+
+        caption = sanitize(caption || '');
 
         if (!file || !caption) {
             return alertSystem.show('Please choose a video or enter a caption', 'error');
