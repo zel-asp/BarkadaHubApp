@@ -4,6 +4,8 @@ import { initCommentsModal, loadComments, initDeleteComment, initCommentRealtime
 import { initEllipsisButtons, showDeleteConfirmation, hideDeleteConfirmation, initDeletePermanently } from '../utils/postDeleteUtils.js';
 import { displayBio, displayInformation } from '../render/profile.js';
 import { likePost, commentPost } from './notification.js';
+import { initReactions } from '../utils/reactionUtils.js';
+
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await supabaseClient.auth.getUser();
@@ -396,6 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await getUserPosts();
         initDeleteComment(alertSystem);
         initCommentRealtime();
+        initReactions(alertSystem);
         initDeletePermanently(userId, alertSystem);
     })();
 });
