@@ -1,7 +1,9 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 import uploadedPost from '../render/post.js';
+import { getPostReactions } from './reactionUtils.js';
 import { likePost, commentPost } from '../pages/notification.js';
+import { subscribeToPostReactions } from './realtimeReactions.js';
 
 export const alertSystem = new AlertSystem();
 
@@ -142,23 +144,60 @@ export async function renderPost(post, displayedPostIds, container, position = "
     const currentUserId = userData?.user?.id;
     const owner = currentUserId === post.user_id;
 
-    // Check if user liked this post
-    let isLikedByUser = false;
+    // Get user's reaction and total reactions
+    const { userReaction, total } = await getPostReactions(post.id, currentUserId);
+
+    // CHECK IF POST IS REPORTED BY CURRENT USER
+    let isReported = false;
     if (currentUserId) {
-        const { data: userLike } = await supabaseClient
-            .from('post_likes')
+        const { data: report } = await supabaseClient
+            .from('reports')
             .select('id')
             .eq('post_id', post.id)
-            .eq('user_id', currentUserId)
+            .eq('who_reported', currentUserId)
             .maybeSingle();
-        isLikedByUser = !!userLike;
+        isReported = !!report;
     }
 
-    // Get total likes
-    const { count: totalLikes } = await supabaseClient
-        .from('post_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('post_id', post.id);
+    // Get recent reactions with user names - ADD THIS COMPLETE CODE
+    let formattedReactions = [];
+    try {
+        // First, get the reactions
+        const { data: reactions, error: reactionsError } = await supabaseClient
+            .from('post_reactions')
+            .select('reaction, user_id')
+            .eq('post_id', post.id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (!reactionsError && reactions && reactions.length > 0) {
+            // Then fetch profiles separately for each user
+            const userIds = [...new Set(reactions.map(r => r.user_id))];
+
+            const { data: profiles, error: profilesError } = await supabaseClient
+                .from('profile')
+                .select('id, name, avatar_url')
+                .in('id', userIds);
+
+            if (!profilesError && profiles) {
+                // Create a map of user profiles
+                const profileMap = {};
+                profiles.forEach(p => {
+                    profileMap[p.id] = p;
+                });
+
+                // Format reactions with profile data
+                formattedReactions = reactions.map(r => ({
+                    reaction: r.reaction,
+                    user_name: profileMap[r.user_id]?.name || 'Someone',
+                    avatar: profileMap[r.user_id]?.avatar_url || '../images/defaultAvatar.jpg'
+                }));
+            }
+        }
+
+    } catch (err) {
+        console.warn('Error fetching recent reactions:', err);
+    }
 
     // Get total comments
     const { count: commentCount } = await supabaseClient
@@ -196,16 +235,23 @@ export async function renderPost(post, displayedPostIds, container, position = "
         post.media_url,
         post.media_type,
         post.id,
-        totalLikes,
+        total,
         commentCount,
-        isLikedByUser,
+        userReaction,
         post.file_path,
         post.user_id,
-        friendStatus
+        friendStatus,
+        isReported,
+        formattedReactions
     );
 
     container.insertAdjacentHTML(position, html);
     displayedPostIds.add(post.id);
+
+    // Subscribe to real-time updates
+    if (post.id) {
+        subscribeToPostReactions(post.id, currentUserId);
+    }
 
     return post.id;
 }
