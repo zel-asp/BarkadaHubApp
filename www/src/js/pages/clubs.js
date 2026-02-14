@@ -1,6 +1,7 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 import clubs from '../render/clubs.js';
+import sanitize from '../utils/sanitize.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
@@ -115,12 +116,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const handleFormSubmit = async e => {
         e.preventDefault();
-        const clubName = document.getElementById("clubName")?.value.trim();
-        const description = document.getElementById("description")?.value.trim();
-        const location = document.getElementById("location")?.value.trim();
+        let clubName = document.getElementById("clubName")?.value.trim();
+        let description = document.getElementById("description")?.value.trim();
+        let location = document.getElementById("location")?.value.trim();
         const imageFile = elements.inputFile?.files[0];
         const selectedCategory = document.querySelector('input[name="category"]:checked')?.value.trim();
+
         if (!selectedCategory) return;
+
+        clubName = sanitize(clubName || '');
+        location = sanitize(location || '');
+        description = sanitize(description || '');
+
+        console.log(clubName, location, description);
+
 
         try {
             /* ===============================
