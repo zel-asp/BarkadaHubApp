@@ -53,6 +53,7 @@ export async function renderNotifications(notifications) {
                                 <i class="fa-solid fa-user-plus text-blue-600 text-lg"></i>
                             </div>`;
                 case 'like':
+                case 'reaction':
                     return `<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                                 <i class="fa-solid fa-heart text-red-500 text-lg"></i>
                             </div>`;
@@ -88,25 +89,23 @@ export async function renderNotifications(notifications) {
             </div>`
             : '';
 
-        const username = n.sender?.name || 'User';
-        const avatarUrl = n.sender?.avatar_url || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`;
+        const username = n.sender?.name || n.username || 'User';
+        const avatarUrl = n.sender?.avatar_url || n.avatar_url || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`;
 
         // Always assign postId / videoId attributes
-        const postIdAttr = ['comment', 'like'].includes(n.type) ? n.entity_id || '' : '';
-        const videoIdAttr = n.type === 'video_like' ? n.entity_id || '' : '';
+        const postIdAttr = ['comment', 'like', 'reaction'].includes(n.type) ? n.entity_id || n.post_id || '' : '';
+        const videoIdAttr = n.type === 'video_like' ? n.entity_id || n.video_id || '' : '';
 
         // Render notification item
         const html = `
-            <div class="notification-item ${isUnread} p-4 hover:bg-gray-50 transition duration-200"
+            <div class="notification-item ${isUnread} p-4 hover:bg-gray-50 transition duration-200 cursor-pointer"
                  data-notif-id="${n.id}"
                  data-type="${n.type}"
                  data-post-id="${postIdAttr}"
                  data-video-id="${videoIdAttr}">
                 <div class="flex items-start gap-3">
-
                     <!-- Icon -->
                     <div class="flex-0">${iconHtml}</div>
-
                     <!-- Text -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
@@ -116,12 +115,10 @@ export async function renderNotifications(notifications) {
                         <p class="text-gray-700 text-sm mb-2">${n.message}</p>
                         <span class="text-xs text-gray-500">${timeAgo(n.created_at)}</span>
                     </div>
-
                     ${buttonsHtml}
-
                     <!-- Avatar -->
                     <div class="flex-0 ml-3">
-                        <img src="${avatarUrl}" alt="${username}" class="w-10 h-10 rounded-full" loading="eager">
+                        <img src="${avatarUrl}" alt="${username}" class="w-10 h-10 rounded-full" loading="eager" onerror="this.src='https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}'">
                     </div>
                 </div>
             </div>
@@ -130,68 +127,80 @@ export async function renderNotifications(notifications) {
         container.insertAdjacentHTML('beforeend', html);
     });
 
-    attachNotificationListeners?.();
+    // Attach listeners AFTER rendering
     setupClickMarkRead();
     updateNotificationBadge(notifications);
 }
 
-
 export function setupClickMarkRead() {
-    document.querySelectorAll('.notification-item').forEach(item => {
-        item.addEventListener('click', async (e) => {
-            // Skip if a button inside is clicked
-            if (e.target.closest('button')) return;
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
 
-            const notifId = item.dataset.notifId;
-            const postId = item.dataset.postId || '';
-            const videoId = item.dataset.videoId || '';
-            const type = item.dataset.type || '';
-
-            if (!notifId) return;
-
-            try {
-                // Mark notification as read
-                await supabaseClient
-                    .from('notifications')
-                    .update({ is_read: true })
-                    .eq('id', notifId);
-
-                // Update UI immediately
-                item.classList.remove('unread');
-                const dot = item.querySelector('.unread-dot');
-                if (dot) dot.remove();
-
-                updateNotificationBadge();
-
-                // Redirect based on type
-                if (postId) {
-                    window.location.href = `../html/home.html?id=${postId}`;
-                } else if (videoId) {
-                    window.location.href = `../html/videos.html?id=${videoId}`;
-                } else if (type === 'friend_request') {
-                    window.location.href = '../html/friends.html';
-                }
-            } catch (err) {
-                console.error('Failed to mark notification as read:', err);
-            }
-        });
-    });
+    // Remove existing listener to avoid duplicates
+    container.removeEventListener('click', handleNotificationClick);
+    container.addEventListener('click', handleNotificationClick);
 }
 
+// Define this ONCE
+async function handleNotificationClick(e) {
+    const notificationItem = e.target.closest('.notification-item');
+    if (!notificationItem) return;
+
+    // Skip if a button inside is clicked
+    if (e.target.closest('button')) return;
+
+    const notifId = notificationItem.dataset.notifId;
+    const postId = notificationItem.dataset.postId || '';
+    const videoId = notificationItem.dataset.videoId || '';
+    const type = notificationItem.dataset.type || '';
+
+    if (!notifId) return;
+
+    try {
+        // Mark notification as read
+        await supabaseClient
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', notifId);
+
+        // Update UI immediately
+        notificationItem.classList.remove('unread');
+        const dot = notificationItem.querySelector('.unread-dot');
+        if (dot) dot.remove();
+
+        updateNotificationBadge();
+
+        // Redirect based on type
+        if (postId) {
+            window.location.href = `../html/home.html?id=${postId}`;
+        } else if (videoId) {
+            window.location.href = `../html/videos.html?id=${videoId}`;
+        } else if (type === 'friend_request') {
+            window.location.href = '../html/friends.html';
+        }
+    } catch (err) {
+        console.error('Failed to mark notification as read:', err);
+    }
+}
 
 export function updateNotificationBadge(notifications = null) {
     const badge = document.getElementById('notificationBadge');
     if (!badge) return;
 
     if (!notifications) {
-        notifications = Array.from(document.querySelectorAll('.notification-item'));
-        notifications = notifications.map(item => ({
-            is_read: !item.classList.contains('unread')
-        }));
+        const unreadItems = document.querySelectorAll('.notification-item.unread');
+        const unreadCount = unreadItems.length;
+
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+        return;
     }
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
-    console.log("Unread notifications:", unreadCount); // 🔍 check count
 
     if (unreadCount > 0) {
         badge.textContent = unreadCount;
@@ -203,18 +212,13 @@ export function updateNotificationBadge(notifications = null) {
 
 export function updateMessageBadge(messages = null) {
     const badge = document.getElementById('messageBadge');
-
-    if (!badge) {
-        console.warn('Message badge element not found in DOM');
-        return;
-    }
+    if (!badge) return;
 
     if (!messages) {
         messages = Array.from(document.querySelectorAll('[data-message-id]'));
     }
 
     const unreadCount = messages.length > 0 ? messages.length : 0;
-    console.log("Unread messages:", unreadCount);
 
     if (unreadCount > 0) {
         badge.textContent = unreadCount;
@@ -224,6 +228,65 @@ export function updateMessageBadge(messages = null) {
     }
 }
 
-export function attachNotificationListeners() {
-    // You can put other notification-specific event listeners here
+export function setupRealtimeNotifications(userId) {
+    if (!userId) return;
+
+    const channel = supabaseClient
+        .channel('notifications-channel')
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notifications',
+                filter: `user_id=eq.${userId}`
+            },
+            async (payload) => {
+                // Fetch sender data for the new notification
+                const { data: senderData } = await supabaseClient
+                    .from('profile')
+                    .select('name, avatar_url')
+                    .eq('id', payload.new.sender_id)
+                    .single();
+
+                // Add sender data to notification
+                payload.new.sender = senderData;
+
+                // Re-render all notifications
+                const { data: updatedNotifications } = await supabaseClient
+                    .from('notifications')
+                    .select(`
+                        *,
+                        sender:sender_id(name, avatar_url)
+                    `)
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+
+                renderNotifications(updatedNotifications || []);
+            }
+        )
+        .subscribe();
+}
+
+export async function markAllNotificationsAsRead(userId) {
+    if (!userId) return;
+
+    try {
+        await supabaseClient
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('user_id', userId)
+            .eq('is_read', false);
+
+        // Update UI
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+            item.classList.remove('unread');
+            const dot = item.querySelector('.unread-dot');
+            if (dot) dot.remove();
+        });
+
+        updateNotificationBadge();
+    } catch (err) {
+        console.error('Failed to mark all as read:', err);
+    }
 }
