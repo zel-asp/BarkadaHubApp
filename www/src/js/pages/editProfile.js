@@ -1,6 +1,7 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 import students from '../data/students.js';
+import sanitize from '../utils/sanitize.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -167,17 +168,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     ----------------------------- */
     async function saveProfile() {
 
-        const fullName = fullNameInput.value.trim();
-        const location = locationInput.value;
+        let fullName = fullNameInput.value.trim();
+        let location = locationInput.value;
         const major = majorSelect.value;
         const yearLevel = yearLevelSelect.value;
         const bio = bioTextarea.value.trim();
         const avatarFile = avatarUpload.files?.[0];
-
         let studentNumberFromUser = null;
+
+        fullName = sanitize(fullName || '');
+        location = sanitize(location || '');
+        bio = sanitize(bio || '');
 
         if (isVerified) {
             studentNumberFromUser = studentNumberInput.value.trim();
+            studentNumberFromUser = sanitize(studentNumberFromUser || '');
         }
 
         const { data: student, error: studentError } = await supabaseClient
