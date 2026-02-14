@@ -11,7 +11,6 @@ export function getReactionImageUrl(reactionType) {
     return data.publicUrl;
 }
 
-// Pre-load all reaction images for better performance
 export const REACTION_IMAGES = {
     like: 'https://mxxrymqwkxxtvxsgkyil.supabase.co/storage/v1/object/public/reactions/like.png',
     love: 'https://mxxrymqwkxxtvxsgkyil.supabase.co/storage/v1/object/public/reactions/love.png',
