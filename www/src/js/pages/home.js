@@ -4,6 +4,9 @@ import { initCommentsModal, loadComments, initDeleteComment, initCommentRealtime
 import { initEllipsisButtons, showDeleteConfirmation, hideDeleteConfirmation, initDeletePermanently } from '../utils/postDeleteUtils.js';
 import { initFollowButtons, initFriendRealtime } from '../utils/friendUtils.js';
 import { initReportModal, checkIfUserReported } from '../utils/reportUtils.js';
+import { initReactions } from '../utils/reactionUtils.js';
+import { unsubscribeAllReactions } from '../utils/realtimeReactions.js';
+
 import uploadedPost from '../render/post.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -46,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "demonyo", "impakto", "aswang", "tikbalang", "duwende", "kapre", "tiyanak", "manananggal",
         "bampira", "multo", "pugot", "maligno", "satanas", "diyablo", "demonyo", "bwisit na",
         "napakabobo", "napakatanga", "napakagago", "napakasira", "napakabastos",
-        "sinungaling", "magnanakaw", "sinungaling", "dayo",
+        "sinungaling", "magnanakaw", "sinungaling", "dayo", "fuck",
         "ulikba", "ungol", "ungas", "unggoy", "tamod", "tamuran",
         "kadiri", "kadiri", "kasuklam-suklam", "nakakadiri", "nakakasuka",
         "pakshet", "pakyu", "pakyu", "pakyo", "pakyaw", "pakyawan",
@@ -304,7 +307,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 table: 'posts'
             },
             async (payload) => {
-                console.log('New post detected:', payload.new);
                 if (!displayedPostIds.has(payload.new.id)) {
                     // Fetch the complete post data with comments count
                     const { data: newPost, error } = await supabaseClient
@@ -327,7 +329,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 table: 'posts'
             },
             (payload) => {
-                console.log('Post deleted:', payload.old);
                 const postEl = document.querySelector(`.post[data-post-id="${payload.old.id}"]`);
                 if (postEl) {
                     postEl.remove();
@@ -338,6 +339,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         .subscribe((status) => {
             console.log('Realtime subscription status:', status);
         });
+
+    window.addEventListener('beforeunload', () => {
+        unsubscribeAllReactions();
+    });
 
     // =======================
     // INITIALIZE
@@ -357,6 +362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDeleteComment(alertSystem);
     initCommentRealtime();
     initReportModal(alertSystem, checkIfUserReported);
+    initReactions(alertSystem);
 
     if (userId) {
         initFriendRealtime(userId);
