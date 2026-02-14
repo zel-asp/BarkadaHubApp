@@ -1,6 +1,7 @@
 import supabaseClient from '../supabase.js';
 import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
+import sanitize from '../utils/sanitize.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
@@ -65,12 +66,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             const itemType = document.querySelector('input[name="itemType"]:checked')?.value;
-            const itemName = document.getElementById('itemName').value.trim();
+            let itemName = document.getElementById('itemName').value.trim();
             const category = document.getElementById('category').value.trim();
-            const description = document.getElementById('description').value.trim();
-            const location = document.getElementById('location').value.trim();
+            let description = document.getElementById('description').value.trim();
+            let location = document.getElementById('location').value.trim();
             const file = imageUpload.files[0];
 
+            itemName = sanitize(itemName);
+            description = sanitize(description);
+            location = sanitize(location);
             let filePath = null;
 
             if (file) {
