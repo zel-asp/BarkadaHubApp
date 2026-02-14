@@ -1,4 +1,5 @@
 import supabaseClient from '../supabase.js';
+import sanitize from '../utils/sanitize.js';
 
 // =======================
 // CHECK IF USER REPORTED POST
@@ -116,8 +117,9 @@ export function initReportModal(alertSystem, checkIfUserReported) {
             const modal = document.getElementById('reportPostModal');
             const postId = modal.dataset.postId;
             const reason = document.getElementById('reportReason').value;
-            const otherReason = document.getElementById('reportDetails').value;
+            let otherReason = document.getElementById('reportDetails').value;
 
+            otherReason = sanitize(otherReason || '');
             if (!reason) {
                 alertSystem.show('Please select a reason for reporting', 'warning');
                 return;
