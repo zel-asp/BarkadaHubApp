@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error) {
                 // If it's a foreign key violation, try without entity_id
                 if (error.code === '23503') {
-                    console.log('Foreign key violation, retrying without entity_id...');
                     delete notificationData.entity_id;
                     delete notificationData.entity_type;
 
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return false;
             }
 
-            console.log('Notification created for user:', userId);
             return true;
         } catch (error) {
             console.error('Error sending notification:', error);
@@ -101,16 +99,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =======================
     async function sendReportNotifications(action) {
         try {
-            console.log('=== NOTIFICATION DEBUG ===');
-            console.log('Reporter:', currentReporterId);
-            console.log('Post Owner:', currentUserId);
-            console.log('Same?', currentReporterId === currentUserId);
 
             const reportReason = document.getElementById('reportReason')?.textContent || 'Unknown reason';
             const isSelfReport = currentReporterId === currentUserId;
 
             if (isSelfReport) {
-                console.log('This is a SELF-REPORT');
                 // For self-reports, only send one notification
                 const selfReportMessages = {
                     'reviewed': `Your self-report has been reviewed: ${reportReason}`,
@@ -127,10 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         currentPostId,
                         adminUserId
                     );
-                    console.log('Self-report notification sent:', success);
                 }
             } else {
-                console.log('This is a REGULAR REPORT (different users)');
                 // Regular report with different users
                 const reporterMessages = {
                     'reviewed': `Your report has been reviewed. Reason: ${reportReason}`,
@@ -147,7 +138,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Send to REPORTER
                 if (currentReporterId && reporterMessages[action]) {
-                    console.log('Sending to reporter:', currentReporterId);
                     const reporterSuccess = await sendNotification(
                         currentReporterId,
                         `report_${action}`,
@@ -155,12 +145,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         currentPostId,
                         adminUserId
                     );
-                    console.log('Reporter notification sent:', reporterSuccess);
                 }
 
                 // Send to POST OWNER (skip for dismissed reports)
                 if (currentUserId && action !== 'dismissed' && postOwnerMessages[action]) {
-                    console.log('Sending to post owner:', currentUserId);
                     const postOwnerSuccess = await sendNotification(
                         currentUserId,
                         `content_${action}`,
@@ -168,11 +156,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         currentPostId,
                         adminUserId
                     );
-                    console.log('Post owner notification sent:', postOwnerSuccess);
                 }
             }
 
-            console.log('=== NOTIFICATION DEBUG END ===');
             return true;
         } catch (error) {
             console.error('Error sending report notifications:', error);
@@ -429,11 +415,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUserId = post.user_id; // POST OWNER
             currentUserName = post.user_name;
             currentReporterId = report.who_reported; // REPORTER
-
-            console.log('=== DEBUG: User IDs ===');
-            console.log('Post Owner (currentUserId):', currentUserId);
-            console.log('Reporter (currentReporterId):', currentReporterId);
-            console.log('Same user?', currentUserId === currentReporterId);
 
             // Populate modal content - CORRECTED IDs to match HTML
             const reportTimeEl = document.getElementById('reportTime');
