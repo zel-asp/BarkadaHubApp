@@ -25,6 +25,34 @@ export async function checkIfUserReported(postId) {
 }
 
 // =======================
+// UPDATE REPORT BUTTON UI
+// =======================
+function updateReportButtonUI(postId) {
+    const reportBtn = document.querySelector(`.report-btn[data-post-id="${postId}"]`);
+    if (!reportBtn) return;
+
+    // Get the parent container with tooltip
+    const container = reportBtn.closest('.relative.group');
+
+    // Update button classes and attributes
+    reportBtn.disabled = true;
+    reportBtn.classList.remove('from-red-400', 'to-red-500', 'hover:shadow-md', 'hover:scale-105');
+    reportBtn.classList.add('from-gray-400', 'to-gray-500', 'cursor-default');
+
+    // Update tooltip text
+    const tooltip = container.querySelector('div.absolute');
+    if (tooltip) {
+        const tooltipSpan = tooltip.querySelector('span');
+        if (tooltipSpan) {
+            tooltipSpan.textContent = 'Reported';
+        }
+    }
+
+    // Update container title
+    container.setAttribute('title', 'Post reported');
+}
+
+// =======================
 // INIT REPORT MODAL
 // =======================
 export function initReportModal(alertSystem, checkIfUserReported) {
@@ -32,6 +60,9 @@ export function initReportModal(alertSystem, checkIfUserReported) {
     document.addEventListener('click', async (e) => {
         const reportBtn = e.target.closest('.report-btn');
         if (!reportBtn) return;
+
+        // Don't open modal if button is disabled
+        if (reportBtn.disabled) return;
 
         const postId = reportBtn.dataset.postId;
 
@@ -43,68 +74,100 @@ export function initReportModal(alertSystem, checkIfUserReported) {
         }
 
         const modal = document.getElementById('reportPostModal');
+        if (!modal) return;
+
         modal.dataset.postId = postId;
         modal.classList.remove('hidden');
+
+        // Focus on reason select for better UX
+        setTimeout(() => {
+            const reasonSelect = document.getElementById('reportReason');
+            if (reasonSelect) reasonSelect.focus();
+        }, 100);
     });
 
     // Cancel button
-    document.getElementById('cancelReportBtn').addEventListener('click', () => {
-        const modal = document.getElementById('reportPostModal');
-        modal.classList.add('hidden');
-        document.getElementById('reportReason').value = '';
-        document.getElementById('reportDetails').value = '';
-    });
-
-    // Submit report
-    document.getElementById('confirmReportBtn').addEventListener('click', async () => {
-        const modal = document.getElementById('reportPostModal');
-        const postId = modal.dataset.postId;
-        const reason = document.getElementById('reportReason').value;
-        const otherReason = document.getElementById('reportDetails').value;
-
-        if (!reason) {
-            alert('Please select a reason for reporting.');
-            return;
-        }
-
-        const { data: userData } = await supabaseClient.auth.getUser();
-        const whoReported = userData?.user?.id;
-
-        if (!whoReported) {
-            alert('You must be logged in to report.');
-            return;
-        }
-
-        try {
-            const { error } = await supabaseClient
-                .from('reports')
-                .insert([
-                    {
-                        post_id: postId,
-                        who_reported: whoReported,
-                        reason,
-                        other_reason: otherReason || null
-                    }
-                ]);
-
-            if (error) throw error;
-
-            alertSystem.show('Report submitted successfully!', 'success');
-
-            const reportBtn = document.querySelector(`.report-btn[data-post-id="${postId}"]`);
-            if (reportBtn) {
-                reportBtn.innerHTML = `<i class="fas fa-flag-checkered mr-1"></i> Reported`;
-                reportBtn.disabled = true;
-                reportBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
-                reportBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            }
-
+    const cancelBtn = document.getElementById('cancelReportBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            const modal = document.getElementById('reportPostModal');
             modal.classList.add('hidden');
             document.getElementById('reportReason').value = '';
             document.getElementById('reportDetails').value = '';
-        } catch (err) {
-            console.error('Error submitting report:', err);
-            alert('Failed to submit report.');
-        }
-    });
+        });
+    }
+
+    // Close modal when clicking outside
+    const modal = document.getElementById('reportPostModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                document.getElementById('reportReason').value = '';
+                document.getElementById('reportDetails').value = '';
+            }
+        });
+    }
+
+    // Submit report
+    const confirmBtn = document.getElementById('confirmReportBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const modal = document.getElementById('reportPostModal');
+            const postId = modal.dataset.postId;
+            const reason = document.getElementById('reportReason').value;
+            const otherReason = document.getElementById('reportDetails').value;
+
+            if (!reason) {
+                alertSystem.show('Please select a reason for reporting', 'warning');
+                return;
+            }
+
+            // Disable submit button to prevent double submission
+            confirmBtn.disabled = true;
+            const originalText = confirmBtn.textContent;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+
+            try {
+                const { data: userData } = await supabaseClient.auth.getUser();
+                const whoReported = userData?.user?.id;
+
+                if (!whoReported) {
+                    alertSystem.show('You must be logged in to report', 'error');
+                    return;
+                }
+
+                const { error } = await supabaseClient
+                    .from('reports')
+                    .insert([
+                        {
+                            post_id: postId,
+                            who_reported: whoReported,
+                            reason,
+                            other_reason: otherReason || null
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                alertSystem.show('Report submitted successfully!', 'success');
+
+                // Update button UI
+                updateReportButtonUI(postId);
+
+                // Close modal and reset form
+                modal.classList.add('hidden');
+                document.getElementById('reportReason').value = '';
+                document.getElementById('reportDetails').value = '';
+
+            } catch (err) {
+                console.error('Error submitting report:', err);
+                alertSystem.show('Failed to submit report. Please try again.', 'error');
+            } finally {
+                // Re-enable submit button
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalText;
+            }
+        });
+    }
 }
