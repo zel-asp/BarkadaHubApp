@@ -616,8 +616,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const fileName = `${timestamp}_${randomString}.${fileExt}`;
             const filePath = `${conversationId}/${fileName}`;
 
-            console.log('Uploading file to path:', filePath);
-
             // Upload file to Supabase Storage
             const { data, error } = await supabaseClient.storage
                 .from('chat-media')
