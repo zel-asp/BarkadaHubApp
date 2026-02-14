@@ -2,6 +2,7 @@ import supabaseClient from '../supabase.js';
 import comments, { emptyComments } from '../render/comments.js';
 import { formatRelativeTime } from './postUtils.js';
 import { commentPost } from '../pages/notification.js';
+import sanitize from './sanitize.js';
 
 // =======================
 // COMMENTS MODAL
@@ -79,6 +80,10 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
         if (!currentPostId) return alertSystem.show("No post selected!", "error");
 
         let commentText = commentInput.innerText?.trim() || '';
+        commentText = sanitize(commentText || '');
+
+        console.log(commentText);
+
         if (!commentText) return;
 
         if (sendBtn) sendBtn.disabled = true;
