@@ -183,33 +183,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterButtons = document.querySelectorAll('.notification-filter');
 
     /* -------------------------------------------
-       MARK ALL AS READ
+       MARK ALL AS READ - FIXED VERSION
     ------------------------------------------- */
     if (markAllReadBtn) {
         markAllReadBtn.addEventListener('click', async () => {
-            const items = document.querySelectorAll('.notification-item');
+            try {
+                const items = document.querySelectorAll('.notification-item.unread');
 
-            // Update DB
-            await supabaseClient
-                .from('notifications')
-                .update({ is_read: true })
-                .eq('user_id', userId)
-                .eq('is_read', false);
+                if (items.length === 0) {
+                    return; // No unread notifications
+                }
 
-            // Update UI
-            items.forEach(item => {
-                item.classList.remove('unread');
-                const dot = item.querySelector('.unread-dot');
-                if (dot) dot.remove();
-            });
+                // Update DB - get all unread notification IDs first
+                const { data: unreadNotifications, error: fetchError } = await supabaseClient
+                    .from('notifications')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('is_read', false);
 
-            updateNotificationBadge();
+                if (fetchError) throw fetchError;
 
-            // Button UI
-            markAllReadBtn.innerHTML = `<i class="fas fa-check"></i> All marked as read`;
-            markAllReadBtn.disabled = true;
-            markAllReadBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            markAllReadBtn.classList.add('bg-gray-400');
+                if (unreadNotifications && unreadNotifications.length > 0) {
+                    // Update each notification individually or use IN clause
+                    const { error: updateError } = await supabaseClient
+                        .from('notifications')
+                        .update({
+                            is_read: true,
+                            // Don't update created_at - it should stay as original
+                        })
+                        .eq('user_id', userId)
+                        .eq('is_read', false);
+
+                    if (updateError) throw updateError;
+                }
+
+                // Update UI
+                items.forEach(item => {
+                    item.classList.remove('unread');
+                    const dot = item.querySelector('.unread-dot');
+                    if (dot) dot.remove();
+                });
+
+                updateNotificationBadge();
+
+                // Button UI
+                markAllReadBtn.innerHTML = `<i class="fas fa-check mr-2"></i> All marked as read`;
+                markAllReadBtn.disabled = true;
+                markAllReadBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                markAllReadBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+                alertSystem?.show('Failed to mark notifications as read', 'error');
+            }
         });
     }
 
