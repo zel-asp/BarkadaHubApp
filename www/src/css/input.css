@@ -574,3 +574,101 @@ input{
     color: #dc2626 !important;
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
+
+/* Add to your CSS file */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.reaction-picker {
+    animation: scaleIn 0.2s ease-out;
+    transform-origin: bottom left;
+}
+
+.reaction-option {
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.reaction-option:hover {
+    transform: scale(1.2) translateY(-5px);
+}
+
+.reaction-btn {
+    transition: all 0.2s ease;
+}
+
+.reaction-btn:active {
+    transform: scale(0.95);
+}
+
+/* Add to your CSS file */
+.total-reactions, 
+.reaction-btn,
+.reaction-preview-icons {
+    transition: all 0.2s ease;
+}
+
+.reaction-preview-icons {
+    display: flex;
+    align-items: center;
+}
+
+.reaction-preview-icons > div {
+    transition: transform 0.2s ease;
+}
+
+.reaction-preview-icons > div:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+/* Tooltip styles */
+.group {
+    position: relative;
+}
+
+.group:hover .absolute {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure tooltips are above everything */
+.z-50 {
+    z-index: 9999;
+}
+
+/* Smooth tooltip animation */
+.absolute.opacity-0 {
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    visibility: hidden;
+}
+
+.absolute.opacity-0.group-hover\:opacity-100 {
+    visibility: visible;
+}
+
+/* Improve tooltip positioning */
+.absolute.-top-10 {
+    margin-top: -5px;
+}
+
+/* Add a slight delay to prevent flicker */
+.group:hover .absolute {
+    transition-delay: 0.2s;
+}
+
+/* Add to your main CSS file */
+.reaction-stats img {
+    display: block !important;
+    width: 20px;
+    height: 100%;
+    object-fit: cover;
+}
+
