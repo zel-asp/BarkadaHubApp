@@ -6,6 +6,7 @@ import { initFollowButtons, initFriendRealtime } from '../utils/friendUtils.js';
 import { initReportModal, checkIfUserReported } from '../utils/reportUtils.js';
 import { initReactions } from '../utils/reactionUtils.js';
 import { unsubscribeAllReactions } from '../utils/realtimeReactions.js';
+import sanitize from '../utils/sanitize.js';
 
 import uploadedPost from '../render/post.js';
 
@@ -157,6 +158,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let content = postContent.value;
             let foundBanned = false;
+
+            content = sanitize(content || '');
 
             bannedWords.forEach(word => {
                 const pattern = new RegExp(`\\b${word}\\b[.,!?;:]*`, 'gi');
