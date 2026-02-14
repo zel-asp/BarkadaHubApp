@@ -370,8 +370,6 @@ const messageCount = async () => {
             return;
         }
 
-        console.log('Unread messages count:', count);
-
         // Update badge
         const badge = document.getElementById('messageBadge');
         if (!badge) return;
@@ -425,7 +423,6 @@ const subscribeToUnreadMessages = async () => {
             (payload) => {
                 // Only count messages not sent by the current user
                 if (payload.new.sender_id !== userId) {
-                    console.log('New unread message:', payload.new);
                     messageCount(); // Update badge
                 }
             }
@@ -433,7 +430,6 @@ const subscribeToUnreadMessages = async () => {
 
         await channel.subscribe();
 
-        console.log('Subscribed to unread messages for all conversations');
     } catch (err) {
         console.error('Error in subscribeToUnreadMessages():', err);
     }
