@@ -1,8 +1,6 @@
 import supabaseClient from '../supabase.js';
 
-// =======================
-// THREE-DOTS MENU
-// =======================
+// three-dots menu
 export function initEllipsisButtons(showDeleteConfirmation, hideDeleteConfirmation) {
     const ellipsisButtons = document.querySelectorAll('.ellipsis-btn');
     const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
@@ -32,9 +30,7 @@ export function initEllipsisButtons(showDeleteConfirmation, hideDeleteConfirmati
     cancelDeleteBtn.onclick = hideDeleteConfirmation;
 }
 
-// =======================
-// SHOW DELETE CONFIRMATION
-// =======================
+// show delete confirmation
 export function showDeleteConfirmation(alertSystem) {
     const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
     const postId = ellipsisMenuModal.dataset.postId;
@@ -50,9 +46,7 @@ export function showDeleteConfirmation(alertSystem) {
     ellipsisMenuModal.classList.add('hidden');
 }
 
-// =======================
-// HIDE DELETE CONFIRMATION
-// =======================
+// hide delete confirmation
 export function hideDeleteConfirmation() {
     const modal = document.getElementById('deleteConfirmationModal');
     const card = modal.querySelector('.delete-card');
@@ -63,9 +57,7 @@ export function hideDeleteConfirmation() {
     }, 150);
 }
 
-// =======================
-// DELETE POST PERMANENTLY
-// =======================
+// delete post permanently
 export function initDeletePermanently(userId, alertSystem) {
     document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
         const modal = document.getElementById('deleteConfirmationModal');
@@ -77,7 +69,7 @@ export function initDeletePermanently(userId, alertSystem) {
         const filePathForStorage = postEl.dataset.filePath;
         const alertId = alertSystem.show('Deleting...', 'info');
 
-        // Check post ownership
+        // check post ownership
         const { data: post, error: fetchError } = await supabaseClient
             .from('posts')
             .select('user_id')
@@ -88,7 +80,7 @@ export function initDeletePermanently(userId, alertSystem) {
         if (!post) return alertSystem.show("Post not found", 'error');
         if (post.user_id !== userId) return alertSystem.show("You can't delete this post", 'error');
 
-        // Delete from storage
+        // delete from storage
         const { error } = await supabaseClient
             .storage
             .from('post-media')
@@ -99,7 +91,7 @@ export function initDeletePermanently(userId, alertSystem) {
             return alertSystem.show(`Failed to delete file: ${error.message}`, 'error');
         }
 
-        // Delete from database
+        // delete from database
         const { error: deleteError } = await supabaseClient
             .from('posts')
             .delete()
@@ -107,7 +99,7 @@ export function initDeletePermanently(userId, alertSystem) {
 
         if (deleteError) return alertSystem.show(`Failed to delete post: ${deleteError.message}`, 'error');
 
-        // Remove from page
+        // remove from page
         postEl.remove();
         hideDeleteConfirmation();
         alertSystem.show('Post deleted successfully!', 'success');
