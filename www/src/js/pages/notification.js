@@ -3,12 +3,10 @@ import { lost_found } from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 import { renderNotifications, setupClickMarkRead, updateNotificationBadge, } from '../render/notification.js';
 
-/* -------------------------------------------
-like notification function (normalized)
-------------------------------------------- */
+// like notification
 async function likePost(postId, currentUserId) {
     try {
-        // Get post owner
+        // get post owner
         const { data: postData, error: postError } = await supabaseClient
             .from('posts')
             .select('user_id')
@@ -18,10 +16,10 @@ async function likePost(postId, currentUserId) {
 
         const postOwnerId = postData.user_id;
 
-        // Avoid notifying yourself
+        // avoid notifying yourself
         if (postOwnerId === currentUserId) return;
 
-        // Insert notification with only sender_id (normalized)
+        // insert notification with only sender_id
         const { error: notifError } = await supabaseClient
             .from('notifications')
             .insert([{
@@ -43,9 +41,7 @@ async function likePost(postId, currentUserId) {
 
 export { likePost };
 
-/* -------------------------------------------
-comments notification functions
-------------------------------------------- */
+// comment notification
 async function commentPost(postId, currentUserId) {
     try {
         // get post owner
@@ -58,10 +54,10 @@ async function commentPost(postId, currentUserId) {
 
         const postOwnerId = postData.user_id;
 
-        // avoid notify to self
+        // avoid notifying yourself
         if (postOwnerId === currentUserId) return;
 
-        // insert notif with only sender_id (normalized)
+        // insert notification with only sender_id
         const { error: notifError } = await supabaseClient
             .from('notifications')
             .insert([{
@@ -82,9 +78,7 @@ async function commentPost(postId, currentUserId) {
 }
 export { commentPost };
 
-/* -------------------------------------------
-video notification functions
-------------------------------------------- */
+// video notification
 async function videoLike(videoId, currentUserId) {
     try {
         // get video owner
@@ -97,11 +91,11 @@ async function videoLike(videoId, currentUserId) {
 
         const videoOwnerId = videoData.user_id;
 
-        // avoid notify to self
+        // avoid notifying yourself
         if (videoOwnerId === currentUserId) return;
 
-        // insert notif with only sender_id (normalized)
-        // Don't store entity_id since videoId is numeric but entity_id expects UUID
+        // insert notification with only sender_id
+        // don't store entity_id since videoId is numeric but entity_id expects UUID
         const { error: notifError } = await supabaseClient
             .from('notifications')
             .insert([{
@@ -147,7 +141,7 @@ function setupRealtimeNotifications(userId) {
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
             async (payload) => {
-                // Fetch fresh notifications to get sender data
+                // fetch fresh notifications to get sender data
                 const updatedNotifications = await fetchNotifications(userId);
                 renderNotifications(updatedNotifications);
             }
@@ -155,9 +149,7 @@ function setupRealtimeNotifications(userId) {
         .subscribe();
 }
 
-/* -------------------------------------------
-end of fetch and render notifications
-------------------------------------------- */
+// fetch and render notifications
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: userData } = await supabaseClient.auth.getUser();
     const userId = userData?.user?.id;
@@ -167,13 +159,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    /* -------------------------------------------
-       FETCH + RENDER
-    ------------------------------------------- */
+    // fetch + render
     const notifications = await fetchNotifications(userId);
     await renderNotifications(notifications);
 
-    // 🔗 Attach listeners AFTER render
+    // attach listeners after render
     setupClickMarkRead();
     updateNotificationBadge(notifications);
 
@@ -182,19 +172,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const markAllReadBtn = document.getElementById('markAllRead');
     const filterButtons = document.querySelectorAll('.notification-filter');
 
-    /* -------------------------------------------
-       MARK ALL AS READ - FIXED VERSION
-    ------------------------------------------- */
+    // mark all as read
     if (markAllReadBtn) {
         markAllReadBtn.addEventListener('click', async () => {
             try {
                 const items = document.querySelectorAll('.notification-item.unread');
 
                 if (items.length === 0) {
-                    return; // No unread notifications
+                    return;
                 }
 
-                // Update DB - get all unread notification IDs first
+                // update db - get all unread notification ids first
                 const { data: unreadNotifications, error: fetchError } = await supabaseClient
                     .from('notifications')
                     .select('id')
@@ -204,20 +192,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (fetchError) throw fetchError;
 
                 if (unreadNotifications && unreadNotifications.length > 0) {
-                    // Update each notification individually or use IN clause
+                    // update all unread notifications
                     const { error: updateError } = await supabaseClient
                         .from('notifications')
-                        .update({
-                            is_read: true,
-                            // Don't update created_at - it should stay as original
-                        })
+                        .update({ is_read: true })
                         .eq('user_id', userId)
                         .eq('is_read', false);
 
                     if (updateError) throw updateError;
                 }
 
-                // Update UI
+                // update ui
                 items.forEach(item => {
                     item.classList.remove('unread');
                     const dot = item.querySelector('.unread-dot');
@@ -226,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 updateNotificationBadge();
 
-                // Button UI
+                // button ui
                 markAllReadBtn.innerHTML = `<i class="fas fa-check mr-2"></i> All marked as read`;
                 markAllReadBtn.disabled = true;
                 markAllReadBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -239,15 +224,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* -------------------------------------------
-       FILTER BUTTONS
-    ------------------------------------------- */
+    // filter buttons
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
             const filter = button.dataset.filter;
             const items = document.querySelectorAll('.notification-item');
 
-            // Reset styles
+            // reset styles
             filterButtons.forEach(btn => {
                 btn.classList.remove('active', 'border-blue-600', 'text-blue-600');
                 btn.classList.add('text-gray-500');
@@ -256,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             button.classList.add('active', 'border-blue-600', 'text-blue-600');
             button.classList.remove('text-gray-500');
 
-            // Apply filter
+            // apply filter
             items.forEach(item => {
                 if (filter === 'unread') {
                     item.style.display = item.classList.contains('unread') ? 'block' : 'none';
@@ -267,9 +250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    /* -------------------------------------------
-       FRIEND REQUEST ACTIONS
-    ------------------------------------------- */
+    // friend request actions
     document.addEventListener('click', (e) => {
         const confirmBtn = e.target.closest('.confirm-friend');
         const deleteBtn = e.target.closest('.delete-friend');
