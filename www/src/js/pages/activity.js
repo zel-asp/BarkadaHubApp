@@ -8,7 +8,6 @@ const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 let totalPages = 1;
 
-
 document.addEventListener('DOMContentLoaded', async () => {
     const summaryContainer = document.getElementById('summary');
     const rowsContainer = document.getElementById('rows');
@@ -16,8 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function showSummary() {
         try {
-
-            // 2. Active sessions (users whose last action is login)
+            // active sessions (users whose last action is login)
             const { data: lastActions } = await supabaseClient
                 .from('user_activity')
                 .select('user_id, action, created_at');
@@ -32,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const activeSessions = Object.values(lastActionPerUser).filter(row => row.action === 'login').length;
 
-            // 3. Logins today
+            // logins today
             const startOfToday = new Date();
             startOfToday.setHours(0, 0, 0, 0);
 
@@ -130,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderPagination() {
         paginationContainer.innerHTML = '';
 
-        // Previous
+        // previous
         const prevBtn = document.createElement('button');
         prevBtn.className = 'px-3 py-1 rounded text-lg';
         prevBtn.innerHTML = `<i class="fas fa-chevron-left"></i>`;
@@ -141,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         paginationContainer.appendChild(prevBtn);
 
-        // Page numbers
+        // page numbers
         for (let i = 1; i <= totalPages; i++) {
             if (i > currentPage + 2 || i < currentPage - 2) continue;
 
@@ -160,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             paginationContainer.appendChild(btn);
         }
 
-        // Next
+        // next
         const nextBtn = document.createElement('button');
         nextBtn.className = 'px-3 py-1 rounded text-lg';
         nextBtn.innerHTML = `<i class="fas fa-chevron-right"></i>`;
