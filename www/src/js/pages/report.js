@@ -2,11 +2,8 @@ import supabaseClient from '../supabase.js';
 import uploadedPost from '../render/post.js';
 import AlertSystem from '../render/Alerts.js';
 
-
 document.addEventListener('DOMContentLoaded', async () => {
-    // =======================
-    // PAGE ELEMENTS
-    // =======================
+    // page elements
     const reportsContainer = document.getElementById('reportsContainer');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const noReports = document.getElementById('noReports');
@@ -14,18 +11,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pendingReportsEl = document.getElementById('pendingReports');
     const resolvedReportsEl = document.getElementById('resolvedReports');
 
-    // Modals
+    // modals
     const reportDetailsModal = document.getElementById('reportDetailsModal');
     const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
 
-    // Filters
+    // filters
     const statusFilter = document.getElementById('statusFilter');
     const reasonFilter = document.getElementById('reasonFilter');
     const clearFilters = document.getElementById('clearFilters');
 
-    // =======================
-    // APP STATE
-    // =======================
+    // app state
     let currentReportId = null;
     let currentPostId = null;
     let currentFilePath = null;
@@ -34,16 +29,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentReporterId = null;
     let allReports = [];
 
-    // Get current admin user
+    // get current admin user
     const { data: adminData } = await supabaseClient.auth.getUser();
     const adminUserId = adminData?.user?.id;
     const adminUserName = adminData?.user?.user_metadata?.display_name || 'Admin';
 
     const alertSystem = new AlertSystem();
 
-    // =======================
-    // SEND NOTIFICATION FUNCTION
-    // =======================
+    // send notification function
     async function sendNotification(userId, type, message, entityId = null, senderId = null) {
         try {
             const notificationData = {
@@ -57,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 is_read: false
             };
 
-            // For banning actions, don't include entity_id since post was deleted
+            // for banning actions, don't include entity_id since post was deleted
             if (entityId && !type.includes('user_banned') && !type.includes('post_deleted')) {
                 notificationData.entity_id = entityId;
                 notificationData.entity_type = 'post';
@@ -68,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .insert(notificationData);
 
             if (error) {
-                // If it's a foreign key violation, try without entity_id
+                // if it's a foreign key violation, try without entity_id
                 if (error.code === '23503') {
                     delete notificationData.entity_id;
                     delete notificationData.entity_type;
@@ -94,17 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // SEND REPORT NOTIFICATIONS (FINAL VERSION)
-    // =======================
+    // send report notifications
     async function sendReportNotifications(action) {
         try {
-
             const reportReason = document.getElementById('reportReason')?.textContent || 'Unknown reason';
             const isSelfReport = currentReporterId === currentUserId;
 
             if (isSelfReport) {
-                // For self-reports, only send one notification
+                // for self-reports, only send one notification
                 const selfReportMessages = {
                     'reviewed': `Your self-report has been reviewed: ${reportReason}`,
                     'dismissed': `Your self-report was dismissed.`,
@@ -114,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (selfReportMessages[action]) {
                     const success = await sendNotification(
-                        currentUserId, // Send to the same user
+                        currentUserId,
                         `self_report_${action}`,
                         selfReportMessages[action],
                         currentPostId,
@@ -122,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     );
                 }
             } else {
-                // Regular report with different users
+                // regular report with different users
                 const reporterMessages = {
                     'reviewed': `Your report has been reviewed. Reason: ${reportReason}`,
                     'dismissed': `Your report was dismissed by admin.`,
@@ -136,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     'user_banned': `Your account was banned for violations.`
                 };
 
-                // Send to REPORTER
+                // send to reporter
                 if (currentReporterId && reporterMessages[action]) {
                     const reporterSuccess = await sendNotification(
                         currentReporterId,
@@ -147,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     );
                 }
 
-                // Send to POST OWNER (skip for dismissed reports)
+                // send to post owner (skip for dismissed reports)
                 if (currentUserId && action !== 'dismissed' && postOwnerMessages[action]) {
                     const postOwnerSuccess = await sendNotification(
                         currentUserId,
@@ -166,16 +156,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // LOAD REPORTS
-    // =======================
+    // load reports
     async function loadReports() {
         try {
             loadingIndicator.classList.remove('hidden');
             reportsContainer.innerHTML = '';
             reportsContainer.appendChild(loadingIndicator);
 
-            // Get reports with posts
+            // get reports with posts
             const { data: reports, error } = await supabaseClient
                 .from('reports')
                 .select(`
@@ -198,9 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // UPDATE STATS
-    // =======================
+    // update stats
     function updateStats() {
         const total = allReports.length;
         const pending = allReports.filter(r => !r.reviewed_at && !r.resolved_at).length;
@@ -209,12 +195,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         totalReportsEl.textContent = total;
         pendingReportsEl.textContent = pending;
-        resolvedReportsEl.textContent = resolved + reviewed; // Show reviewed as part of resolved
+        resolvedReportsEl.textContent = resolved + reviewed;
     }
 
-    // =======================
-    // RENDER REPORT CARD
-    // =======================
+    // render report card
     function renderReportCard(report, post) {
         if (!post) return '';
 
@@ -226,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             minute: '2-digit'
         });
 
-        // Determine status
+        // determine status
         let status = 'pending';
         let statusText = 'Pending';
         if (report.resolved_at) {
@@ -247,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         return `
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden report-card" data-report-id="${report.id}" data-post-id="${post.id}">
-                <!-- Report Header -->
+                <!-- report header -->
                 <div class="border-b border-gray-100 p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -275,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 
-                <!-- Report Reason -->
+                <!-- report reason -->
                 <div class="p-4 border-b border-gray-100">
                     <div class="flex items-start gap-2">
                         <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -288,14 +272,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 
-                <!-- Post Preview -->
+                <!-- post preview -->
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-medium text-gray-700">Reported Post</h5>
                         <span class="text-xs text-gray-500">by ${post.user_name}</span>
                     </div>
                     
-                    <!-- Post Content Preview -->
+                    <!-- post content preview -->
                     <div class="bg-gray-50 rounded-lg p-3 max-h-32 overflow-hidden relative">
                         ${post.content.length > 150
                 ? `<p class="text-sm text-gray-600">${post.content.substring(0, 150)}...</p>`
@@ -314,9 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
     }
 
-    // =======================
-    // FORMAT REASON
-    // =======================
+    // format reason
     function formatReason(reason) {
         const reasonMap = {
             'spam': 'Spam',
@@ -328,16 +310,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return reasonMap[reason] || reason;
     }
 
-    // =======================
-    // APPLY FILTERS
-    // =======================
+    // apply filters
     function applyFilters() {
         const statusFilterValue = statusFilter.value;
         const reasonFilterValue = reasonFilter.value;
 
         let filteredReports = [...allReports];
 
-        // Apply status filter
+        // apply status filter
         if (statusFilterValue !== 'all') {
             filteredReports = filteredReports.filter(report => {
                 if (statusFilterValue === 'pending') return !report.reviewed_at && !report.resolved_at;
@@ -347,18 +327,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Apply reason filter
+        // apply reason filter
         if (reasonFilterValue !== 'all') {
             filteredReports = filteredReports.filter(report => report.reason === reasonFilterValue);
         }
 
-        // Render filtered reports
+        // render filtered reports
         renderReportsList(filteredReports);
     }
 
-    // =======================
-    // RENDER REPORTS LIST
-    // =======================
+    // render reports list
     function renderReportsList(reports) {
         reportsContainer.innerHTML = '';
 
@@ -376,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Add click handlers
+        // add click handlers
         document.querySelectorAll('.view-report-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const reportId = e.currentTarget.dataset.reportId;
@@ -384,12 +362,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
-    // =======================
-    // OPEN REPORT DETAILS
-    // =======================
+
+    // open report details
     async function openReportDetails(reportId) {
         try {
-            // Get report data
+            // get report data
             const { data: report, error: reportError } = await supabaseClient
                 .from('reports')
                 .select('*')
@@ -399,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (reportError) throw reportError;
             if (!report) throw new Error('Report not found');
 
-            // Get post data separately
+            // get post data separately
             const { data: post, error: postError } = await supabaseClient
                 .from('posts')
                 .select('*')
@@ -412,11 +389,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentReportId = reportId;
             currentPostId = post.id;
             currentFilePath = post.file_path;
-            currentUserId = post.user_id; // POST OWNER
+            currentUserId = post.user_id;
             currentUserName = post.user_name;
-            currentReporterId = report.who_reported; // REPORTER
+            currentReporterId = report.who_reported;
 
-            // Populate modal content - CORRECTED IDs to match HTML
+            // populate modal content
             const reportTimeEl = document.getElementById('reportTime');
             if (reportTimeEl) {
                 reportTimeEl.textContent = new Date(report.created_at).toLocaleString('en-US', {
@@ -428,13 +405,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // Report reason
+            // report reason
             const reportReasonEl = document.getElementById('reportReason');
             if (reportReasonEl) {
                 reportReasonEl.textContent = formatReason(report.reason);
             }
 
-            // Report status
+            // report status
             const reportStatusEl = document.getElementById('reportStatus');
             if (reportStatusEl) {
                 if (report.resolved_at) {
@@ -449,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Additional details
+            // additional details
             const reportDetailsTextEl = document.getElementById('reportDetailsText');
             if (reportDetailsTextEl) {
                 if (report.other_reason) {
@@ -461,7 +438,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Set reporter info - this section is in your HTML but needs to be populated
+            // set reporter info
             const reporterProfile = await supabaseClient
                 .from('profile')
                 .select('name, avatar_url')
@@ -484,13 +461,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             }
 
-            // Render the post for review - using the correct container ID from your HTML
+            // render the post for review
             const reportedPostContainer = document.getElementById('reportedPostContainer');
             if (reportedPostContainer) {
                 reportedPostContainer.innerHTML = await renderPostForReview(post);
             }
 
-            // Show/hide action buttons based on status
+            // show/hide action buttons based on status
             const markReviewedBtn = document.getElementById('markReviewedBtn');
             const dismissReportBtn = document.getElementById('dismissReportBtn');
 
@@ -508,7 +485,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Show modal
+            // show modal
             if (reportDetailsModal) {
                 reportDetailsModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
@@ -519,11 +496,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             alertSystem.show('Failed to load report details', 'error');
         }
     }
-    // =======================
-    // RENDER POST FOR REVIEW
-    // =======================
+
+    // render post for review
     async function renderPostForReview(post) {
-        // Get post author profile
+        // get post author profile
         let avatar = '../images/defaultAvatar.jpg';
         try {
             const { data: profile } = await supabaseClient
@@ -537,7 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn('Failed to fetch profile avatar:', err);
         }
 
-        // Format time
+        // format time
         const postDate = new Date(post.created_at).toLocaleDateString('en-US', {
             month: 'long',
             day: 'numeric',
@@ -548,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         return `
             <div class="post-review bg-white rounded-lg border border-gray-200 p-4">
-                <!-- Post Header -->
+                <!-- post header -->
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -564,11 +540,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 </div>
                 
-                <!-- Post Content -->
+                <!-- post content -->
                 <div class="mb-4">
                     <p class="whitespace-pre-line text-gray-700">${post.content}</p>
                     
-                    <!-- Media -->
+                    <!-- media -->
                     ${post.media_url ? `
                         <div class="mt-3 rounded-lg overflow-hidden bg-gray-50 border border-gray-200">
                             <div class="media-wrapper flex items-center justify-center max-h-64">
@@ -583,7 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ` : ''}
                 </div>
                 
-                <!-- Post Stats -->
+                <!-- post stats -->
                 <div class="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100 pt-3">
                     <div class="flex items-center gap-1">
                         <i class="fas fa-heart text-red-400"></i>
@@ -602,9 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
     }
 
-    // =======================
-    // MARK AS REVIEWED
-    // =======================
+    // mark as reviewed
     async function markAsReviewed() {
         if (!currentReportId || !currentPostId || !currentReporterId) {
             alertSystem.show('Missing data for review', 'error');
@@ -614,7 +588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const alertId = alertSystem.show('Marking as reviewed...', 'loading');
 
-            // Update report status
+            // update report status
             const { error: updateError } = await supabaseClient
                 .from('reports')
                 .update({
@@ -624,13 +598,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (updateError) throw updateError;
 
-            // Send different notifications to reporter and post owner
+            // send different notifications to reporter and post owner
             await sendReportNotifications('reviewed');
 
             alertSystem.hide(alertId);
             alertSystem.show('Report marked as reviewed. Notifications sent.', 'success');
 
-            // Close modal and refresh
+            // close modal and refresh
             closeReportDetails();
             loadReports();
 
@@ -640,9 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // DISMISS REPORT
-    // =======================
+    // dismiss report
     async function dismissReport() {
         if (!currentReportId || !currentReporterId) {
             alertSystem.show('No report selected', 'error');
@@ -652,7 +624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const alertId = alertSystem.show('Dismissing report...', 'loading');
 
-            // DELETE the report from the reports table
+            // delete the report from the reports table
             const { error } = await supabaseClient
                 .from('reports')
                 .delete()
@@ -660,13 +632,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            // Send notification only to reporter (post owner doesn't need to know)
+            // send notification only to reporter
             await sendReportNotifications('dismissed');
 
             alertSystem.hide(alertId);
             alertSystem.show('Report dismissed. Notification sent to reporter.', 'success');
 
-            // Close modal and refresh
+            // close modal and refresh
             closeReportDetails();
             loadReports();
 
@@ -676,9 +648,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // DELETE POST
-    // =======================
+    // delete post
     async function deletePost() {
         if (!currentPostId || !currentUserId || !currentReporterId) {
             alertSystem.show('Missing data for deletion', 'error');
@@ -688,7 +658,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const alertId = alertSystem.show('Deleting post...', 'loading');
 
-            // 1. Delete media from storage
+            // delete media from storage
             if (currentFilePath) {
                 const { error: storageError } = await supabaseClient
                     .storage
@@ -700,7 +670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // 2. Delete post
+            // delete post
             const { error: postDeleteError } = await supabaseClient
                 .from('posts')
                 .delete()
@@ -708,7 +678,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (postDeleteError) throw postDeleteError;
 
-            // 3. Delete all reports for this post
+            // delete all reports for this post
             const { error: reportsDeleteError } = await supabaseClient
                 .from('reports')
                 .delete()
@@ -716,13 +686,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (reportsDeleteError) console.warn('Failed to delete reports:', reportsDeleteError);
 
-            // 4. Send different notifications to reporter and post owner
+            // send different notifications to reporter and post owner
             await sendReportNotifications('post_deleted');
 
             alertSystem.hide(alertId);
             alertSystem.show('Post deleted. Notifications sent to both users.', 'success');
 
-            // Close modal and refresh
+            // close modal and refresh
             hideDeleteConfirmation();
             closeReportDetails();
             await loadReports();
@@ -733,9 +703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // CLOSE REPORT DETAILS
-    // =======================
+    // close report details
     function closeReportDetails() {
         reportDetailsModal.classList.add('hidden');
         document.body.style.overflow = '';
@@ -747,9 +715,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentReporterId = null;
     }
 
-    // =======================
-    // DELETE CONFIRMATION
-    // =======================
+    // delete confirmation
     function showDeleteConfirmation() {
         const card = deleteConfirmationModal.querySelector('.delete-card');
         deleteConfirmationModal.dataset.postId = currentPostId;
@@ -763,26 +729,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => deleteConfirmationModal.classList.add('hidden'), 150);
     }
 
-    // =======================
-    // EVENT LISTENERS
-    // =======================
-    // Close report details
+    // event listeners
     document.getElementById('closeReportDetails').addEventListener('click', closeReportDetails);
-
-    // Mark as reviewed
     document.getElementById('markReviewedBtn').addEventListener('click', markAsReviewed);
-
-    // Dismiss report
     document.getElementById('dismissReportBtn').addEventListener('click', dismissReport);
-
-    // Delete post
     document.getElementById('deletePostBtn').addEventListener('click', showDeleteConfirmation);
-
-    // Delete confirmation
     document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteConfirmation);
     document.getElementById('confirmDeleteBtn').addEventListener('click', deletePost);
 
-    // Filters
+    // filters
     statusFilter.addEventListener('change', applyFilters);
     reasonFilter.addEventListener('change', applyFilters);
     clearFilters.addEventListener('click', () => {
@@ -791,7 +746,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyFilters();
     });
 
-    // Close modals on background click
+    // close modals on background click
     reportDetailsModal.addEventListener('click', (e) => {
         if (e.target === reportDetailsModal) closeReportDetails();
     });
@@ -799,12 +754,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     deleteConfirmationModal.addEventListener('click', (e) => {
         if (e.target === deleteConfirmationModal) hideDeleteConfirmation();
     });
-    // =======================
-    // INITIALIZE
-    // =======================
+
+    // initialize
     await loadReports();
 
-    // Set up real-time updates
+    // set up real-time updates
     supabaseClient
         .channel('reports-realtime')
         .on('postgres_changes',
