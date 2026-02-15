@@ -1,4 +1,4 @@
-// Constants for shared data
+// constants for shared data
 const NAV_ITEMS = [
     { page: 'home', label: 'Home', icon: 'fas fa-home' },
     { page: 'clubs', label: 'Clubs', icon: 'fas fa-users' },
@@ -16,17 +16,7 @@ const SIDEBAR_ITEMS = [
     { page: 'profile', label: 'Profile', icon: 'fas fa-circle-user' }
 ];
 
-const CLUBS = [
-    { name: 'Computer Science Club', icon: 'fas fa-laptop-code', members: 245 },
-    { name: 'Basketball Team', icon: 'fas fa-basketball-ball', members: 18 }
-];
-
-const ONLINE_FRIENDS = [
-    { name: 'Janzel Dolo', avatar: 'https://i.pravatar.cc/150?img=32' },
-    { name: 'Miguel Torres', avatar: 'https://i.pravatar.cc/150?img=45' }
-];
-
-// Template generators
+// template generators
 const generateNavItem = ({ page, label, icon, isActive = false, type = 'mobile' }) => {
     const activeClass = isActive ? 'text-primary' : 'text-gray-500';
 
@@ -39,7 +29,7 @@ const generateNavItem = ({ page, label, icon, isActive = false, type = 'mobile' 
 `;
     }
 
-    // For sidebar
+    // for sidebar
     const bgClass = isActive ? 'bg-gray-100 text-primary font-medium' : 'text-gray-700 hover:bg-gray-100';
     return `
 <li>
@@ -51,36 +41,10 @@ const generateNavItem = ({ page, label, icon, isActive = false, type = 'mobile' 
 `;
 };
 
-const generateClubCard = ({ name, icon, members }) => `
-<div class="club-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-    data-page="clubs">
-    <div class="club-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-        <i class="${icon} text-primary"></i>
-    </div>
-    <div class="club-info">
-        <h4 class="font-medium text-sm">${name}</h4>
-        <span class="text-xs text-gray-500">${members} members</span>
-    </div>
-</div>
-`;
-
-const generateFriendCard = ({ name, avatar }, index) => `
-<div class="friend-card flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
-    data-page="messages">
-    <div class="friend-avatar w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-        <img src="${avatar}" alt="${name}" class="w-full h-full object-cover" loading="lazy" width="40" height="40">
-    </div>
-    <div class="friend-info">
-        <h4 class="font-medium text-sm">${name}</h4>
-        <span class="text-xs text-green-500">Online</span>
-    </div>
-</div>
-`;
-
-// Memoization cache for static components
+// memoization cache for static components
 const componentCache = new Map();
 
-// Mobile Navigation
+// mobile navigation
 export function mobileNavigations(currentPage = null) {
     if (!currentPage) {
         currentPage = window.location.pathname.split('/').pop().split('.')[0];
@@ -110,8 +74,7 @@ export function mobileNavigations(currentPage = null) {
     return component;
 };
 
-
-// Left Sidebar
+// left sidebar
 export function leftSideBar(currentPage = null) {
     if (!currentPage) {
         currentPage = window.location.pathname.split('/').pop().split('.')[0];
@@ -144,16 +107,16 @@ export function leftSideBar(currentPage = null) {
     return component;
 };
 
-// Helper function to clear cache when needed
+// helper function to clear cache when needed
 export function clearNavigationCache() {
     componentCache.clear();
 }
 
-// For dynamic updates (e.g., when user changes page)
+// for dynamic updates (e.g., when user changes page)
 export function updateNavigationActiveState() {
     const currentPage = window.location.pathname.split('/').pop().split('.')[0];
 
-    // Update mobile navigation
+    // update mobile navigation
     const mobileNav = document.querySelector('.mobile-nav-item');
     if (mobileNav) {
         document.querySelectorAll('.mobile-nav-item').forEach(item => {
@@ -163,7 +126,7 @@ export function updateNavigationActiveState() {
         });
     }
 
-    // Update sidebar navigation
+    // update sidebar navigation
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
     if (sidebarLinks.length > 0) {
         sidebarLinks.forEach(link => {
@@ -175,7 +138,7 @@ export function updateNavigationActiveState() {
             link.classList.toggle('hover:bg-gray-100', !isActive);
         });
 
-        // Clear cache for dynamic pages
+        // clear cache for dynamic pages
         clearNavigationCache();
     }
 }
