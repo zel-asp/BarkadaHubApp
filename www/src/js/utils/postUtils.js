@@ -7,9 +7,7 @@ import { subscribeToPostReactions } from './realtimeReactions.js';
 
 export const alertSystem = new AlertSystem();
 
-// =======================
-// TIME FORMATTING
-// =======================
+// time formatting
 export function formatRelativeTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -26,9 +24,7 @@ export function formatRelativeTime(dateString) {
     return date.toLocaleString('en-US', { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
 }
 
-// =======================
-// LIKE BUTTONS
-// =======================
+// like buttons
 export function initLikeButtons(alertSystem) {
     document.querySelectorAll('.like-btn').forEach(btn => {
         if (!btn.hasAttribute('data-bound-like')) {
@@ -96,9 +92,7 @@ export function initLikeButtons(alertSystem) {
     });
 }
 
-// =======================
-// UPDATE LIKE BUTTON STATES
-// =======================
+// update like button states
 export async function updateLikeButtonStates() {
     const { data: userData } = await supabaseClient.auth.getUser();
     const userId = userData?.user?.id;
@@ -134,9 +128,7 @@ export async function updateLikeButtonStates() {
     });
 }
 
-// =======================
-// RENDER SINGLE POST
-// =======================
+// render single post
 export async function renderPost(post, displayedPostIds, container, position = "beforeend", showFriendStatus = false) {
     if (!post.id || displayedPostIds.has(post.id)) return;
 
@@ -144,10 +136,10 @@ export async function renderPost(post, displayedPostIds, container, position = "
     const currentUserId = userData?.user?.id;
     const owner = currentUserId === post.user_id;
 
-    // Get user's reaction and total reactions
+    // get user's reaction and total reactions
     const { userReaction, total } = await getPostReactions(post.id, currentUserId);
 
-    // CHECK IF POST IS REPORTED BY CURRENT USER
+    // check if post is reported by current user
     let isReported = false;
     if (currentUserId) {
         const { data: report } = await supabaseClient
@@ -159,10 +151,10 @@ export async function renderPost(post, displayedPostIds, container, position = "
         isReported = !!report;
     }
 
-    // Get recent reactions with user names - ADD THIS COMPLETE CODE
+    // get recent reactions with user names
     let formattedReactions = [];
     try {
-        // First, get the reactions
+        // first, get the reactions
         const { data: reactions, error: reactionsError } = await supabaseClient
             .from('post_reactions')
             .select('reaction, user_id')
@@ -171,7 +163,7 @@ export async function renderPost(post, displayedPostIds, container, position = "
             .limit(10);
 
         if (!reactionsError && reactions && reactions.length > 0) {
-            // Then fetch profiles separately for each user
+            // then fetch profiles separately for each user
             const userIds = [...new Set(reactions.map(r => r.user_id))];
 
             const { data: profiles, error: profilesError } = await supabaseClient
@@ -180,13 +172,13 @@ export async function renderPost(post, displayedPostIds, container, position = "
                 .in('id', userIds);
 
             if (!profilesError && profiles) {
-                // Create a map of user profiles
+                // create a map of user profiles
                 const profileMap = {};
                 profiles.forEach(p => {
                     profileMap[p.id] = p;
                 });
 
-                // Format reactions with profile data
+                // format reactions with profile data
                 formattedReactions = reactions.map(r => ({
                     reaction: r.reaction,
                     user_name: profileMap[r.user_id]?.name || 'Someone',
@@ -199,13 +191,13 @@ export async function renderPost(post, displayedPostIds, container, position = "
         console.warn('Error fetching recent reactions:', err);
     }
 
-    // Get total comments
+    // get total comments
     const { count: commentCount } = await supabaseClient
         .from('post_comments')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', post.id);
 
-    // Get profile avatar
+    // get profile avatar
     let avatar = post.avatar_url || '../images/defaultAvatar.jpg';
     try {
         const { data: profile } = await supabaseClient
@@ -248,7 +240,7 @@ export async function renderPost(post, displayedPostIds, container, position = "
     container.insertAdjacentHTML(position, html);
     displayedPostIds.add(post.id);
 
-    // Subscribe to real-time updates
+    // subscribe to real-time updates
     if (post.id) {
         subscribeToPostReactions(post.id, currentUserId);
     }
@@ -256,9 +248,7 @@ export async function renderPost(post, displayedPostIds, container, position = "
     return post.id;
 }
 
-// =======================
-// GET FRIEND STATUS
-// =======================
+// get friend status
 async function getFriendStatus(currentUserId, postUserId) {
     if (currentUserId === postUserId) return null;
 
