@@ -11,9 +11,7 @@ async function initNotifications() {
     setupClickMarkRead();
 }
 
-/* ------------------------------------------------------
-    POST LOADING
------------------------------------------------------- */
+// post loading
 function startPostLoading() {
     const btn = document.getElementById('postVideoBtn');
     if (!btn) return () => { };
@@ -35,9 +33,7 @@ function startPostLoading() {
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
-    /* ------------------------------------------------------
-        ELEMENTS
-    ------------------------------------------------------ */
+    // elements
     const createModal = document.getElementById('createVideoModal');
     const openCreateBtn = document.getElementById('openCreateVideoBtn');
     const closeModalBtn = document.getElementById('closeCreateModalBtn');
@@ -57,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userId = data?.user?.id;
 
     async function addNewVideo(videoId) {
-        // Fetch only the new video
+        // fetch only the new video
         const { data: video, error } = await supabaseClient
             .from('videos')
             .select('*')
@@ -72,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data: authData } = await supabaseClient.auth.getUser();
         const userId = authData?.user?.id;
 
-        // Get friend status and like data for the new video
+        // get friend status and like data for the new video
         const friendStatus = await getFriendStatus(userId, video.user_id);
 
         const { count: likeCount } = await supabaseClient
@@ -89,10 +85,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             userLiked
         };
 
-        // Handle null avatar URL - use default image
+        // handle null avatar url - use default image
         const avatarUrl = video.avatar_url || '../images/image.png';
 
-        // Create the HTML for the new video
+        // create the html for the new video
         const postOwner = userId === video.user_id;
         const newVideoHTML = createVideoItem(
             videoWithData.video_url,
@@ -107,19 +103,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             videoWithData.userLiked
         );
 
-        // Insert new video at the top
+        // insert new video at the top
         videoContainer.insertAdjacentHTML('afterbegin', newVideoHTML);
 
-        // Initialize controls for the new video
+        // initialize controls for the new video
         setTimeout(() => {
             const newVideoElement = document.querySelector(`.video-barkadahub-item[data-id="${videoId}"]`);
             if (newVideoElement) {
-                // Get the videoPlayback instance from the render function
+                // get the videoPlayback instance from the render function
                 if (window.videoPlayback && window.videoPlayback.initializeVideoControlsForElement) {
                     window.videoPlayback.initializeVideoControlsForElement(newVideoElement);
                 }
 
-                // Auto-play if near top and user has interacted
+                // auto-play if near top and user has interacted
                 if (window.userInteracted && window.scrollY < 100) {
                     const video = newVideoElement.querySelector('video');
                     if (video) {
@@ -164,9 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     cancelBtn?.addEventListener('click', closeVideoModal);
     createModal?.addEventListener('click', e => e.target === createModal && closeVideoModal());
 
-    /* ------------------------------------------------------
-        VIDEO SELECTION
-    ------------------------------------------------------ */
+    // video selection
     selectVideoBtn?.addEventListener('click', () => videoFileInput.click());
 
     videoFileInput?.addEventListener('change', e => {
@@ -188,9 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         charCount.textContent = `${len}/150`;
     });
 
-    /* ------------------------------------------------------
-        UPLOAD VIDEO
-    ------------------------------------------------------ */
+    // upload video
     createVideoForm?.addEventListener('submit', async e => {
         e.preventDefault();
 
@@ -247,9 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    /* ------------------------------------------------------
-        DELETE VIDEO FROM DATABASE
-    ------------------------------------------------------ */
+    // delete video from database
     async function deleteVideo(postId) {
         const { data } = await supabaseClient
             .from('videos')
@@ -264,9 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await supabaseClient.from('videos').delete().eq('id', postId);
     }
 
-    /* ------------------------------------------------------
-        FRIEND SYSTEM
-    ------------------------------------------------------ */
+    // friend system
     async function getFriendStatus(currentUserId, videoUserId) {
         if (currentUserId === videoUserId) return null;
 
@@ -464,9 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.innerHTML = icon;
     }
 
-    /* ------------------------------------------------------
-        REALTIME: FRIEND REQUESTS
-    ------------------------------------------------------ */
+    // realtime: friend requests
     function initFriendRealtime(currentUserId) {
         supabaseClient
             .channel('friends-request-realtime-videos')
@@ -500,9 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    /* ------------------------------------------------------
-        ELLIPSIS MENU FOR OWNER
-    ------------------------------------------------------ */
+    // ellipsis menu for owner
     function openEllipsisMenuBtn() {
         const ellipsisModal = document.getElementById('ellipsisMenuModal');
         const deletePostBtn = document.getElementById('deletePostBtn');
@@ -565,13 +549,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* ------------------------------------------------------
-        VIDEO PLAY / PAUSE - TikTok Style with Smart Mute
-    ------------------------------------------------------ */
+    // video play / pause - tiktok style with smart mute
     function initVideoPlayback() {
         window.userInteracted = false;
 
-        // Store video state
+        // store video state
         const videoStates = new Map();
 
         function unlockVideos() {
@@ -585,14 +567,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener('click', unlockVideos);
         document.addEventListener('touchstart', unlockVideos);
 
-        // Initialize controls for a single video element
+        // initialize controls for a single video element
         function initializeVideoControlsForElement(item) {
             const video = item.querySelector('video');
             if (!video) return;
 
             const videoId = item.dataset.id;
 
-            // Store initial state
+            // store initial state
             videoStates.set(videoId, {
                 muted: true,
                 playing: false,
@@ -600,11 +582,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentTime: 0
             });
 
-            // Set initial muted state
+            // set initial muted state
             video.muted = true;
             video.volume = 0;
 
-            // Get control elements
+            // get control elements
             const playPauseBtn = item.querySelector('.play-pause-btn');
             const volumeBtn = item.querySelector('.volume-btn');
             const progressContainer = item.querySelector('.progress-container');
@@ -614,21 +596,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             const playOverlay = item.querySelector('.play-overlay');
             const playOverlayBtn = item.querySelector('.play-pause-overlay-btn');
 
-            // Format time function
+            // format time function
             const formatTime = (seconds) => {
                 const mins = Math.floor(seconds / 60);
                 const secs = Math.floor(seconds % 60);
                 return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             };
 
-            // Update duration on load
+            // update duration on load
             video.addEventListener('loadedmetadata', () => {
                 if (durationSpan) {
                     durationSpan.textContent = formatTime(video.duration);
                 }
             });
 
-            // Update time and progress
+            // update time and progress
             video.addEventListener('timeupdate', () => {
                 if (currentTimeSpan) {
                     currentTimeSpan.textContent = formatTime(video.currentTime);
@@ -641,7 +623,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     progressBar.style.width = `${percent}%`;
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.currentTime = video.currentTime;
@@ -649,7 +631,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Play/Pause button
+            // play/pause button
             if (playPauseBtn) {
                 const icon = playPauseBtn.querySelector('i');
                 playPauseBtn.addEventListener('click', (e) => {
@@ -658,7 +640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // Play overlay button (large center button)
+            // play overlay button (large center button)
             if (playOverlayBtn) {
                 const overlayIcon = playOverlayBtn.querySelector('i');
                 playOverlayBtn.addEventListener('click', (e) => {
@@ -671,7 +653,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // Volume button
+            // volume button
             if (volumeBtn) {
                 const icon = volumeBtn.querySelector('i');
                 volumeBtn.addEventListener('click', (e) => {
@@ -680,7 +662,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // Progress bar
+            // progress bar
             if (progressContainer) {
                 progressContainer.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -692,13 +674,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // Show/hide play overlay on video click
+            // show/hide play overlay on video click
             video.addEventListener('click', (e) => {
                 e.stopPropagation();
                 togglePlayOverlay(playOverlay, video);
             });
 
-            // Update play/pause icon
+            // update play/pause icon
             video.addEventListener('play', () => {
                 const icon = playPauseBtn?.querySelector('i');
                 const overlayIcon = playOverlayBtn?.querySelector('i');
@@ -714,7 +696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     playOverlay.classList.add('opacity-0');
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.playing = true;
@@ -734,7 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     overlayIcon.classList.add('fa-play');
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.playing = false;
@@ -742,7 +724,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Update volume icon
+            // update volume icon
             video.addEventListener('volumechange', () => {
                 const icon = volumeBtn?.querySelector('i');
                 if (icon) {
@@ -755,7 +737,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.muted = video.muted;
@@ -764,7 +746,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Handle video end
+            // handle video end
             video.addEventListener('ended', () => {
                 const icon = playPauseBtn?.querySelector('i');
                 const overlayIcon = playOverlayBtn?.querySelector('i');
@@ -780,7 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     playOverlay.classList.remove('opacity-0');
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.playing = false;
@@ -788,7 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Initial icon setup
+            // initial icon setup
             const volumeIcon = volumeBtn?.querySelector('i');
             if (volumeIcon && video.muted) {
                 volumeIcon.classList.add('fa-volume-mute');
@@ -814,14 +796,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Initialize controls for all videos
+        // initialize controls for all videos
         function initializeVideoControls() {
             document.querySelectorAll('.video-barkadahub-item').forEach(item => {
                 initializeVideoControlsForElement(item);
             });
         }
 
-        // Helper functions
+        // helper functions
         function togglePlayPause(video, icon, playOverlay, videoId) {
             if (video.paused) {
                 video.play().catch(err => console.log('Play failed:', err));
@@ -833,7 +815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     playOverlay.classList.add('opacity-0');
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.playing = true;
@@ -849,7 +831,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     playOverlay.classList.remove('opacity-0');
                 }
 
-                // Update stored state
+                // update stored state
                 const state = videoStates.get(videoId);
                 if (state) {
                     state.playing = false;
@@ -875,7 +857,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Update stored state
+            // update stored state
             const state = videoStates.get(videoId);
             if (state) {
                 state.muted = video.muted;
@@ -891,7 +873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 playOverlay.classList.remove('opacity-0');
             } else {
                 playOverlay.classList.add('opacity-0');
-                // Show briefly then hide
+                // show briefly then hide
                 setTimeout(() => {
                     if (!video.paused) {
                         playOverlay.classList.add('opacity-0');
@@ -900,9 +882,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Click anywhere on video to play/pause (excluding controls)
+        // click anywhere on video to play/pause (excluding controls)
         document.addEventListener('click', (e) => {
-            // Don't trigger if clicking controls
+            // don't trigger if clicking controls
             if (e.target.closest('.play-pause-btn, .volume-btn, .progress-container, ' +
                 '.play-pause-overlay-btn, .likeBtn, .openEllipsisMenuBtn, .followBtn, button, .action-icon')) {
                 return;
@@ -932,7 +914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         playOverlay.classList.add('opacity-0');
                     }
 
-                    // Update stored state
+                    // update stored state
                     const state = videoStates.get(videoId);
                     if (state) {
                         state.playing = true;
@@ -952,7 +934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         playOverlay.classList.remove('opacity-0');
                     }
 
-                    // Update stored state
+                    // update stored state
                     const state = videoStates.get(videoId);
                     if (state) {
                         state.playing = false;
@@ -962,7 +944,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // AUTOPLAY ON SCROLL with mute management
+        // autoplay on scroll with mute management
         function initAutoPlayOnSnap() {
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -974,7 +956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const state = videoStates.get(videoId);
 
                     if (entry.isIntersecting && window.userInteracted) {
-                        // Play video and restore previous volume state
+                        // play video and restore previous volume state
                         if (state && !state.muted) {
                             video.muted = false;
                             video.volume = state.volume || 0.5;
@@ -985,12 +967,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         video.play().catch(err => console.log('Autoplay failed:', err));
                     } else {
-                        // Pause and mute when not visible
+                        // pause and mute when not visible
                         video.pause();
                         video.muted = true;
                         video.volume = 0;
 
-                        // Save current state before muting
+                        // save current state before muting
                         const currentState = videoStates.get(videoId);
                         if (currentState) {
                             currentState.playing = false;
@@ -1000,7 +982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }, {
                 threshold: 0.8,
-                rootMargin: '0px 0px -10% 0px' // Adjust this to control when videos become "visible"
+                rootMargin: '0px 0px -10% 0px'
             });
 
             document.querySelectorAll('.video-barkadahub-item')
@@ -1016,7 +998,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const videoId = item.dataset.id;
                 const state = videoStates.get(videoId);
 
-                // Check if video is mostly in viewport
+                // check if video is mostly in viewport
                 const isVisible = (
                     rect.top >= -rect.height * 0.3 &&
                     rect.top <= window.innerHeight * 0.7
@@ -1037,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     video.muted = true;
                     video.volume = 0;
 
-                    // Save state
+                    // save state
                     const currentState = videoStates.get(videoId);
                     if (currentState) {
                         currentState.playing = false;
@@ -1047,14 +1029,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Initialize controls after videos are loaded
+        // initialize controls after videos are loaded
         setTimeout(initializeVideoControls, 100);
 
         return { initAutoPlayOnSnap, playVisibleVideo, videoStates, initializeVideoControlsForElement };
     }
-    /* ------------------------------------------------------
-        LIKE VIDEO
-    ------------------------------------------------------ */
+
+    // like video
     async function likeVideo(videoId, userId) {
         const { error } = await supabaseClient
             .from('video_likes')
@@ -1134,12 +1115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* ------------------------------------------------------
-        RENDER VIDEOS (INITIAL LOAD)
-    ------------------------------------------------------ */
-    /* ------------------------------------------------------
-        RENDER VIDEOS (INITIAL LOAD)
-    ------------------------------------------------------ */
+    // render videos (initial load)
     async function render() {
         const { data: videos, error } = await supabaseClient
             .from('videos')
@@ -1179,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         videoContainer.innerHTML = videosWithData.map(video => {
             const postOwner = userId === video.user_id;
-            // Handle null avatar URL
+            // handle null avatar url
             const avatarUrl = video.avatar_url || '../images/image.png';
             return createVideoItem(
                 video.video_url,
@@ -1196,14 +1172,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
 
         const videoPlayback = initVideoPlayback();
-        // Store globally so addNewVideo can access it
+        // store globally so addNewVideo can access it
         window.videoPlayback = videoPlayback;
         videoPlayback.initAutoPlayOnSnap();
 
-        // Add CSS for the controls
+        // add css for the controls
         const style = document.createElement('style');
         style.textContent = `
-        /* Make sure control buttons are clickable */
+        /* make sure control buttons are clickable */
         .play-pause-btn,
         .volume-btn {
             background: transparent !important;
@@ -1235,17 +1211,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             background-color: #3b82f6;
         }
         
-        /* Ensure video controls don't interfere with other elements */
+        /* ensure video controls don't interfere with other elements */
         video {
             pointer-events: none;
         }
         
-        /* Make the video container clickable for play/pause */
+        /* make the video container clickable for play/pause */
         .video-barkadahub-item > div:first-child {
             cursor: pointer;
         }
         
-        /* Controls container styling */
+        /* controls container styling */
         .video-barkadahub-item > div:first-child > div:last-child {
             opacity: 1 !important;
             pointer-events: auto !important;
@@ -1273,9 +1249,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
-    /* ------------------------------------------------------
-        INITIALIZE EVERYTHING
-    ------------------------------------------------------ */
+
+    // initialize everything
     if (userId) {
         initFriendRealtime(userId);
     }
@@ -1285,7 +1260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initLikeButtons();
     await render();
 
-    // Realtime for new videos
+    // realtime for new videos
     supabaseClient
         .channel('videos-realtime')
         .on(
