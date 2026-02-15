@@ -2,11 +2,9 @@ import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
 import sanitize from '../utils/sanitize.js';
 
-
 console.log(sanitize);
 
 document.addEventListener('DOMContentLoaded', async () => {
-
     const alertSystem = new AlertSystem();
 
     const loginEmailInput = document.getElementById('loginEmail');
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!loginPasswordInput || !loginLockIcon) return;
 
         loginLockIcon.addEventListener('click', () => {
-
             const isHidden = loginPasswordInput.type === 'password';
 
             loginPasswordInput.type = isHidden ? 'text' : 'password';
@@ -33,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // validate login inputs
     function validateInputs(email, password) {
-
         if (!email || !password) {
             alertSystem.show('Please fill out all fields', 'error');
             return false;
@@ -57,9 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return true;
     }
 
-
     loginForm.addEventListener('submit', async (event) => {
-
         event.preventDefault();
 
         let loginEmail = loginEmailInput.value.trim();
@@ -136,12 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 1500);
 
         } catch (err) {
-
             console.error('Unexpected error:', err);
             alertSystem.show('Login Failed, please try again', 'error');
-
         } finally {
-
             // re-enable button
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -149,10 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
-    /* -----------------------------
-    initialize
-    ----------------------------- */
+    // initialize
     initPasswordToggle();
-
 });
