@@ -6,7 +6,6 @@ import { displayBio, displayInformation } from '../render/profile.js';
 import { likePost, commentPost } from './notification.js';
 import { initReactions } from '../utils/reactionUtils.js';
 
-
 document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
@@ -17,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(error);
     }
 
-    // DOM Elements
+    // dom elements
     const app = document.getElementById('app');
     const logoutBtn = document.getElementById('logoutBtn');
     const logoutModal = document.getElementById('logoutModal');
@@ -43,9 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let deleteTargetPostId = null;
     let activeCommentPostId = null;
 
-    /* -----------------------------
-    LOGOUT HANDLERS
-    ----------------------------- */
+    // logout handlers
     const openModal = () => {
         logoutModal.classList.remove('hidden');
         app.classList.add('opacity-50');
@@ -100,9 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* -----------------------------
-    LOAD USER INFO
-    ----------------------------- */
+    // load user info
     async function loadUserName() {
         const { data, error } = await supabaseClient.auth.getUser();
         if (error || !data?.user) return console.log("User not logged in");
@@ -193,9 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
-    /* -----------------------------
-    FETCH POSTS
-    ----------------------------- */
+    // fetch posts
     async function getUserPosts() {
         if (!currentUserId) return;
 
@@ -230,17 +223,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    /* -----------------------------
-    COMMENTS HANDLING
-    ----------------------------- */
+    // comments handling
 
-    // Comment input handling for contenteditable div
+    // comment input handling for contenteditable div
     if (commentInput) {
         commentInput.addEventListener('input', () => {
             const commentText = commentInput.innerText || '';
             const commentLength = commentText.length;
 
-            // Enforce max length
+            // enforce max length
             if (commentLength > 250) {
                 commentInput.innerText = commentText.substring(0, 250);
                 placeCursorAtEnd(commentInput);
@@ -252,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Prevent Enter from submitting (optional)
+        // prevent enter from submitting
         commentInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -263,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Helper function to place cursor at end
+    // helper function to place cursor at end
     function placeCursorAtEnd(el) {
         el.focus();
         const range = document.createRange();
@@ -277,7 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     commentForm.addEventListener('submit', async e => {
         e.preventDefault();
 
-        // Get comment text from contenteditable div
+        // get comment text from contenteditable div
         const comment = commentInput.innerText?.trim() || '';
 
         if (!comment || !activeCommentPostId) {
@@ -288,10 +279,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sendBtn) sendBtn.disabled = true;
 
         try {
-            // Get user name
+            // get user name
             const userName = document.getElementById('username')?.textContent || 'User';
 
-            // Get user avatar
+            // get user avatar
             let avatar = '../images/defaultAvatar.jpg';
             const { data: profile } = await supabaseClient
                 .from('profile')
@@ -312,14 +303,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }]);
             if (error) throw error;
 
-            // Create notification for post owner
+            // create notification for post owner
             await commentPost(activeCommentPostId, currentUserId);
 
-            // Clear input
+            // clear input
             commentInput.innerHTML = '';
             charCounter.textContent = '0/250';
 
-            // Reload comments with currentUserId to determine ownership
+            // reload comments with currentUserId to determine ownership
             await loadComments(activeCommentPostId, currentUserId);
 
         } catch (err) {
@@ -330,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Open comments modal
+    // open comments modal
     document.addEventListener('click', async (e) => {
         const button = e.target.closest('.commentBtn');
         if (!button) return;
@@ -339,13 +330,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!postId) return alertSystem.show('No postId found!', 'error');
 
         activeCommentPostId = postId;
-        // Pass currentUserId to loadComments
+        // pass currentUserId to loadComments
         await loadComments(postId, currentUserId);
 
         commentModal.classList.remove('hidden');
         app.classList.add('hidden');
 
-        // Focus on comment input
+        // focus on comment input
         setTimeout(() => {
             if (commentInput) {
                 commentInput.focus();
@@ -360,9 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         app.classList.remove('hidden');
     });
 
-    /* -----------------------------
-    DELETE POST
-    ----------------------------- */
+    // delete post
     confirmDeleteBtn.addEventListener('click', async () => {
         if (!deleteTargetPostId) return;
         const postEl = recentPostContainer.querySelector(`.post[data-post-id="${deleteTargetPostId}"]`);
@@ -389,9 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         app.classList.remove('opacity-50');
     });
 
-    /* -----------------------------
-    INIT
-    ----------------------------- */
+    // init
     (async function init() {
         await loadUserName();
         await renderBio();
