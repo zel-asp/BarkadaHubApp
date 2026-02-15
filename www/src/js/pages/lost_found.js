@@ -6,11 +6,11 @@ import sanitize from '../utils/sanitize.js';
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
-    // Get logged-in user
+    // get logged-in user
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     const userId = userData?.user?.id;
 
-    // ELEMENTS
+    // elements
     const openUploadFormBtn = document.getElementById('openUploadForm');
     const uploadModal = document.getElementById('uploadModal');
     const cancelBtn = document.getElementById('cancelBtn');
@@ -20,11 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const previewImg = document.getElementById('previewImg');
     const lostFoundContainer = document.getElementById('lostFoundContainer');
 
-    const displayedItemIds = new Set(); // Track rendered items
+    const displayedItemIds = new Set();
 
-    /* ------------------------------
-    MODAL OPEN/CLOSE
-    ------------------------------ */
+    // modal open/close
     const closeModal = () => {
         uploadModal.classList.add('hidden');
         lostFoundForm.reset();
@@ -35,9 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     cancelBtn.addEventListener('click', closeModal);
     uploadModal.addEventListener('click', e => { if (e.target === uploadModal) closeModal(); });
 
-    /* ------------------------------
-    IMAGE PREVIEW
-    ------------------------------ */
+    // image preview
     imageUpload.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;
@@ -50,9 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         reader.readAsDataURL(file);
     });
 
-    /* ------------------------------
-    SUBMIT LOST & FOUND REPORT
-    ------------------------------ */
+    // submit lost & found report
     lostFoundForm.addEventListener('submit', async e => {
         e.preventDefault();
 
@@ -89,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 filePath = uploadData.path;
             }
 
-            // Insert new lost & found record
+            // insert new lost & found record
             const { data: insertedData, error: insertError } = await supabaseClient
                 .from('lost_found')
                 .insert([{
@@ -110,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             closeModal();
             renderLostFoundSingle(insertedData[0], true);
 
-            // Reset button
+            // reset button
             submitBtn.textContent = 'Submitted!';
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             setTimeout(() => {
@@ -128,10 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
-    /* ------------------------------
-    RENDER FUNCTIONS
-    ------------------------------ */
+    // render functions
     async function renderLostFound() {
         try {
             const { data: items, error } = await supabaseClient
@@ -199,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayedItemIds.add(item.id);
     }
 
-
+    // delete post
     document.addEventListener('click', async (e) => {
         const deleteBtn = e.target.closest('.delete-btn');
         if (!deleteBtn) return;
@@ -214,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // deleting UI effect
+        // deleting ui effect
         const originalHTML = deleteBtn.innerHTML;
         deleteBtn.disabled = true;
         deleteBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Deleting...`;
@@ -229,9 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
     async function destroy(postId, filePath) {
-
         if (filePath) {
             const { error: storageError } = await supabaseClient
                 .storage
@@ -255,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         alertSystem.show('Post deleted successfully', 'success');
     }
 
+    // message button
     document.addEventListener('click', async (e) => {
         const msgBtn = e.target.closest('.message-btn');
         if (!msgBtn) return;
@@ -263,13 +253,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const postId = msgBtn.dataset.postId;
         const messageAdded = msgBtn.dataset.messageAdded === 'true';
 
-        // Already has message → just go
+        // already has message → just go
         if (messageAdded) {
             window.location.href = `./messages.html`;
             return;
         }
 
-        // First time message
+        // first time message
         e.preventDefault();
 
         try {
@@ -286,9 +276,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
             msgBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             msgBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-            msgBtn.disabled = false; // re-enable if you want clickable after
+            msgBtn.disabled = false;
 
-            // Go to messages page
+            // go to messages page
             window.location.href = `./messages.html`;
 
         } catch (err) {
@@ -300,12 +290,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
-
     async function addToMessageTable(friendId, postId) {
-        /* -----------------------------------------
-        AUTH USER
-        ----------------------------------------- */
+        // auth user
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !userData?.user) {
             console.error('Auth error:', authError);
@@ -315,9 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const myUserId = userData.user.id;
         const myName = userData.user.user_metadata?.display_name || 'User';
 
-        /* -----------------------------------------
-        FETCH BOTH PROFILES IN ONE QUERY
-        ----------------------------------------- */
+        // fetch both profiles in one query
         const { data: profiles, error: profileError } = await supabaseClient
             .from('profile')
             .select('id, name, avatar_url')
@@ -334,9 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const friendAvatar = friendProfile?.avatar_url || '../images/defaultAvatar.jpg';
         const myAvatar = myProfile?.avatar_url || '../images/defaultAvatar.jpg';
 
-        /* -----------------------------------------
-        GET LOST & FOUND POST
-        ----------------------------------------- */
+        // get lost & found post
         const { data: lostFound, error: lostError } = await supabaseClient
             .from('lost_found')
             .select('item_name')
@@ -359,9 +341,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (convError) throw convError;
         const conversationId = conversation.id;
 
-        /* -----------------------------------------
-        PREPARE MESSAGES
-        ----------------------------------------- */
+        // prepare messages
         const messages = [
             {
                 user_id: myUserId,
@@ -383,9 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         ];
 
-        /* -----------------------------------------
-        INSERT BOTH ROWS AT ONCE
-        ----------------------------------------- */
+        // insert both rows at once
         const { error: insertError } = await supabaseClient
             .from('message')
             .insert(messages);
@@ -395,9 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-
-    /* ------------------------------
-    INITIAL LOAD
-    ------------------------------ */
+    // initial load
     renderLostFound();
 });
