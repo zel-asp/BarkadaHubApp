@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const cards = document.querySelectorAll('.card-hover');
 
-    // Add staggered animation
+    // stagger card animations
     cards.forEach((card, index) => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
