@@ -1,7 +1,7 @@
 // utils/reactionImages.js
 import supabaseClient from '../supabase.js';
 
-// Get the public URL for a reaction image
+// get the public url for a reaction image
 export function getReactionImageUrl(reactionType) {
     const { data } = supabaseClient
         .storage
@@ -21,7 +21,7 @@ export const REACTION_IMAGES = {
     clap: 'https://mxxrymqwkxxtvxsgkyil.supabase.co/storage/v1/object/public/reactions/clap.png'
 };
 
-// Background colors for fallback
+// background colors for fallback
 export const REACTION_BG_COLORS = {
     like: 'bg-blue-100',
     love: 'bg-red-100',
@@ -32,7 +32,7 @@ export const REACTION_BG_COLORS = {
     clap: 'bg-green-100'
 };
 
-// Labels for reactions
+// labels for reactions
 export const REACTION_LABELS = {
     like: 'Like',
     love: 'Love',
