@@ -3,16 +3,13 @@ import AlertSystem from '../render/Alerts.js';
 import students from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-
     const signupForm = document.getElementById('signupForm');
     const lockIcons = document.querySelectorAll('.lockIcon');
     const alertSystem = new AlertSystem();
 
     if (!signupForm) return;
 
-    /* -----------------------------
-    helper: sanitize input
-    ----------------------------- */
+    // helper: sanitize input
     function sanitize(str) {
         return str.replace(/[&<>"'\/]/g, match => ({
             '&': '&amp;',
@@ -24,9 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }[match]));
     }
 
-    /* -----------------------------
-    password show/hide toggle
-    ----------------------------- */
+    // password show/hide toggle
     lockIcons.forEach(icon => {
         icon.addEventListener('click', () => {
             const input = icon.previousElementSibling;
@@ -40,13 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* -----------------------------
-    real-time student id validation
-    ----------------------------- */
+    // real-time student id validation
     const studentNumberInput = document.getElementById('studentNumber');
 
     if (studentNumberInput) {
-
         const feedbackDiv = document.createElement('div');
         feedbackDiv.className = 'mt-2 text-sm font-medium flex items-center gap-2';
         feedbackDiv.id = 'studentNumberFeedback';
@@ -84,11 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* -----------------------------
-    signup form submit
-    ----------------------------- */
+    // signup form submit
     signupForm.addEventListener('submit', async (e) => {
-
         e.preventDefault();
 
         const submitBtn = signupForm.querySelector('button[type="submit"]');
@@ -112,10 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             signupEmail = sanitize(signupEmail);
             studentNumber = sanitize(studentNumber);
 
-
-            /* -----------------------------
-            basic validation
-            ----------------------------- */
+            // basic validation
             if (!signupName || !signupEmail || !studentNumber || !password || !confirmPassword) {
                 alertSystem.show('Please fill out all fields', 'error');
                 return;
@@ -255,5 +241,4 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     });
-
 });
