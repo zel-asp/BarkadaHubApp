@@ -10,9 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clubHeaderContainer = document.getElementById('clubHeaderContainer');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    /* -------------------------------------------
-        CHARACTER COUNTER
-    ------------------------------------------- */
+    // character counter
     if (postContent && charCount) {
         postContent.addEventListener('input', () => {
             const length = postContent.value.length;
@@ -21,9 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    /* -------------------------------------------
-        FETCH USER JOINED CLUB
-    ------------------------------------------- */
+    // get user's joined club
     async function getUserJoinedClub() {
         try {
             const { data: userData, error: authError } = await supabaseClient.auth.getUser();
@@ -50,14 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    /* -------------------------------------------
-        GET CLUB MEMBERS COUNT
-    ------------------------------------------- */
+    // get club member count
     async function getClubMembersCount(clubId) {
         try {
             const { count, error } = await supabaseClient
                 .from('club_members')
-                .select('user_id', { count: 'exact', head: true }) // only count
+                .select('user_id', { count: 'exact', head: true })
                 .eq('club_id', clubId);
 
             if (error) throw error;
@@ -69,30 +63,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    /* -------------------------------------------
-        RENDER CLUB HEADER
-    ------------------------------------------- */
+    // render club header
     async function renderClubHeader(club) {
         if (!club) return;
 
-        // Get dynamic members count
+        // get dynamic members count
         const membersCount = await getClubMembersCount(club.id);
 
         clubHeaderContainer.innerHTML =
             joinedClubHeaderTemplate(club.club_image, club.club_name, club.description, membersCount, club.category);
 
-        // Leave club logic
+        // leave club logic
         const leaveBtn = document.getElementById('leaveClubBtn');
         leaveBtn.addEventListener('click', async () => {
             try {
-                // Get the logged-in user
+                // get logged-in user
                 const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
                 if (userError || !user) {
                     alertSystem.show('You must be logged in to leave the club.', 'error');
                     return;
                 }
 
-                // Delete the membership
+                // delete membership
                 const { error } = await supabaseClient
                     .from('club_members')
                     .delete()
@@ -101,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (error) throw error;
 
-                // Delete the membership
+                // delete message
                 const { error: message } = await supabaseClient
                     .from('message')
                     .delete()
@@ -119,11 +111,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alertSystem.show('Failed to leave the club.', 'error');
             }
         });
-
-
     }
 
-    // Fetch joined club and render
+    // fetch joined club and render
     const joinedClub = await getUserJoinedClub();
     await renderClubHeader(joinedClub);
 });
