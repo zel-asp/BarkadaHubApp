@@ -2,7 +2,6 @@
 import { REACTION_IMAGES, REACTION_BG_COLORS, REACTION_LABELS } from '../utils/reactionImages.js';
 import supabaseClient from '../supabase.js';
 
-
 export default function uploadedPost(
     avatar = 'hi',
     postOwner = false,
@@ -324,66 +323,6 @@ export function searchUser(userId, avatarUrl, name) {
     `;
 }
 
-export function lost_found(img, type, item, description, location, datePosted, postOwner = false, userId = 1, filePath = null, postId = 1, messageAdded = false) {
-    return `
-<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" >
-    <div class="h-56 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50 p-2 relative group">
-        <div class="w-full h-full rounded-lg overflow-hidden border-2 border-blue-100/50">
-            <img src="${img}" alt="${item}"
-                class="w-full h-full object-fit transition-transform duration-500 group-hover:scale-110">
-        </div>
-    </div>
-
-    <div class="p-6 bg-linear-to-b from-white to-gray-50/50">
-        <span
-            class="item-status status-lost inline-block ${type === 'lost' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'} text-xs px-3 py-1.5 rounded-full font-semibold mb-3 shadow-sm">
-            ${type === 'lost' ? 'LOST' : 'FOUND'}
-        </span>
-
-        <h3 class="font-bold text-md mb-3 text-gray-800">Item: ${item}</h3>
-        <p class="text-gray-600 mb-4 text-sm leading-relaxed">Description: ${description}</p>
-
-        <div class="flex justify-between text-sm text-gray-600 mb-5 bg-gray-50/80 rounded-lg p-3">
-            <span class="flex items-center font-medium">
-                <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                <span class="text-gray-700">${location}</span>
-            </span>
-            <span class="flex items-center font-medium">
-                <i class="fas fa-calendar mr-2 text-gray-500"></i>
-                <span class="text-gray-700">${datePosted}</span>
-            </span>
-        </div>
-
-        ${postOwner
-            ? `
-            <div class="flex gap-3">
-                <button
-                    class="delete-btn flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]"
-                    data-post-id="${postId}"
-                    data-file-path="${filePath}">
-                    Delete
-                </button>
-            </div>
-            `
-            : `
-            <a href="messages.html">
-                <button
-                    class="message-btn w-full ${messageAdded ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} 
-                    text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] 
-                    flex items-center justify-center gap-2"
-                    data-user-id="${userId}"
-                    data-message-added="${messageAdded}"
-                    data-post-id="${postId}">
-                    <i class="fas ${messageAdded ? 'fa-comments' : 'fa-comment'}"></i>
-                    ${messageAdded ? 'Go to Message' : 'Message'}
-                </button>
-            </a>
-        `
-        }
-    </div>
-</div>
-`
-}
 // Function to show all reactions modal
 export function showAllReactionsModal(postId) {
     // Check if modal exists, if not create it
@@ -693,3 +632,84 @@ function generateReactionSummary(reactions) {
 if (typeof window !== 'undefined') {
     window.showAllReactionsModal = showAllReactionsModal;
 }
+
+export function lost_found(img, type, item, description, location, datePosted, postOwner = false, userId = 1, filePath = null, postId = 1, messageAdded = false) {
+    return `
+<div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" >
+    <div class="h-56 overflow-hidden bg-linear-to-br from-gray-50 to-blue-50 p-2 relative group">
+        <div class="w-full h-full rounded-lg overflow-hidden border-2 border-blue-100/50">
+            <img src="${img}" alt="${item}"
+                class="w-full h-full object-fit transition-transform duration-500 group-hover:scale-110">
+        </div>
+    </div>
+
+    <div class="p-6 bg-linear-to-b from-white to-gray-50/50">
+        <span
+            class="item-status status-lost inline-block ${type === 'lost' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'} text-xs px-3 py-1.5 rounded-full font-semibold mb-3 shadow-sm">
+            ${type === 'lost' ? 'LOST' : 'FOUND'}
+        </span>
+
+        <h3 class="font-bold text-md mb-3 text-gray-800">Item: ${item}</h3>
+        <p class="text-gray-600 mb-4 text-sm leading-relaxed">Description: ${description}</p>
+
+        <div class="flex justify-between text-sm text-gray-600 mb-5 bg-gray-50/80 rounded-lg p-3">
+            <span class="flex items-center font-medium">
+                <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                <span class="text-gray-700">${location}</span>
+            </span>
+            <span class="flex items-center font-medium">
+                <i class="fas fa-calendar mr-2 text-gray-500"></i>
+                <span class="text-gray-700">${datePosted}</span>
+            </span>
+        </div>
+
+        ${postOwner
+            ? `
+            <div class="flex gap-3">
+                <button
+                    class="delete-btn flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]"
+                    data-post-id="${postId}"
+                    data-file-path="${filePath}">
+                    Delete
+                </button>
+            </div>
+            `
+            : `
+            <a href="messages.html">
+                <button
+                    class="message-btn w-full ${messageAdded ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} 
+                    text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] 
+                    flex items-center justify-center gap-2"
+                    data-user-id="${userId}"
+                    data-message-added="${messageAdded}"
+                    data-post-id="${postId}">
+                    <i class="fas ${messageAdded ? 'fa-comments' : 'fa-comment'}"></i>
+                    ${messageAdded ? 'Go to Message' : 'Message'}
+                </button>
+            </a>
+        `
+        }
+    </div>
+</div>
+`
+}
+
+export const emptyLost_found = `
+    <!-- Empty State Div -->
+    <div id="emptyState" class="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-box-open text-gray-400 text-4xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Items Found</h3>
+        <p class="text-gray-600 mb-6 max-w-sm">There are no items to display at the moment. Be the first to report a lost or found item!</p>
+    </div>
+
+    <!-- Alternative Empty State for Filtered Results -->
+    <div id="emptyFilterState" class="hidden flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-filter text-gray-400 text-4xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Matching Items</h3>
+        <p class="text-gray-600 mb-6 max-w-sm">No items match your current filter.</p>
+    </div>
+`;
