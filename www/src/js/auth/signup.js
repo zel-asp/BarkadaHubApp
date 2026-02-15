@@ -1,6 +1,6 @@
 import supabaseClient from '../supabase.js';
 import AlertSystem from '../render/Alerts.js';
-import { students } from '../data/students.js';
+import students from '../data/students.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
