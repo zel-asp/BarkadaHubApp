@@ -1,9 +1,7 @@
 import supabaseClient from '../supabase.js';
 import sanitize from '../utils/sanitize.js';
 
-// =======================
-// CHECK IF USER REPORTED POST
-// =======================
+// check if user reported post
 export async function checkIfUserReported(postId) {
     const { data: userData } = await supabaseClient.auth.getUser();
     const currentUserId = userData?.user?.id;
@@ -25,22 +23,20 @@ export async function checkIfUserReported(postId) {
     }
 }
 
-// =======================
-// UPDATE REPORT BUTTON UI
-// =======================
+// update report button ui
 function updateReportButtonUI(postId) {
     const reportBtn = document.querySelector(`.report-btn[data-post-id="${postId}"]`);
     if (!reportBtn) return;
 
-    // Get the parent container with tooltip
+    // get the parent container with tooltip
     const container = reportBtn.closest('.relative.group');
 
-    // Update button classes and attributes
+    // update button classes and attributes
     reportBtn.disabled = true;
     reportBtn.classList.remove('from-red-400', 'to-red-500', 'hover:shadow-md', 'hover:scale-105');
     reportBtn.classList.add('from-gray-400', 'to-gray-500', 'cursor-default');
 
-    // Update tooltip text
+    // update tooltip text
     const tooltip = container.querySelector('div.absolute');
     if (tooltip) {
         const tooltipSpan = tooltip.querySelector('span');
@@ -49,20 +45,18 @@ function updateReportButtonUI(postId) {
         }
     }
 
-    // Update container title
+    // update container title
     container.setAttribute('title', 'Post reported');
 }
 
-// =======================
-// INIT REPORT MODAL
-// =======================
+// init report modal
 export function initReportModal(alertSystem, checkIfUserReported) {
-    // Open Report Modal
+    // open report modal
     document.addEventListener('click', async (e) => {
         const reportBtn = e.target.closest('.report-btn');
         if (!reportBtn) return;
 
-        // Don't open modal if button is disabled
+        // don't open modal if button is disabled
         if (reportBtn.disabled) return;
 
         const postId = reportBtn.dataset.postId;
@@ -80,14 +74,14 @@ export function initReportModal(alertSystem, checkIfUserReported) {
         modal.dataset.postId = postId;
         modal.classList.remove('hidden');
 
-        // Focus on reason select for better UX
+        // focus on reason select for better ux
         setTimeout(() => {
             const reasonSelect = document.getElementById('reportReason');
             if (reasonSelect) reasonSelect.focus();
         }, 100);
     });
 
-    // Cancel button
+    // cancel button
     const cancelBtn = document.getElementById('cancelReportBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
@@ -98,7 +92,7 @@ export function initReportModal(alertSystem, checkIfUserReported) {
         });
     }
 
-    // Close modal when clicking outside
+    // close modal when clicking outside
     const modal = document.getElementById('reportPostModal');
     if (modal) {
         modal.addEventListener('click', (e) => {
@@ -110,7 +104,7 @@ export function initReportModal(alertSystem, checkIfUserReported) {
         });
     }
 
-    // Submit report
+    // submit report
     const confirmBtn = document.getElementById('confirmReportBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', async () => {
@@ -125,7 +119,7 @@ export function initReportModal(alertSystem, checkIfUserReported) {
                 return;
             }
 
-            // Disable submit button to prevent double submission
+            // disable submit button to prevent double submission
             confirmBtn.disabled = true;
             const originalText = confirmBtn.textContent;
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
@@ -154,10 +148,10 @@ export function initReportModal(alertSystem, checkIfUserReported) {
 
                 alertSystem.show('Report submitted successfully!', 'success');
 
-                // Update button UI
+                // update button ui
                 updateReportButtonUI(postId);
 
-                // Close modal and reset form
+                // close modal and reset form
                 modal.classList.add('hidden');
                 document.getElementById('reportReason').value = '';
                 document.getElementById('reportDetails').value = '';
@@ -166,7 +160,7 @@ export function initReportModal(alertSystem, checkIfUserReported) {
                 console.error('Error submitting report:', err);
                 alertSystem.show('Failed to submit report. Please try again.', 'error');
             } finally {
-                // Re-enable submit button
+                // re-enable submit button
                 confirmBtn.disabled = false;
                 confirmBtn.innerHTML = originalText;
             }
