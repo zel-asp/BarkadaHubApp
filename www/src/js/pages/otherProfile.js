@@ -37,13 +37,13 @@ async function renderBio() {
     const year_level = profile?.year_level || nullData;
     const avatarUrl = profile?.avatar_url || '../images/defaultAvatar.jpg';
 
-    // Elements
+    // elements
     const userAvatar = document.getElementById('userAvatar');
     const fullImageModal = document.getElementById('fullImageModal');
     const viewAvatar = document.getElementById('viewAvatar');
     const closeFullImage = document.getElementById('closeFullImage');
 
-    // Set data
+    // set data
     userAvatar.src = avatarUrl;
     viewAvatar.src = avatarUrl;
 
@@ -53,32 +53,26 @@ async function renderBio() {
     document.getElementById('PersonalInfo').innerHTML =
         displayInformation(name, email, major, year_level, isOwner);
 
-    // Initialize follow button functionality if not owner
+    // initialize follow button functionality if not owner
     if (!isOwner) {
         initFollowButton(userId, ownerId);
         initFriendRealtime(userId, ownerId);
     }
 
-    // =============================
-    // OPEN FULL IMAGE MODAL
-    // =============================
+    // open full image modal
     userAvatar.onclick = () => {
         viewAvatar.src = avatarUrl;
         fullImageModal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     };
 
-    // =============================
-    // CLOSE MODAL (X BUTTON)
-    // =============================
+    // close modal (x button)
     closeFullImage.onclick = () => {
         fullImageModal.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     };
 
-    // =============================
-    // CLOSE MODAL (BACKGROUND CLICK)
-    // =============================
+    // close modal (background click)
     fullImageModal.onclick = (e) => {
         if (e.target === fullImageModal) {
             fullImageModal.classList.add('hidden');
@@ -87,18 +81,16 @@ async function renderBio() {
     };
 }
 
-// =======================
-// FOLLOW BUTTON FUNCTIONALITY
-// =======================
+// follow button functionality
 async function initFollowButton(currentUserId, profileOwnerId) {
     const followBtn = document.querySelector('.follow-btn');
     if (!followBtn) return;
 
-    // Get current friend status
+    // get current friend status
     const friendStatus = await getFriendStatus(currentUserId, profileOwnerId);
     updateFollowButtonState(followBtn, friendStatus);
 
-    // Add click event listener
+    // add click event listener
     followBtn.addEventListener('click', async () => {
         if (followBtn.dataset.requestSent === 'true') return;
 
@@ -180,7 +172,7 @@ async function initFollowButton(currentUserId, profileOwnerId) {
                         });
                     }
 
-                    // Get names from posts if not in profile
+                    // get names from posts if not in profile
                     if (senderProfile.name === 'User') {
                         try {
                             const { data: userPost } = await supabaseClient
@@ -215,7 +207,7 @@ async function initFollowButton(currentUserId, profileOwnerId) {
                         }
                     }
 
-                    // Create friendship records
+                    // create friendship records
                     const { error: friendsError } = await supabaseClient
                         .from('friends')
                         .insert([
@@ -233,7 +225,7 @@ async function initFollowButton(currentUserId, profileOwnerId) {
 
                     if (friendsError) throw friendsError;
 
-                    // Create conversation for friends
+                    // create conversation for friends
                     const { data: conversation, error: convError } = await supabaseClient
                         .from('conversations')
                         .insert({ type: 'friend' })
@@ -244,7 +236,7 @@ async function initFollowButton(currentUserId, profileOwnerId) {
 
                     const conversationId = conversation.id;
 
-                    // Create message entries for the friendship
+                    // create message entries for the friendship
                     try {
                         const { error: messageError } = await supabaseClient
                             .from('message')
@@ -319,9 +311,7 @@ async function initFollowButton(currentUserId, profileOwnerId) {
     });
 }
 
-// =======================
-// GET FRIEND STATUS
-// =======================
+// get friend status
 async function getFriendStatus(currentUserId, targetUserId) {
     if (!currentUserId || !targetUserId || currentUserId === targetUserId) return null;
 
@@ -346,9 +336,7 @@ async function getFriendStatus(currentUserId, targetUserId) {
     return null;
 }
 
-// =======================
-// UPDATE FOLLOW BUTTON STATE
-// =======================
+// update follow button state
 function updateFollowButtonState(button, status) {
     if (!button) return;
 
@@ -356,11 +344,11 @@ function updateFollowButtonState(button, status) {
     button.dataset.requestSent = (status === 'pending' || status === 'friends') ? 'true' : 'false';
     button.disabled = status === 'friends';
 
-    // Clear existing color classes
+    // clear existing color classes
     const classList = button.classList;
     const classesToRemove = [];
 
-    // Collect classes to remove
+    // collect classes to remove
     classList.forEach(className => {
         if (className.startsWith('bg-') ||
             className.startsWith('hover:bg-') ||
@@ -371,12 +359,12 @@ function updateFollowButtonState(button, status) {
         }
     });
 
-    // Remove collected classes
+    // remove collected classes
     classesToRemove.forEach(className => {
         classList.remove(className);
     });
 
-    // Set icon and text based on status
+    // set icon and text based on status
     let iconClass, buttonText, bgClass, textClass = 'text-white';
 
     switch (status) {
@@ -410,20 +398,18 @@ function updateFollowButtonState(button, status) {
 
     button.innerHTML = `<i class="${iconClass} mr-1"></i><span>${buttonText}</span>`;
 
-    // Only add classes if they're not empty
+    // only add classes if they're not empty
     if (bgClass && bgClass.trim()) button.classList.add(bgClass);
     if (textClass && textClass.trim()) button.classList.add(textClass);
 
-    // Add hover class for non-friends states
+    // add hover class for non-friends states
     if (status !== 'friends' && bgClass && bgClass.trim()) {
         const hoverClass = bgClass.replace('bg-', 'hover:bg-');
         if (hoverClass && hoverClass.trim()) button.classList.add(hoverClass);
     }
 }
 
-// =======================
-// REALTIME FRIEND REQUESTS UPDATES
-// =======================
+// realtime friend requests updates
 function initFriendRealtime(currentUserId, profileOwnerId) {
     if (!currentUserId || !profileOwnerId) return;
 
@@ -462,25 +448,23 @@ function initFriendRealtime(currentUserId, profileOwnerId) {
         .subscribe();
 }
 
-// =======================
-// HANDLE FRIEND UPDATE
-// =======================
+// handle friend update
 async function handleFriendUpdate(row, currentUserId, profileOwnerId, isDelete = false) {
     const followBtn = document.querySelector('.follow-btn');
     if (!followBtn) return;
 
     if (isDelete) {
-        // If request was deleted, reset to follow button
+        // if request was deleted, reset to follow button
         updateFollowButtonState(followBtn, null);
         return;
     }
 
     if (row.status === 'pending') {
         if (row.sender_id === currentUserId) {
-            // User sent the request
+            // user sent the request
             updateFollowButtonState(followBtn, 'pending');
         } else if (row.receiver_id === currentUserId) {
-            // User received the request
+            // user received the request
             updateFollowButtonState(followBtn, 'accept');
         }
         return;
