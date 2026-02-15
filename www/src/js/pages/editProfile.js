@@ -132,10 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateUserAt(fullNameInput.value);
 
-
-    /* -----------------------------
-    load profile from database
-    ----------------------------- */
+    // load profile from database
     const { data: profile, error: profileError } = await supabaseClient
         .from('profile')
         .select('*')
@@ -162,10 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUserAt(fullNameInput.value);
     }
 
-
-    /* -----------------------------
-    save profile
-    ----------------------------- */
+    // save profile
     async function saveProfile() {
 
         let fullName = fullNameInput.value.trim();
@@ -258,10 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         alertSystem.show('Profile updated successfully', 'success');
     }
 
-
-    /* -----------------------------
-    form submit handler
-    ----------------------------- */
+    // form submit handler
     form?.addEventListener('submit', async e => {
 
         e.preventDefault();
