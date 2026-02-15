@@ -49,4 +49,4 @@ const students = [
 ];
 
 export default students;
-export { students };
+
