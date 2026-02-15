@@ -4,9 +4,7 @@ import { formatRelativeTime } from './postUtils.js';
 import { commentPost } from '../pages/notification.js';
 import sanitize from './sanitize.js';
 
-// =======================
-// COMMENTS MODAL
-// =======================
+// comments modal
 export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) {
     const commentModal = document.getElementById('commentModal');
     const commentBackBtn = document.getElementById('commentBackBtn');
@@ -39,7 +37,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
         commentModal.classList.remove('hidden');
         app.classList.add('hidden');
 
-        // Focus on comment input
+        // focus on comment input
         setTimeout(() => {
             if (commentInput) {
                 commentInput.focus();
@@ -47,7 +45,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
         }, 300);
     });
 
-    // Contenteditable input handling
+    // contenteditable input handling
     if (commentInput) {
         commentInput.addEventListener('input', () => {
             const commentText = commentInput.innerText || '';
@@ -64,7 +62,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
             }
         });
 
-        // Prevent Enter from submitting (optional)
+        // prevent enter from submitting
         commentInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -95,7 +93,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
 
             if (!userId) throw new Error("You must be logged in to comment.");
 
-            // Filter banned words
+            // filter banned words
             if (bannedWords.length > 0) {
                 let foundBanned = false;
                 bannedWords.forEach(word => {
@@ -108,7 +106,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
                 if (foundBanned) alertSystem.show("Some inappropriate words were filtered.", 'info');
             }
 
-            // Get avatar
+            // get avatar
             let avatar = '../images/defaultAvatar.jpg';
             const { data: profile } = await supabaseClient
                 .from('profile')
@@ -117,7 +115,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
                 .maybeSingle();
             if (profile?.avatar_url) avatar = profile.avatar_url;
 
-            // Insert comment
+            // insert comment
             const { error: insertError } = await supabaseClient
                 .from('post_comments')
                 .insert({
@@ -131,7 +129,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
 
             await commentPost(currentPostId, userId);
 
-            // Reset input
+            // reset input
             commentInput.innerHTML = '';
             charCounter.innerHTML = '0/250';
             await loadComments(currentPostId, currentUserId);
@@ -144,7 +142,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
         }
     });
 
-    // Helper: move cursor to end after trimming
+    // helper: move cursor to end after trimming
     function placeCursorAtEnd(el) {
         el.focus();
         const range = document.createRange();
@@ -156,9 +154,7 @@ export function initCommentsModal(alertSystem, bannedWords = [], currentUserId) 
     }
 }
 
-// =======================
-// LOAD COMMENTS
-// =======================
+// load comments
 export async function loadComments(postId, currentUserId = null) {
     const commentsContainer = document.getElementById('comments');
 
@@ -181,7 +177,7 @@ export async function loadComments(postId, currentUserId = null) {
     } else {
         commentsData.forEach(comment => {
             const commentDate = formatRelativeTime(comment.created_at);
-            // Check if the current user owns this comment
+            // check if the current user owns this comment
             let isOwner = currentUserId && comment.user_id === currentUserId;
 
             commentsContainer.insertAdjacentHTML(
@@ -203,22 +199,20 @@ export async function loadComments(postId, currentUserId = null) {
     commentsContainer.scrollTop = commentsContainer.scrollHeight;
 }
 
-// =======================
-// DELETE COMMENT FUNCTIONALITY
-// =======================
+// delete comment functionality
 export function initDeleteComment(alertSystem) {
-    // Use a more efficient event delegation pattern
-    let isProcessing = false; // Prevent multiple simultaneous deletions
+    // use a more efficient event delegation pattern
+    let isProcessing = false; // prevent multiple simultaneous deletions
 
     document.addEventListener('click', async (e) => {
         const deleteBtn = e.target.closest('.delete-btn');
         if (!deleteBtn) return;
 
-        // Skip if it's a mention button or already processing
+        // skip if it's a mention button or already processing
         if (deleteBtn.classList.contains('mention-btn') || isProcessing) return;
 
         e.preventDefault();
-        e.stopPropagation(); // Stop event propagation to reduce overhead
+        e.stopPropagation();
 
         const commentId = parseInt(deleteBtn.dataset.commentId);
         const postId = deleteBtn.dataset.postId;
@@ -229,12 +223,12 @@ export function initDeleteComment(alertSystem) {
             return;
         }
 
-        // Use a custom modal instead of confirm() to avoid blocking
+        // use a custom modal instead of confirm() to avoid blocking
         if (!await showDeleteConfirmationDialog(alertSystem)) {
             return;
         }
 
-        // Set processing flag
+        // set processing flag
         isProcessing = true;
 
         const originalHTML = deleteBtn.innerHTML;
@@ -242,7 +236,7 @@ export function initDeleteComment(alertSystem) {
         deleteBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Deleting...';
 
         try {
-            // Get user data - this is async but we can't avoid it
+            // get user data
             const { data: userData } = await supabaseClient.auth.getUser();
             const currentUserId = userData?.user?.id;
 
@@ -251,7 +245,7 @@ export function initDeleteComment(alertSystem) {
                 return;
             }
 
-            // Use Promise.all to parallelize requests where possible
+            // use promise.all to parallelize requests where possible
             const [commentResult] = await Promise.all([
                 supabaseClient
                     .from('post_comments')
@@ -279,7 +273,7 @@ export function initDeleteComment(alertSystem) {
 
             if (deleteError) throw deleteError;
 
-            // Use requestAnimationFrame for smooth animations
+            // use requestanimationframe for smooth animations
             requestAnimationFrame(() => {
                 const commentContainer = deleteBtn.closest('.comment-container');
                 if (commentContainer) {
@@ -309,7 +303,7 @@ export function initDeleteComment(alertSystem) {
             deleteBtn.disabled = false;
             deleteBtn.innerHTML = originalHTML;
         } finally {
-            // Clear processing flag after a short delay
+            // clear processing flag after a short delay
             setTimeout(() => {
                 isProcessing = false;
             }, 500);
@@ -317,10 +311,10 @@ export function initDeleteComment(alertSystem) {
     });
 }
 
-// Custom confirmation dialog to avoid blocking confirm()
+// custom confirmation dialog to avoid blocking confirm()
 async function showDeleteConfirmationDialog(alertSystem) {
     return new Promise((resolve) => {
-        // Check if modal exists, if not create a temporary one
+        // check if modal exists, if not create a temporary one
         let modal = document.getElementById('deleteCommentModal');
 
         if (!modal) {
@@ -352,7 +346,7 @@ async function showDeleteConfirmationDialog(alertSystem) {
         confirmBtn.addEventListener('click', handleConfirm);
         cancelBtn.addEventListener('click', handleCancel);
 
-        // Also close on backdrop click
+        // also close on backdrop click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 handleCancel();
@@ -395,9 +389,7 @@ function createDeleteConfirmationModal() {
     return modal;
 }
 
-// =======================
-// REALTIME COMMENT DELETION
-// =======================
+// realtime comment deletion
 export function initCommentRealtime() {
     supabaseClient
         .channel('public:post_comments')
@@ -426,9 +418,7 @@ export function initCommentRealtime() {
         .subscribe();
 }
 
-// =======================
-// MENTION USER
-// =======================
+// mention user
 export function initMentionUser(alertSystem) {
     const commentInput = document.getElementById('commentInput');
 
