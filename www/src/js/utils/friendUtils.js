@@ -1,8 +1,6 @@
 import supabaseClient from '../supabase.js';
 
-// =======================
-// GET FRIEND STATUS
-// =======================
+// get friend status
 export async function getFriendStatus(currentUserId, postUserId) {
     if (currentUserId === postUserId) return null;
 
@@ -22,9 +20,7 @@ export async function getFriendStatus(currentUserId, postUserId) {
     return null;
 }
 
-// =======================
-// FOLLOW BUTTONS
-// =======================
+// follow buttons
 export function initFollowButtons(alertSystem) {
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.follow-btn');
@@ -208,9 +204,7 @@ export function initFollowButtons(alertSystem) {
     });
 }
 
-// =======================
-// REALTIME FRIEND REQUESTS
-// =======================
+// realtime friend requests
 export function initFriendRealtime(currentUserId) {
     supabaseClient
         .channel('friends-request-realtime')
