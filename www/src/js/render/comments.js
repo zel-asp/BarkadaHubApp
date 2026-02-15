@@ -1,3 +1,4 @@
+import sanitize from '../utils/sanitize.js';
 export default function comments(
     name,
     comment,
@@ -8,18 +9,6 @@ export default function comments(
     isOwner = true,
     postId = 0
 ) {
-    // Sanitize text to prevent XSS
-    const sanitize = (str) =>
-        String(str)
-            .replace(/[&<>"'`]/g, (match) => ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;",
-                "`": "&#96;",
-            }[match]));
-
     const safeName = sanitize(name);
     const safeComment = sanitize(comment);
 
