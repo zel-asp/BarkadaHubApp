@@ -15,7 +15,7 @@ export const REACTION_TYPES = {
 export function initReactions(alertSystem) {
     let currentPicker = null;
 
-    // Show reaction picker on hover
+    // show reaction picker on hover
     document.addEventListener('mouseenter', (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
@@ -27,37 +27,37 @@ export function initReactions(alertSystem) {
         const picker = container?.querySelector('.reaction-picker');
 
         if (picker) {
-            // Hide any other open pickers
+            // hide any other open pickers
             document.querySelectorAll('.reaction-picker').forEach(p => {
                 if (p !== picker) {
                     p.classList.add('hidden');
                 }
             });
 
-            // Show this picker
+            // show this picker
             picker.classList.remove('hidden');
             currentPicker = picker;
         }
     }, true);
 
-    // Hide picker when clicking outside
+    // hide picker when clicking outside
     document.addEventListener('click', (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
 
-        // Don't hide if clicking on reaction button or picker
+        // don't hide if clicking on reaction button or picker
         if (target.closest('.reaction-btn') || target.closest('.reaction-picker')) {
             return;
         }
 
-        // Hide all pickers
+        // hide all pickers
         document.querySelectorAll('.reaction-picker').forEach(picker => {
             picker.classList.add('hidden');
         });
         currentPicker = null;
     });
 
-    // Handle reaction selection
+    // handle reaction selection
     document.addEventListener('click', async (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
@@ -123,7 +123,7 @@ export function initReactions(alertSystem) {
                 await createReactionNotification(postId, userId, reaction);
             }
 
-            // Hide the picker after selection
+            // hide the picker after selection
             const picker = reactionOption.closest('.reaction-picker');
             if (picker) {
                 picker.classList.add('hidden');
@@ -138,7 +138,7 @@ export function initReactions(alertSystem) {
         }
     });
 
-    // Optional: Also hide on scroll to keep UI clean
+    // optional: also hide on scroll to keep ui clean
     document.addEventListener('scroll', () => {
         document.querySelectorAll('.reaction-picker:not(.hidden)').forEach(picker => {
             picker.classList.add('hidden');
@@ -198,18 +198,18 @@ async function createReactionNotification(postId, userId, reaction) {
         const senderName = userData?.user?.user_metadata?.display_name || 'Someone';
         const senderAvatar = userData?.user?.user_metadata?.avatar_url || '../images/defaultAvatar.jpg';
 
-        // Insert notification with correct schema
+        // insert notification with correct schema
         const { error } = await supabaseClient
             .from('notifications')
             .insert({
-                user_id: postData.user_id,           // recipient
-                sender_id: userId,                    // who performed the action
-                type: 'reaction',                      // notification type
-                entity_type: 'post',                    // type of entity
-                entity_id: postId,                      // the post ID
+                user_id: postData.user_id,
+                sender_id: userId,
+                type: 'reaction',
+                entity_type: 'post',
+                entity_id: postId,
                 message: `${senderName} reacted with ${REACTION_LABELS[reaction]} to your post`,
-                username: senderName,                   // sender's name
-                avatar_url: senderAvatar,                // sender's avatar
+                username: senderName,
+                avatar_url: senderAvatar,
                 is_read: false,
                 created_at: new Date().toISOString()
             });
@@ -227,13 +227,13 @@ export async function getPostReactions(postId, userId) {
     if (!postId) return { userReaction: null, total: 0, summary: {}, recentReactions: [] };
 
     try {
-        // Get total count
+        // get total count
         const { count, error: countError } = await supabaseClient
             .from('post_reactions')
             .select('*', { count: 'exact', head: true })
             .eq('post_id', postId);
 
-        // Get user's reaction
+        // get user's reaction
         const { data: userReactionData } = await supabaseClient
             .from('post_reactions')
             .select('reaction')
@@ -241,7 +241,7 @@ export async function getPostReactions(postId, userId) {
             .eq('user_id', userId)
             .maybeSingle();
 
-        // Get recent reactions for preview (limit to 20)
+        // get recent reactions for preview
         const { data: recentReactionsData } = await supabaseClient
             .from('post_reactions')
             .select('reaction, user_id, created_at')
@@ -249,7 +249,7 @@ export async function getPostReactions(postId, userId) {
             .order('created_at', { ascending: false })
             .limit(20);
 
-        // Get profiles for these users
+        // get profiles for these users
         let formattedReactions = [];
         if (recentReactionsData && recentReactionsData.length > 0) {
             const userIds = [...new Set(recentReactionsData.map(r => r.user_id))];
@@ -271,7 +271,7 @@ export async function getPostReactions(postId, userId) {
             }));
         }
 
-        // Get reaction counts for summary
+        // get reaction counts for summary
         const { data: summaryData } = await supabaseClient
             .from('post_reactions')
             .select('reaction')
