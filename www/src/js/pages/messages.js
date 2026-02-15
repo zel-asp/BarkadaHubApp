@@ -23,15 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const app = document.getElementById('app');
     const searchInput = document.querySelector('input[type="text"]');
 
-    // Store current conversation data
+    // store current conversation data
     let currentConversation = null;
     let currentUserId = null;
-    let currentUserName = 'You'; // Store current user's name
+    let currentUserName = 'You';
     let currentMessages = [];
     let activeSubscription = null;
     let isSendingMessage = false;
 
-    // Store all messages for search functionality
+    // store all messages for search functionality
     let allMessages = {
         friends: [],
         clubs: [],
@@ -44,9 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     async function render() {
-        /* -----------------------------------------
-        AUTH USER
-        ----------------------------------------- */
+        // auth user
         const { data: userData, error: authError } = await supabaseClient.auth.getUser();
         if (authError) {
             console.error(authError);
@@ -60,15 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Get current user's name
+        // get current user's name
         currentUserName = userData.user?.user_metadata?.name ||
             userData.user?.user_metadata?.full_name ||
             userData.user?.email?.split('@')[0] ||
             'You';
 
-        /* -----------------------------------------
-        FETCH ALL USER MESSAGES
-        ----------------------------------------- */
+        // fetch all user messages
         const { data: messages, error } = await supabaseClient
             .from('message')
             .select('*')
@@ -86,9 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        /* -----------------------------------------
-        FETCH UNREAD CHAT MESSAGES
-        ----------------------------------------- */
+        // fetch unread chat messages
         const { data: unreadRows, error: unreadError } = await supabaseClient
             .from('chat_messages')
             .select('conversation_id')
@@ -101,29 +95,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const unreadMap = {};
         (unreadRows || []).forEach(row => {
-            unreadMap[row.conversation_id] = true; // true = has unread
+            unreadMap[row.conversation_id] = true;
         });
 
-        /* -----------------------------------------
-        SPLIT BY RELATION
-        ----------------------------------------- */
+        // split by relation
         const friendMessages = messages.filter(m => m.relation === 'friend');
         const clubMessages = messages.filter(m => m.relation === 'club');
         const lostFoundMessages = messages.filter(m => m.relation === 'lost & found');
 
-        // Store all messages for search
+        // store all messages for search
         allMessages.friends = friendMessages;
         allMessages.clubs = clubMessages;
         allMessages.lost = lostFoundMessages;
 
-        // Initially show all messages
+        // initially show all messages
         filteredMessages.friends = friendMessages;
         filteredMessages.clubs = clubMessages;
         filteredMessages.lost = lostFoundMessages;
 
-        /* -----------------------------------------
-        CLUB MEMBER COUNTS
-        ----------------------------------------- */
+        // club member counts
         const membersCountMap = {};
         const clubIds = [...new Set(clubMessages.map(m => m.friends_id).filter(Boolean))];
 
@@ -141,30 +131,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        /* -----------------------------------------
-        HELPER FUNCTIONS
-        ----------------------------------------- */
+        // helper functions
         const formatTime = date =>
             new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const formatDate = date =>
             new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-        /* -----------------------------------------
-        RENDER MESSAGES FUNCTION
-        ----------------------------------------- */
+        // render messages function
         function renderMessages() {
-            // Clear existing messages
+            // clear existing messages
             friendsMessage.innerHTML = '';
             clubMessage.innerHTML = '';
             lostMessage.innerHTML = '';
 
-            // Show/hide sections based on whether they have messages
+            // show/hide sections based on whether they have messages
             const friendsSection = document.querySelector('#friends-message').parentElement;
             const clubSection = document.querySelector('#club-message').parentElement;
             const lostSection = document.querySelector('#lost-message').parentElement;
 
-            // Render friends messages
+            // render friends messages
             if (filteredMessages.friends.length > 0) {
                 friendsSection.classList.remove('hidden');
                 friendsMessage.innerHTML = filteredMessages.friends.map(mes => messageItem({
@@ -177,13 +163,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     conversationId: mes.conversation_id,
                     firendId: mes.friends_id,
                     formatDate: formatDate(mes.created_at),
-                    isSeen: !unreadMap[mes.conversation_id] // true = seen, false = unread
+                    isSeen: !unreadMap[mes.conversation_id]
                 })).join('');
             } else {
                 friendsSection.classList.add('hidden');
             }
 
-            // Render club messages
+            // render club messages
             if (filteredMessages.clubs.length > 0) {
                 clubSection.classList.remove('hidden');
                 clubMessage.innerHTML = filteredMessages.clubs.map(mes => messageItem({
@@ -203,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 clubSection.classList.add('hidden');
             }
 
-            // Render lost & found messages
+            // render lost & found messages
             if (filteredMessages.lost.length > 0) {
                 lostSection.classList.remove('hidden');
                 lostMessage.innerHTML = filteredMessages.lost.map(mes => messageItem({
@@ -222,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 lostSection.classList.add('hidden');
             }
 
-            // Show "no results" message if all sections are hidden and search is active
+            // show "no results" message if all sections are hidden and search is active
             const searchTerm = searchInput.value.trim();
             if (searchTerm &&
                 filteredMessages.friends.length === 0 &&
@@ -234,12 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        /* -----------------------------------------
-        SEARCH FUNCTIONALITY
-        ----------------------------------------- */
+        // search functionality
         function performSearch(searchTerm) {
             if (!searchTerm) {
-                // Reset to show all messages
+                // reset to show all messages
                 filteredMessages = {
                     friends: allMessages.friends,
                     clubs: allMessages.clubs,
@@ -251,22 +235,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const lowerSearchTerm = searchTerm.toLowerCase();
 
-            // Filter friends messages
+            // filter friends messages
             filteredMessages.friends = allMessages.friends.filter(message =>
                 message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
                 message.relation?.toLowerCase().includes(lowerSearchTerm) ||
                 message.latest_message?.toLowerCase().includes(lowerSearchTerm)
             );
 
-            // Filter club messages
+            // filter club messages
             filteredMessages.clubs = allMessages.clubs.filter(message =>
                 message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
                 message.relation?.toLowerCase().includes(lowerSearchTerm) ||
                 message.latest_message?.toLowerCase().includes(lowerSearchTerm) ||
-                membersCountMap[message.friends_id]?.toString().includes(searchTerm) // Search by member count
+                membersCountMap[message.friends_id]?.toString().includes(searchTerm)
             );
 
-            // Filter lost & found messages
+            // filter lost & found messages
             filteredMessages.lost = allMessages.lost.filter(message =>
                 message.friend_name?.toLowerCase().includes(lowerSearchTerm) ||
                 message.relation?.toLowerCase().includes(lowerSearchTerm) ||
@@ -276,9 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderMessages();
         }
 
-        /* -----------------------------------------
-        SHOW NO RESULTS MESSAGE
-        ----------------------------------------- */
+        // show no results message
         function showNoResultsMessage(searchTerm) {
             let noResultsDiv = document.getElementById('no-results-message');
 
@@ -289,7 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const messagesContainer = document.querySelector('#messagesContainer');
                 if (messagesContainer) {
-                    // Insert after the sections
                     messagesContainer.appendChild(noResultsDiv);
                 }
             }
@@ -310,9 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
-        /* -----------------------------------------
-        HIDE NO RESULTS MESSAGE
-        ----------------------------------------- */
+        // hide no results message
         function hideNoResultsMessage() {
             const noResultsDiv = document.getElementById('no-results-message');
             if (noResultsDiv) {
@@ -320,32 +299,28 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        /* -----------------------------------------
-        ESCAPE HTML HELPER
-        ----------------------------------------- */
+        // escape html helper
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Initial render
+        // initial render
         renderMessages();
 
-        /* -----------------------------------------
-        SETUP SEARCH EVENT LISTENERS
-        ----------------------------------------- */
+        // setup search event listeners
         if (searchInput) {
-            // Search on input with debounce
+            // search on input with debounce
             let searchTimeout;
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     performSearch(e.target.value.trim());
-                }, 300); // 300ms debounce
+                }, 300);
             });
 
-            // Clear search on escape
+            // clear search on escape
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     searchInput.value = '';
@@ -354,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            // Clear search on clear button click (if you add one)
+            // clear search on clear button click
             const searchClearBtn = searchInput.parentElement.querySelector('.search-clear');
             if (searchClearBtn) {
                 searchClearBtn.addEventListener('click', () => {
@@ -368,9 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     render();
 
-    /* -------------------------------------------
-        REST OF YOUR EXISTING CODE (UNCHANGED)
-        ------------------------------------------- */
+    // direct message click handler
     document.addEventListener('click', async (e) => {
         const selectedChat = e.target.closest('.selectedMessage');
         if (!selectedChat) return;
@@ -383,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const members = selectedChat.dataset.members;
         const friendId = selectedChat.dataset.friendid;
 
-        // Store current conversation data
+        // store current conversation data
         currentConversation = {
             id: conversationId,
             friendName,
@@ -398,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
         app.classList.add('hidden');
         directMessageModal.classList.remove('hidden');
 
-        // ------------------ MARK MESSAGES AS SEEN ------------------
+        // mark messages as seen
         try {
             const { data: updated, error: updateError } = await supabaseClient
                 .from('chat_messages')
@@ -415,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error('Unexpected error updating is_seen:', err);
         }
 
-        // Fetch chat messages
+        // fetch chat messages
         const { data, error } = await fetchMessages(conversationId);
 
         if (error) {
@@ -426,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         currentMessages = data || [];
 
-        // Format messages for display
+        // format messages for display
         const renderedMessages = await Promise.all(currentMessages.map(msg => formatMessageForDisplay(msg)));
 
         directMessageContainer.innerHTML = directMessage(
@@ -438,24 +411,22 @@ document.addEventListener("DOMContentLoaded", () => {
             renderedMessages
         );
 
-        // Set up real-time subscription
+        // set up real-time subscription
         setupRealtimeSubscription(conversationId);
 
-        // Scroll to bottom
+        // scroll to bottom
         setTimeout(() => {
             scrollToBottom();
         }, 100);
 
-        // Add scroll event listener to maintain scroll position
+        // add scroll event listener to maintain scroll position
         setupChatScrolling();
 
-        // Initialize ellipsis buttons for delete functionality
+        // initialize ellipsis buttons for delete functionality
         initEllipsisButtons();
     });
 
-    /* -------------------------------------------
-        DOM ELEMENTS AND START OF DIRECT MESSAGE CODE
-        ------------------------------------------- */
+    // dom elements and start of direct message code
     const videoBtn = document.getElementById('videoBtn');
     const cameraBtn = document.getElementById('cameraBtn');
     const messageInput = document.getElementById('messageInput');
@@ -467,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentMediaFile = null;
     let currentMediaType = null;
 
-    // Back button handler
+    // back button handler
     if (backToMessages) {
         backToMessages.addEventListener('click', (e) => {
             e.preventDefault();
@@ -477,16 +448,16 @@ document.addEventListener("DOMContentLoaded", () => {
             directMessageModal.classList.add('hidden');
             app.classList.remove('hidden');
 
-            // Clear current conversation
+            // clear current conversation
             currentConversation = null;
             currentMessages = [];
             messageInput.value = '';
             removeMediaPreview();
 
-            // Reset send button state
+            // reset send button state
             updateSendButtonState();
 
-            // Unsubscribe from real-time updates
+            // unsubscribe from real-time updates
             if (activeSubscription) {
                 supabaseClient.removeChannel(activeSubscription);
                 activeSubscription = null;
@@ -494,9 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* -------------------------------------------
-        CAMERA BUTTON HANDLER - SIMPLIFIED
-        ------------------------------------------- */
+    // camera button handler
     cameraBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -513,9 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.click();
     });
 
-    /* -------------------------------------------
-        VIDEO BUTTON HANDLER
-        ------------------------------------------- */
+    // video button handler
     videoBtn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -533,9 +500,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.click();
     });
 
-    /* -------------------------------------------
-        SHOW MEDIA PREVIEW
-        ------------------------------------------- */
+    // show media preview
     function showMediaPreview(file, type) {
         previewContainer.innerHTML = '';
 
@@ -563,9 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSendButtonState();
     }
 
-    /* -------------------------------------------
-        REMOVE MEDIA PREVIEW
-        ------------------------------------------- */
+    // remove media preview
     function removeMediaPreview() {
         previewContainer.innerHTML = '';
         mediaPreviewArea.classList.add('hidden');
@@ -574,9 +537,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSendButtonState();
     }
 
-    /* -------------------------------------------
-        UPDATE SEND BUTTON STATE
-        ------------------------------------------- */
+    // update send button state
     function updateSendButtonState() {
         const hasContent = messageInput.value.trim().length > 0 || currentMediaFile;
         sendBtn.disabled = isSendingMessage || !hasContent;
@@ -593,9 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        FETCH MESSAGES FUNCTION
-        ------------------------------------------- */
+    // fetch messages function
     async function fetchMessages(conversationId) {
         return await supabaseClient
             .from('chat_messages')
@@ -604,19 +563,17 @@ document.addEventListener("DOMContentLoaded", () => {
             .order('created_at', { ascending: true });
     }
 
-    /* -------------------------------------------
-        UPLOAD FILE TO STORAGE
-        ------------------------------------------- */
+    // upload file to storage
     async function uploadFileToStorage(file, conversationId) {
         try {
-            // Create a folder structure: chat-media/{conversationId}/{timestamp_filename}
+            // create folder structure: chat-media/{conversationId}/{timestamp_filename}
             const fileExt = file.name.split('.').pop();
             const timestamp = Date.now();
             const randomString = Math.random().toString(36).substring(7);
             const fileName = `${timestamp}_${randomString}.${fileExt}`;
             const filePath = `${conversationId}/${fileName}`;
 
-            // Upload file to Supabase Storage
+            // upload file to supabase storage
             const { data, error } = await supabaseClient.storage
                 .from('chat-media')
                 .upload(filePath, file, {
@@ -628,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (error) {
                 console.error('Storage upload error:', error);
 
-                // For bucket permission errors, use data URL fallback
+                // for bucket permission errors, use data URL fallback
                 if (error.message.includes('bucket') || error.code === '400' || error.message.includes('policy')) {
                     console.log('Storage bucket access issue, using data URL fallback');
                     throw new Error('STORAGE_UNAVAILABLE');
@@ -638,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log('Upload successful');
 
-            // Get public URL
+            // get public url
             const { data: urlData } = supabaseClient.storage
                 .from('chat-media')
                 .getPublicUrl(filePath);
@@ -656,19 +613,17 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error('Error in uploadFileToStorage:', error);
 
-            // Re-throw the error for the calling function to handle
+            // re-throw the error for the calling function to handle
             if (error.message === 'STORAGE_UNAVAILABLE') {
                 throw error;
             }
 
-            // For other errors, also use fallback
+            // for other errors, also use fallback
             throw new Error('STORAGE_UNAVAILABLE');
         }
     }
 
-    /* -------------------------------------------
-        DELETE FILE FROM STORAGE
-        ------------------------------------------- */
+    // delete file from storage
     async function deleteFileFromStorage(filePath) {
         try {
             if (!filePath) return;
@@ -693,12 +648,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        EXTRACT FILE PATH FROM MESSAGE CONTENT
-        ------------------------------------------- */
+    // extract file path from message content
     function extractFilePathFromContent(content) {
         try {
-            // Check if content contains Supabase storage URL
+            // check if content contains supabase storage url
             const storagePattern = /https:\/\/[^\/]+\/storage\/v1\/object\/public\/chat-media\/([^"'\s]+)/;
             const match = content.match(storagePattern);
 
@@ -713,21 +666,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        DELETE MESSAGE FUNCTION
-        ------------------------------------------- */
+    // delete message function
     async function deleteMessage(messageId, content, senderId) {
-        // Check if current user is the sender
+        // check if current user is the sender
         if (senderId !== currentUserId) {
             alertSystem.show('You can only delete your own messages.', 'error');
             return false;
         }
 
         try {
-            // Extract file path if it's a media message
+            // extract file path if it's a media message
             const filePath = extractFilePathFromContent(content);
 
-            // Delete file from storage if it exists
+            // delete file from storage if it exists
             if (filePath) {
                 const storageDeleted = await deleteFileFromStorage(filePath);
                 if (!storageDeleted) {
@@ -735,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // Delete message from database
+            // delete message from database
             const { error } = await supabaseClient
                 .from('chat_messages')
                 .delete()
@@ -758,47 +709,43 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        INITIALIZE ELLIPSIS BUTTONS FOR DELETE
-        ------------------------------------------- */
+    // initialize ellipsis buttons for delete
     function initEllipsisButtons() {
-        // Add click event to message containers to show ellipsis
+        // add click event to message containers to show ellipsis
         document.addEventListener('click', (e) => {
             const messageContainer = e.target.closest('[data-message-id]');
 
             if (!messageContainer) {
-                // Hide all ellipsis menus if clicking outside
+                // hide all ellipsis menus if clicking outside
                 hideAllEllipsisMenus();
                 return;
             }
 
-            // Check if clicking on ellipsis button or message bubble
+            // check if clicking on ellipsis button or message bubble
             if (e.target.closest('.message-ellipsis-btn')) {
                 const messageId = messageContainer.dataset.messageId;
                 const senderId = messageContainer.dataset.senderId;
                 const messageContent = messageContainer.querySelector('.message-content')?.innerHTML || '';
 
-                // Show ellipsis menu
+                // show ellipsis menu
                 showEllipsisMenu(messageId, senderId, messageContent, e);
             } else if (e.target.closest('.message-content')) {
-                // Show ellipsis button when clicking on message
+                // show ellipsis button when clicking on message
                 showEllipsisButton(messageContainer);
             }
         });
     }
 
-    /* -------------------------------------------
-        SHOW ELLIPSIS BUTTON ON MESSAGE CLICK
-        ------------------------------------------- */
+    // show ellipsis button on message click
     function showEllipsisButton(messageContainer) {
-        // Hide any existing ellipsis buttons first
+        // hide any existing ellipsis buttons first
         hideAllEllipsisButtons();
 
-        // Check if this is the current user's message
+        // check if this is the current user's message
         const senderId = messageContainer.dataset.senderId;
-        if (senderId !== currentUserId) return; // Only show for own messages
+        if (senderId !== currentUserId) return;
 
-        // Create ellipsis button if it doesn't exist
+        // create ellipsis button if it doesn't exist
         let ellipsisBtn = messageContainer.querySelector('.message-ellipsis-btn');
         if (!ellipsisBtn) {
             ellipsisBtn = document.createElement('button');
@@ -806,15 +753,15 @@ document.addEventListener("DOMContentLoaded", () => {
             ellipsisBtn.innerHTML = '<i class="fas fa-ellipsis-h text-gray-600 text-sm"></i>';
             ellipsisBtn.title = 'More options';
 
-            // Add to message container
+            // add to message container
             messageContainer.style.position = 'relative';
             messageContainer.appendChild(ellipsisBtn);
         }
 
-        // Show the ellipsis button
+        // show the ellipsis button
         ellipsisBtn.classList.remove('hidden');
 
-        // Auto-hide after 5 seconds
+        // auto-hide after 5 seconds
         setTimeout(() => {
             if (ellipsisBtn && !ellipsisBtn.matches(':hover')) {
                 ellipsisBtn.classList.add('hidden');
@@ -822,23 +769,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     }
 
-    /* -------------------------------------------
-        HIDE ALL ELLIPSIS BUTTONS
-        ------------------------------------------- */
+    // hide all ellipsis buttons
     function hideAllEllipsisButtons() {
         document.querySelectorAll('.message-ellipsis-btn').forEach(btn => {
             btn.classList.add('hidden');
         });
     }
 
-    /* -------------------------------------------
-        SHOW ELLIPSIS MENU
-        ------------------------------------------- */
+    // show ellipsis menu
     function showEllipsisMenu(messageId, senderId, content, event) {
-        // Hide any existing menus first
+        // hide any existing menus first
         hideAllEllipsisMenus();
 
-        // Create menu
+        // create menu
         const menu = document.createElement('div');
         menu.className = 'fixed bg-white rounded-lg shadow-lg py-2 min-w-[150px] z-50 border border-gray-200';
         menu.innerHTML = `
@@ -848,13 +791,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>
         `;
 
-        // Position menu near the click
+        // position menu near the click
         const clickX = event.clientX;
         const clickY = event.clientY;
         const menuWidth = 150;
         const menuHeight = 40;
 
-        // Adjust position to fit within viewport
+        // adjust position to fit within viewport
         let left = clickX;
         let top = clickY;
 
@@ -871,7 +814,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.body.appendChild(menu);
 
-        // Handle delete button click
+        // handle delete button click
         const deleteBtn = menu.querySelector('.delete-message-btn');
         deleteBtn.addEventListener('click', async () => {
             const confirmed = confirm('Are you sure you want to delete this message? This action cannot be undone.');
@@ -881,7 +824,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const success = await deleteMessage(messageId, content, senderId);
 
                     if (success) {
-                        // Remove the message from UI
+                        // remove the message from ui
                         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
                         if (messageElement) {
                             messageElement.remove();
@@ -893,17 +836,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // Remove menu
+            // remove menu
             if (menu.parentNode) {
                 document.body.removeChild(menu);
             }
             document.removeEventListener('click', closeMenu);
         });
 
-        // Close menu when clicking outside
+        // close menu when clicking outside
         const closeMenu = (e) => {
             if (!menu.contains(e.target) && !e.target.closest('.message-ellipsis-btn')) {
-                // Check if menu still exists in DOM before removing
+                // check if menu still exists in dom before removing
                 if (menu.parentNode) {
                     document.body.removeChild(menu);
                 }
@@ -916,9 +859,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 100);
     }
 
-    /* -------------------------------------------
-        HIDE ALL ELLIPSIS MENUS
-        ------------------------------------------- */
+    // hide all ellipsis menus
     function hideAllEllipsisMenus() {
         const menus = document.querySelectorAll('.fixed.bg-white.rounded-lg.shadow-lg.py-2');
         menus.forEach(menu => {
@@ -928,17 +869,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* -------------------------------------------
-        GET USER DISPLAY NAME
-        ------------------------------------------- */
+    // get user display name
     async function getUserDisplayName(userId) {
-        // If it's the current user, return cached name
+        // if it's the current user, return cached name
         if (userId === currentUserId) {
             return currentUserName;
         }
 
         try {
-            // First, check if we have a profiles table
+            // check if we have a profiles table
             const { data: profileData, error: profileError } = await supabaseClient
                 .from('profiles')
                 .select('full_name, username, name')
@@ -949,8 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return profileData.full_name || profileData.name || profileData.username || 'Unknown User';
             }
 
-            // If no profiles table or user not found, try to get from auth metadata
-            // Note: This requires appropriate RLS policies
+            // if no profiles table or user not found, try to get from auth metadata
             const { data: authData, error: authError } = await supabaseClient.auth.admin.getUserById(userId);
 
             if (!authError && authData?.user) {
@@ -967,9 +905,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        FORMAT MESSAGE FOR DISPLAY - WITH SENDER NAME AND DELETE OPTION
-        ------------------------------------------- */
+    // format message for display - with sender name and delete option
     async function formatMessageForDisplay(msg) {
         const isCurrentUser = msg.sender_id === currentUserId;
         const messageDate = new Date(msg.created_at);
@@ -978,30 +914,29 @@ document.addEventListener("DOMContentLoaded", () => {
             minute: '2-digit'
         });
 
-        // Get sender name - use from message if available, otherwise fetch it
+        // get sender name - use from message if available, otherwise fetch it
         let senderName = msg.sender_name;
 
         if (!senderName && msg.sender_id) {
             senderName = await getUserDisplayName(msg.sender_id);
         }
 
-        // Check what type of content we have
+        // check what type of content we have
         let contentHTML = msg.content || '';
 
-        // If it's already HTML with <img> or <video> tags, use it as is
+        // if it's already html with <img> or <video> tags, use it as is
         if (contentHTML.includes('<img ') || contentHTML.includes('<video ') ||
             contentHTML.includes('data:image/') || contentHTML.includes('supabase.co/storage/')) {
-            // Content is already HTML or contains media URLs
-            // No need to escape or modify
+            // content is already html or contains media urls
         } else {
-            // It's plain text - escape it for safety
+            // it's plain text - escape it for safety
             const div = document.createElement('div');
             div.textContent = contentHTML;
             contentHTML = div.innerHTML;
         }
 
-        // For current user's messages, don't show name but add delete option
-        // For other users' messages, show sender name
+        // for current user's messages, don't show name but add delete option
+        // for other users' messages, show sender name
         if (isCurrentUser) {
             return `
                 <div class="mb-4 text-right relative" data-message-id="${msg.id}" data-sender-id="${msg.sender_id}">
@@ -1032,9 +967,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        HELPER FUNCTIONS
-        ------------------------------------------- */
+    // helper functions
     function getVideoMimeType(url) {
         const ext = url.split('.').pop().split('?')[0].toLowerCase();
         const mimeTypes = {
@@ -1053,23 +986,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
-    /* -------------------------------------------
-        SETUP CHAT SCROLLING
-        ------------------------------------------- */
+    // setup chat scrolling
     function setupChatScrolling() {
         const chatBody = document.querySelector('#directMessage .overflow-y-auto');
         if (!chatBody) return;
 
-        // Ensure chat body has proper scrolling
+        // ensure chat body has proper scrolling
         chatBody.style.overflowY = 'auto';
         chatBody.style.maxHeight = 'calc(100vh - 200px)';
-
-
     }
 
-    /* -------------------------------------------
-        SEND MESSAGE HANDLER
-        ------------------------------------------- */
+    // send message handler
     sendBtn.addEventListener('click', async () => {
         if (isSendingMessage) return;
 
@@ -1092,7 +1019,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let textContent = messageText || '';
             let mediaHtml = '';
 
-            // Handle media upload
+            // handle media upload
             if (currentMediaFile) {
                 try {
                     const uploadResult = await uploadFileToStorage(currentMediaFile, currentConversation.id);
@@ -1105,7 +1032,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 } catch (uploadError) {
                     if (uploadError.message === 'STORAGE_UNAVAILABLE') {
-                        // Use data URL as fallback for images only
+                        // use data url as fallback for images only
                         if (currentMediaFile.type.startsWith('image/') && currentMediaFile.size < 5000000) {
                             const reader = new FileReader();
                             const dataUrl = await new Promise((resolve, reject) => {
@@ -1127,7 +1054,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // Combine text and media
+            // combine text and media
             let finalContent = '';
             if (textContent && mediaHtml) {
                 finalContent = `${escapeHtml(textContent)}<br>${mediaHtml}`;
@@ -1137,22 +1064,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 finalContent = mediaHtml;
             }
 
-            // Send the message to database
+            // send the message to database
             await sendMessageToDatabase(finalContent, messageText);
 
-            // Clear input and reset button
+            // clear input and reset button
             messageInput.value = '';
             if (currentMediaFile) removeMediaPreview();
 
             isSendingMessage = false;
             updateSendButtonState();
 
-            // Focus back on input
+            // focus back on input
             messageInput.focus();
 
             render();
-
-            // REMOVED: Don't add optimistic update here - real-time subscription will handle it
 
         } catch (error) {
             console.error('Error sending message:', error);
@@ -1162,12 +1087,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* -------------------------------------------
-        SEND MESSAGE TO DATABASE - WITH SENDER NAME
-        ------------------------------------------- */
+    // send message to database - with sender name
     async function sendMessageToDatabase(finalContent, originalText) {
         try {
-            // Insert message into chat_messages table with sender name
+            // insert message into chat_messages table with sender name
             const { data, error } = await supabaseClient
                 .from('chat_messages')
                 .insert([
@@ -1200,17 +1123,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* -------------------------------------------
-        SETUP REAL-TIME SUBSCRIPTION WITH DELETE HANDLING
-        ------------------------------------------- */
+    // setup real-time subscription with delete handling
     function setupRealtimeSubscription(conversationId) {
-        // Unsubscribe from previous subscription if exists
+        // unsubscribe from previous subscription if exists
         if (activeSubscription) {
             supabaseClient.removeChannel(activeSubscription);
             activeSubscription = null;
         }
 
-        // Create new subscription with better error handling
+        // create new subscription with better error handling
         activeSubscription = supabaseClient
             .channel(`conversation:${conversationId}`)
             .on(
@@ -1224,15 +1145,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 async (payload) => {
                     console.log('Realtime update received:', payload);
 
-                    // Skip if this is our own message (handled by optimistic update)
+                    // skip if this is our own message
                     if (payload.new.sender_id === currentUserId) {
-                        // Remove temporary message if exists
+                        // remove temporary message if exists
                         const tempMsg = document.querySelector('[data-temp-message="true"]');
                         if (tempMsg) {
                             tempMsg.remove();
                         }
 
-                        // Add the actual message with proper formatting
+                        // add the actual message with proper formatting
                         const messageElement = await formatMessageForDisplay(payload.new);
                         const messagesContainer = document.querySelector('#directMessage #messagesContainer');
                         if (messagesContainer) {
@@ -1242,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    // Add message from other person
+                    // add message from other person
                     const messageElement = await formatMessageForDisplay(payload.new);
                     const messagesContainer = document.querySelector('#directMessage #messagesContainer');
 
@@ -1250,7 +1171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         messagesContainer.innerHTML += messageElement;
                         scrollToBottom();
 
-                        // Update the messages list on the main page
+                        // update the messages list on the main page
                         updateMessagesList(payload.new);
                     }
                 }
@@ -1266,7 +1187,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 (payload) => {
                     console.log('Message deleted:', payload.old);
 
-                    // Remove the message from UI
+                    // remove the message from ui
                     const messageElement = document.querySelector(`[data-message-id="${payload.old.id}"]`);
                     if (messageElement) {
                         messageElement.remove();
@@ -1287,21 +1208,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return activeSubscription;
     }
 
-    /* -------------------------------------------
-        UPDATE MESSAGES LIST
-        ------------------------------------------- */
+    // update messages list
     function updateMessagesList(newMessage) {
-        // Update the conversation in the messages list
+        // update the conversation in the messages list
         const conversationElements = document.querySelectorAll(`[data-conversation-id="${newMessage.conversation_id}"]`);
 
         conversationElements.forEach(element => {
             const subtitle = element.querySelector('.text-xs.text-gray-500');
             if (subtitle) {
-                // Create a temporary div to extract text from HTML
+                // create a temporary div to extract text from html
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = newMessage.content;
 
-                // Remove image/video tags for preview
+                // remove image/video tags for preview
                 tempDiv.querySelectorAll('img, video').forEach(el => el.remove());
 
                 let messageText = tempDiv.textContent || tempDiv.innerText || '';
@@ -1322,22 +1241,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* -------------------------------------------
-        SCROLL CHAT TO BOTTOM
-        ------------------------------------------- */
+    // scroll chat to bottom
     function scrollToBottom() {
         const chatBody = document.querySelector('#directMessage .overflow-y-auto');
         if (chatBody) {
-            // Use requestAnimationFrame for smoother scrolling
+            // use requestAnimationFrame for smoother scrolling
             requestAnimationFrame(() => {
                 chatBody.scrollTop = chatBody.scrollHeight;
             });
         }
     }
 
-    /* -------------------------------------------
-        SEND MESSAGE ON ENTER KEY
-        ------------------------------------------- */
+    // send message on enter key
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -1347,13 +1262,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* -------------------------------------------
-        UPDATE SEND BUTTON ON INPUT
-        ------------------------------------------- */
+    // update send button on input
     messageInput.addEventListener('input', () => {
         updateSendButtonState();
     });
 
-    // Initialize send button state
+    // initialize send button state
     updateSendButtonState();
 });
