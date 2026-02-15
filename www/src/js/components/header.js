@@ -17,8 +17,7 @@ const NotificationBadge = ({ count, position = 'default', hidden = false, id = '
     `;
 };
 
-
-// Reusable icon link component
+// reusable icon link component
 const IconLink = ({ href, icon, badge = null, ariaLabel = '', id = null }) => {
     return `
         <div class="relative cursor-pointer">
@@ -30,7 +29,7 @@ const IconLink = ({ href, icon, badge = null, ariaLabel = '', id = null }) => {
     `;
 };
 
-// Main Header Component
+// main header component
 export default function HeaderComponent(isAdmin = false) {
     const userActions = [
         {
@@ -48,7 +47,7 @@ export default function HeaderComponent(isAdmin = false) {
             ariaLabel: 'View statistics'
         }] : []),
 
-        // Notifications
+        // notifications
         {
             href: './notification.html',
             icon: 'fas fa-bell',
@@ -56,7 +55,7 @@ export default function HeaderComponent(isAdmin = false) {
             ariaLabel: 'View notifications'
         },
 
-        // Messages
+        // messages
         {
             href: './messages.html',
             icon: 'fa-solid fa-message',
@@ -70,7 +69,7 @@ export default function HeaderComponent(isAdmin = false) {
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center py-4">
 
-            <!-- LOGO -->
+            <!-- logo -->
             <a href="javascript:void(0)" 
                 class="logo flex items-center gap-2 font-extrabold text-xl cursor-pointer hover:opacity-90 transition-opacity"
                 onclick="history.back()"
@@ -87,7 +86,7 @@ export default function HeaderComponent(isAdmin = false) {
                 </span>
             </a>
 
-            <!-- USER ACTIONS -->
+            <!-- user actions -->
             <div class="user-actions flex items-center gap-4" role="navigation" aria-label="User actions">
                 ${userActions.map(IconLink).join('')}
             </div>
@@ -97,9 +96,8 @@ export default function HeaderComponent(isAdmin = false) {
 <div class="h-20" aria-hidden="true"></div>`;
 }
 
-// Export individual components if needed elsewhere
+// export individual components if needed elsewhere
 export { NotificationBadge, IconLink };
-
 
 export function info() {
     return `
@@ -110,5 +108,5 @@ export function info() {
     active:scale-95 animate-bounce-slow" aria-label="Go back to top">
         <i class="fas fa-info-circle"></i>
     </a>
-`
+`;
 }
