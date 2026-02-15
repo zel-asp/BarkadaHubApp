@@ -7,8 +7,7 @@ import offline, { Loading } from './render/offline.js';
 import { searchUser } from './render/post.js';
 import { mobileNavigations, leftSideBar } from "./components/navigations.js";
 
-
-// Initialize notification system
+// initialize notification system
 const alertSystem = new AlertSystem();
 // const App = window.Capacitor?.Plugins?.App || null;
 // if (App) {
@@ -39,7 +38,7 @@ const ADMIN_IDS = new Map([
     ['d35072cd-9fe3-43bf-9dc8-adb050384154', 2]
 ]);
 
-// All modal/popup IDs in the app
+// all modal/popup ids in the app
 const MODAL_IDS = [
     'commentModal',
     'ellipsisMenuModal',
@@ -47,7 +46,7 @@ const MODAL_IDS = [
     'fullImageModal'
 ];
 
-// App state to track what's happening
+// app state to track what's happening
 const state = {
     openModals: new Set(),
     isAdmin: false,
@@ -56,29 +55,29 @@ const state = {
     isLoading: true
 };
 
-// ===================== HELPER FUNCTIONS =====================
-// Save current page to localStorage
+// ===================== helper functions =====================
+// save current page to localStorage
 const storeCurrentPage = () => {
     localStorage.setItem('lastVisitedPage', window.location.pathname);
 };
 
-// Get current page name from URL
+// get current page name from url
 const getCurrentPageName = () => {
     const path = window.location.pathname;
     return path.substring(path.lastIndexOf('/') + 1).split('.')[0];
 };
 
-// ===================== LOADING MANAGEMENT =====================
-// Show loading screen
+// ===================== loading management =====================
+// show loading screen
 const showLoading = () => {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
 
-    // Hide main content during loading
+    // hide main content during loading
     appBody?.classList.add('hidden');
     offlinePage?.classList.add('hidden');
 
-    // Create loading element if it doesn't exist
+    // create loading element if it doesn't exist
     const loadingHtml = Loading();
     let loadingContainer = document.getElementById('loadingContainer');
 
@@ -94,11 +93,11 @@ const showLoading = () => {
     state.isLoading = true;
 };
 
-// Hide loading screen with fade animation
+// hide loading screen with fade animation
 const hideLoading = () => {
     const loadingContainer = document.getElementById('loadingContainer');
     if (loadingContainer) {
-        // Fade out animation
+        // fade out animation
         loadingContainer.style.opacity = '0';
         loadingContainer.style.transition = 'opacity 0.3s ease-out';
 
@@ -113,13 +112,13 @@ const hideLoading = () => {
     state.isLoading = false;
 };
 
-// ===================== OFFLINE MANAGEMENT =====================
-// Show offline page when no internet
+// ===================== offline management =====================
+// show offline page when no internet
 const showOfflinePage = async () => {
     const appBody = document.getElementById('app');
     const offlinePage = document.getElementById('offlinePage');
 
-    // Create offline page content once
+    // create offline page content once
     if (!offlinePage.innerHTML.trim()) {
         offlinePage.innerHTML = offline();
     }
@@ -130,7 +129,7 @@ const showOfflinePage = async () => {
     const retryBtn = document.getElementById('retryBtn');
     if (!retryBtn) return;
 
-    // Handle retry button click
+    // handle retry button click
     retryBtn.onclick = async () => {
         retryBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Checking...`;
         retryBtn.disabled = true;
@@ -149,14 +148,14 @@ const showOfflinePage = async () => {
     };
 };
 
-// Hide offline page
+// hide offline page
 const hideOfflinePage = () => {
     document.getElementById('offlinePage')?.classList.add('hidden');
     document.getElementById('app')?.classList.remove('hidden');
 };
 
-// ===================== MODAL MANAGEMENT =====================
-// Track which modals are open
+// ===================== modal management =====================
+// track which modals are open
 const recordOpenModals = () => {
     state.openModals.clear();
     MODAL_IDS.forEach(id => {
@@ -167,14 +166,14 @@ const recordOpenModals = () => {
     });
 };
 
-// Close all modals
+// close all modals
 const hideAllModals = () => {
     MODAL_IDS.forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
 };
 
-// Reopen modals that were closed due to offline
+// reopen modals that were closed due to offline
 const restoreModals = () => {
     state.openModals.forEach(id => {
         document.getElementById(id)?.classList.remove('hidden');
@@ -182,8 +181,8 @@ const restoreModals = () => {
     state.openModals.clear();
 };
 
-// ===================== USER SESSION =====================
-// Check if user is logged in
+// ===================== user session =====================
+// check if user is logged in
 const checkUserSession = async () => {
     if (document.body.dataset.page === 'auth') return null;
 
@@ -202,8 +201,8 @@ const checkUserSession = async () => {
     return userData?.user;
 };
 
-// ===================== PAGE RENDERING =====================
-// Update active navigation item
+// ===================== page rendering =====================
+// update active navigation item
 const updateNavigationActiveState = () => {
     const currentPage = getCurrentPageName();
     document.querySelectorAll(".mobile-nav-item").forEach(item => {
@@ -213,7 +212,7 @@ const updateNavigationActiveState = () => {
     });
 };
 
-// Render all page components
+// render all page components
 const renderComponents = async () => {
     const components = [
         { id: 'header', html: HeaderComponent(state.isAdmin) },
@@ -231,11 +230,11 @@ const renderComponents = async () => {
     openSearchModal();
     updateNavigationActiveState();
 
-    // Update notification badge after header is in DOM
+    // update notification badge after header is in dom
     try {
         const user = await supabaseClient.auth.getUser();
         if (user.data?.user?.id) {
-            // Fetch unread notifications
+            // fetch unread notifications
             const { data: notifications } = await supabaseClient
                 .from('notifications')
                 .select('id, is_read')
@@ -245,16 +244,14 @@ const renderComponents = async () => {
             if (notifications) {
                 updateNotificationBadge(notifications);
             }
-
         }
-
     } catch (error) {
         console.error('Failed to update badges:', error);
     }
 };
 
-// ===================== APP INITIALIZATION =====================
-// Main app initialization
+// ===================== app initialization =====================
+// main app initialization
 const initializeApp = async () => {
     showLoading();
     const startTime = Date.now();
@@ -262,7 +259,7 @@ const initializeApp = async () => {
     try {
         storeCurrentPage();
 
-        // Check connection and wait at least 1 second
+        // check connection and wait at least 1 second
         const [isOnline] = await Promise.all([
             checkConnection(),
             new Promise(resolve => setTimeout(resolve, 1000))
@@ -284,7 +281,7 @@ const initializeApp = async () => {
             await subscribeToUnreadMessages();
         }
 
-        // Ensure loading shows for at least 1 second
+        // ensure loading shows for at least 1 second
         const elapsed = Date.now() - startTime;
         if (elapsed < 1000) {
             await new Promise(resolve => setTimeout(resolve, 1000 - elapsed));
@@ -298,15 +295,15 @@ const initializeApp = async () => {
     }
 };
 
-// ===================== EVENT HANDLERS =====================
-// Handle auth state changes
+// ===================== event handlers =====================
+// handle auth state changes
 const handleAuthStateChange = (event) => {
     if (event === 'SIGNED_OUT' && document.body.dataset.page !== 'auth') {
         window.location.replace('../../index.html');
     }
 };
 
-// Handle going offline
+// handle going offline
 const handleOffline = () => {
     if (state.isLoading) {
         hideLoading();
@@ -317,7 +314,7 @@ const handleOffline = () => {
     showOfflinePage();
 };
 
-// Handle coming back online
+// handle coming back online
 const handleOnline = async () => {
     if (state.isLoading) {
         showLoading();
@@ -343,7 +340,7 @@ const messageCount = async () => {
         const userId = userData?.user?.id;
         if (!userId) return;
 
-        // Get all conversations of this user
+        // get all conversations of this user
         const { data: conversations, error: convoError } = await supabaseClient
             .from('message')
             .select('conversation_id')
@@ -357,7 +354,7 @@ const messageCount = async () => {
 
         if (!conversationIds.length) return;
 
-        // Count unread messages (sender is not current user)
+        // count unread messages (sender is not current user)
         const { data, count, error: chatError } = await supabaseClient
             .from('chat_messages')
             .select('id', { count: 'exact', head: true })
@@ -370,7 +367,7 @@ const messageCount = async () => {
             return;
         }
 
-        // Update badge
+        // update badge
         const badge = document.getElementById('messageBadge');
         if (!badge) return;
 
@@ -392,7 +389,7 @@ const subscribeToUnreadMessages = async () => {
         const userId = userData?.user?.id;
         if (!userId) return;
 
-        // Get all conversations of this user
+        // get all conversations of this user
         const { data: conversations, error: convoError } = await supabaseClient
             .from('message')
             .select('conversation_id')
@@ -406,10 +403,10 @@ const subscribeToUnreadMessages = async () => {
 
         if (!conversationIds.length) return;
 
-        // Wrap UUIDs in quotes
+        // wrap uuids in quotes
         const formattedIds = conversationIds.map(id => `'${id}'`);
 
-        // Create a single channel for all conversations
+        // create a single channel for all conversations
         const channel = supabaseClient.channel('unread-messages');
 
         channel.on(
@@ -421,9 +418,9 @@ const subscribeToUnreadMessages = async () => {
                 filter: `conversation_id=in.(${formattedIds.join(',')})`
             },
             (payload) => {
-                // Only count messages not sent by the current user
+                // only count messages not sent by the current user
                 if (payload.new.sender_id !== userId) {
-                    messageCount(); // Update badge
+                    messageCount();
                 }
             }
         );
@@ -435,7 +432,7 @@ const subscribeToUnreadMessages = async () => {
     }
 };
 
-// ===================== SEARCH MODAL =====================
+// ===================== search modal =====================
 const openSearchModal = () => {
     const search = document.getElementById('search');
     const searchModal = document.getElementById('searchModal');
@@ -452,7 +449,7 @@ const openSearchModal = () => {
     if (!closeSearchModal) return;
     closeSearchModal.addEventListener('click', () => {
         searchModal.classList.add('hidden');
-    })
+    });
 };
 
 const handleUserSearch = async () => {
@@ -464,7 +461,7 @@ const handleUserSearch = async () => {
     searchInput.addEventListener('input', async (e) => {
         const query = e.target.value.trim();
 
-        // Clear previous results
+        // clear previous results
         searchResults.innerHTML = '';
 
         if (!query) return;
@@ -473,7 +470,7 @@ const handleUserSearch = async () => {
             const { data: users, error } = await supabaseClient
                 .from('profile')
                 .select('id, avatar_url, name')
-                .ilike('name', `%${query}%`); // case-insensitive search
+                .ilike('name', `%${query}%`);
 
             if (error) throw error;
 
@@ -496,8 +493,7 @@ const handleUserSearch = async () => {
     });
 };
 
-
-// ===================== PAGE LOAD =====================
+// ===================== page load =====================
 document.addEventListener('DOMContentLoaded', () => {
     const infoLink = document.getElementById('infoLink');
     infoLink?.insertAdjacentHTML('beforeend', info());
@@ -510,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', handleOnline);
 });
 
-// Detect page refresh
+// detect page refresh
 window.addEventListener('beforeunload', () => {
     sessionStorage.setItem('isRefreshing', 'true');
 });
