@@ -2,12 +2,11 @@ import { timeout, checkConnection } from "../functions.js";
 import AlertSystem from '../render/Alerts.js';
 import supabaseClient from '../supabase.js';
 
-
-// Initialize alert system
+// initialize alert system
 const alertSystem = new AlertSystem();
 alertSystem.setContainer('alertContainer');
 
-// Check connection on load
+// check connection on load
 async function initConnectionCheck() {
     const isOnline = await checkConnection();
 
@@ -15,7 +14,7 @@ async function initConnectionCheck() {
         showOfflineAlert();
     }
 
-    // Listen for connection changes
+    // listen for connection changes
     window.addEventListener('online', async () => {
         alertSystem.show('Connection restored', 'success');
         window.location.reload();
@@ -26,28 +25,28 @@ async function initConnectionCheck() {
     });
 }
 
-// Show offline alert with retry button
+// show offline alert with retry button
 function showOfflineAlert() {
     const alertId = alertSystem.show(`
         <span>No internet connection</span> 
         <button id="retryBtn" class="ml-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
             <i class="fas fa-sync-alt mr-1"></i>Retry
         </button>
-    `, 'error', 0); // 0 = persist until manually closed
+    `, 'error', 0);
 
     const retryBtn = document.getElementById('retryBtn');
 
     retryBtn.addEventListener('click', async () => {
         const originalContent = retryBtn.innerHTML;
 
-        // Loading state
+        // loading state
         retryBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>Checking...`;
         retryBtn.disabled = true;
         retryBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
         const online = await checkConnection();
 
-        // Restore button
+        // restore button
         retryBtn.innerHTML = originalContent;
         retryBtn.disabled = false;
         retryBtn.classList.remove('opacity-70', 'cursor-not-allowed');
@@ -61,7 +60,7 @@ function showOfflineAlert() {
     });
 }
 
-// Add loading effect to buttons
+// add loading effect to buttons
 function addButtonLoadingEffect(button, asyncCallback) {
     button.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -85,20 +84,19 @@ function addButtonLoadingEffect(button, asyncCallback) {
 }
 
 async function getSession() {
-    const { data: { session }, } = await supabaseClient.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session) {
         window.location.href = './src/html/profile.html';
     }
 }
 
-
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check internet connection
+    // check internet connection
     await initConnectionCheck();
     getSession();
 
-    // Modal elements
+    // modal elements
     const modal = document.getElementById('authModal');
     const openModalBtn = document.getElementById('openModal');
     const brand = document.getElementById('brand');
@@ -109,9 +107,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const signupSwitchLink = document.getElementById('signupSwitchLink');
     const closeModalBtn = document.querySelectorAll('.close-modal');
 
-    // Open modal
+    // open modal
     openModalBtn.addEventListener('click', () => {
-
         // show loading state
         openModalBtn.disabled = true;
         const originalText = openModalBtn.textContent;
@@ -120,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // wait at least 1 second
         setTimeout(() => {
-
             modal.classList.remove('hidden');
             modal.classList.add('active', 'flex');
 
@@ -135,12 +131,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             openModalBtn.disabled = false;
             openModalBtn.textContent = originalText;
             openModalBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-        }, 1000); // 1 second loading
+        }, 1000);
     });
 
-
-    // Close modal
+    // close modal
     closeModalBtn.forEach(btn => {
         btn.classList.add('cursor-pointer');
         btn.addEventListener('click', () => {
@@ -148,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Switch forms
+    // switch forms
     loginSwitchLink.addEventListener('click', (e) => {
         e.preventDefault();
         signupContainer.classList.remove('hidden');
@@ -160,5 +154,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         signupContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
     });
-
 });
