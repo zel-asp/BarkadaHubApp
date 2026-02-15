@@ -24,10 +24,26 @@
 
                     <!-- Main Content Area -->
                     <div class="lg:col-span-2">
+                        <!-- Search Bar -->
+                        <div class="bg-white rounded-lg shadow-sm p-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1 relative">
+                                    <input type="text" id="searchItems" placeholder="Search items..."
+                                        class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition">
+                                </div>
+                                <button id="searchBtn" class="text-gray-600 hover:text-primary p-2 transition-colors">
+                                    <i class="fas fa-search text-lg"></i>
+                                </button>
+                                <button id="clearSearchBtn"
+                                    class="hidden text-gray-400 hover:text-gray-600 p-2 transition-colors">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
 
                         <!-- Lost & Found Page -->
                         <div class="page-section" id="lost-found-page">
-                            <div class="flex justify-between items-center mb-6">
+                            <div class="flex justify-between items-center mb-6 ">
                                 <div>
                                     <h2 class="text-xl font-bold text-primary mb-2">Lost & Found</h2>
                                     <p class="text-gray-600">Report lost items or help return found items to their
@@ -35,7 +51,22 @@
                                 </div>
                                 <button id="openUploadForm"
                                     class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition">
-                                    <i class="fas fa-plus mr-2"></i>Report Item
+                                    <i class="fas fa-plus mr-2"></i>Report
+                                </button>
+                            </div>
+
+                            <div class="flex space-x-2 mb-6">
+                                <button id="showAllBtn"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-secondary transition">
+                                    All Items
+                                </button>
+                                <button id="showLostBtn"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+                                    <i class="fas fa-search mr-2"></i>Lost Items
+                                </button>
+                                <button id="showFoundBtn"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+                                    <i class="fas fa-hand-holding-heart mr-2"></i>Found Items
                                 </button>
                             </div>
 
