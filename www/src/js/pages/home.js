@@ -12,9 +12,7 @@ import uploadedPost from '../render/post.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // =======================
-    // PAGE ELEMENTS
-    // =======================
+    // page elements
     const postForm = document.getElementById('postForm');
     const postContent = document.getElementById('postContent');
     const charCount = document.getElementById('charCount');
@@ -27,9 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const postsContainer = document.getElementById('dynamic-posts');
     const userAvatar = document.getElementById('userAvatar');
 
-    // =======================
-    // APP STATE
-    // =======================
+    // app state
     let selectedMedia = null;
     const displayedPostIds = new Set();
 
@@ -38,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const bannedWords = [
         "tanga", "bobo", "ulol", "gago", "putangina", "pakshet", "tangina", "tarantado", "peste", "hayop",
-        "sex", "kantot", "ligawan", "hubad", "malandi", "puki", "titi", "pepe", "kantutan", "libog", "nigga",
+        "sex", "kantot", "ligawan", "hubad", "malandi", "puki", "titi", "pepe", "kantutan", "libog", "nigga", "puke",
         "puta", "pota", "potangina", "punyeta", "leche", "lintik", "buwisit", "siraulo", "hinayupak",
         "inutil", "bunganga", "kupal", "buang", "gagu", "linta", "saksakan", "gaga", "engot", "bangag",
         "lintik", "yawa", "bwisit", "shet", "animal", "bilat", "betlog", "etits", "tungaw", "tikol",
@@ -51,12 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         "bampira", "multo", "pugot", "maligno", "satanas", "diyablo", "demonyo", "bwisit na",
         "napakabobo", "napakatanga", "napakagago", "napakasira", "napakabastos",
         "sinungaling", "magnanakaw", "sinungaling", "dayo", "fuck",
-        "ulikba", "ungol", "ungas", "unggoy", "tamod", "tamuran",
+        "ulikba", "ungol", "ungas", "unggoy", "tamod", "tamuran", "burnek",
         "kadiri", "kadiri", "kasuklam-suklam", "nakakadiri", "nakakasuka",
-        "pakshet", "pakyu", "pakyu", "pakyo", "pakyaw", "pakyawan",
+        "pakshet", "pakyu", "pakyu", "pakyo", "pakyaw", "pakyawan", "pubic",
         "sinturon", "sinulid", "sinungaling", "sinungaling", "amputa",
         "tarantadu", "tampal", "tampalasan", "tampalasan", "bembang", "bembangan",
-        "yawa", "yagit", "iyot", "nipple", "panget", "pangit", "panot", "hairline", "sipunin", "tuwad", "dogstyle", "kadyot"
+        "yawa", "yagit", "iyot", "nipple", "panget", "pangit", "panot", "hairline", "sipunin", "tuwad", "dogstyle", "kadyot", "noo"
     ];
 
     async function loadProfilePic(userId, userAvatarElement) {
@@ -83,9 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadProfilePic(userId, userAvatar);
 
-    // =======================
-    // LOAD CURRENT USER
-    // =======================
+    // load current user
     async function loadUser() {
         const { data, error } = await supabaseClient.auth.getUser();
         if (error) {
@@ -98,17 +92,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         postContent.placeholder = `What's on your mind, ${name}?`;
     }
 
-    // =======================
-    // CHARACTER COUNT
-    // =======================
+    // character count
     postContent.addEventListener('input', () => {
         charCount.textContent = postContent.value.length;
         postButton.disabled = (postContent.value.length === 0 && !selectedMedia);
     });
 
-    // =======================
-    // MEDIA UPLOAD
-    // =======================
+    // media upload
     function handleMediaUpload(file, type) {
         selectedMedia = { file, type };
         const reader = new FileReader();
@@ -135,9 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         postButton.disabled = (postContent.value.length === 0);
     });
 
-    // =======================
-    // CREATE POST
-    // =======================
+    // create post
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -245,9 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // =======================
-    // FETCH POSTS
-    // =======================
+    // fetch posts
     async function getPosts() {
         const { data, error } = await supabaseClient
             .from('posts')
@@ -283,9 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // =======================
-    // FULL IMAGE MODAL
-    // =======================
+    // full image modal
     window.viewFullImage = (url) => {
         const modal = document.getElementById('fullImageModal');
         document.getElementById('fullImageContent').src = url;
@@ -297,9 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.style.overflow = '';
     }
 
-    // =======================
-    // REALTIME POSTS UPDATES
-    // =======================
+    // realtime posts updates
     const postsChannel = supabaseClient
         .channel('public:posts')
         .on(
@@ -311,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
             async (payload) => {
                 if (!displayedPostIds.has(payload.new.id)) {
-                    // Fetch the complete post data with comments count
+                    // fetch the complete post data with comments count
                     const { data: newPost, error } = await supabaseClient
                         .from('posts')
                         .select('*, post_comments(count)')
@@ -347,9 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         unsubscribeAllReactions();
     });
 
-    // =======================
-    // INITIALIZE
-    // =======================
+    // initialize
     await loadUser();
     await getPosts();
 
@@ -359,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     initDeletePermanently(userId, alertSystem);
     initMentionUser(alertSystem);
-    // Pass userId to comments modal
+    // pass userId to comments modal
     initCommentsModal(alertSystem, bannedWords, userId);
     initFollowButtons(alertSystem);
     initDeleteComment(alertSystem);
