@@ -6,9 +6,7 @@ import sanitize from '../utils/sanitize.js';
 document.addEventListener('DOMContentLoaded', async () => {
     const alertSystem = new AlertSystem();
 
-    /* =====================================================
-    AUTHENTICATION
-    ===================================================== */
+    // auth
     const { data: authData, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !authData?.user) {
         alertSystem.show("You must be logged in.", "error");
@@ -17,9 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const userId = authData.user.id;
 
-    /* =====================================================
-    ADMIN CHECK
-    ===================================================== */
+    // admin check
     const createClubBtn = document.getElementById("createClubBtn");
     const adminIds = [
         'c1517366-9c04-41af-bf32-d0db2b2bab85',
@@ -27,9 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ];
     if (createClubBtn && !adminIds.includes(userId)) createClubBtn.classList.add('hidden');
 
-    /* =====================================================
-    ELEMENT REFERENCES
-    ===================================================== */
+    // elements
     const elements = {
         modal: document.getElementById("createClubModal"),
         openBtn: document.getElementById("openCreateClubBtn"),
@@ -47,9 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clubContainer: document.getElementById("clubContainer"),
     };
 
-    /* =====================================================
-    MODAL
-    ===================================================== */
+    // modal
     const openModal = () => {
         if (!elements.modal) return;
         elements.modal.classList.remove("hidden");
@@ -68,9 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.addEventListener("keydown", e => { if (e.key === "Escape" && !elements.modal?.classList.contains("hidden")) closeModal(); });
     };
 
-    /* =====================================================
-    IMAGE HANDLING
-    ===================================================== */
+    // image handling
     const openFileDialog = () => elements.inputFile?.click();
     const resetImagePreview = () => {
         elements.inputFile.value = "";
@@ -104,9 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.removeImageBtn?.addEventListener("click", resetImagePreview);
     };
 
-    /* =====================================================
-    FORM SUBMISSION
-    ===================================================== */
+    // form submission
     const uploadClubImage = async (userId, imageFile) => {
         const filePath = `clubs/${userId}-${Date.now()}-${imageFile.name}`;
         const { error } = await supabaseClient.storage.from("clubs").upload(filePath, imageFile);
@@ -130,11 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log(clubName, location, description);
 
-
         try {
-            /* ===============================
-            Create conversation
-            =============================== */
+            // create conversation
             const { data: conversation, error: convError } =
                 await supabaseClient
                     .from('conversations')
@@ -166,9 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     const setupForm = () => elements.form?.addEventListener("submit", handleFormSubmit);
 
-    /* =====================================================
-    FETCH & RENDER CLUBS
-    ===================================================== */
+    // fetch & render clubs
     const getClubs = async () => {
         const { data: clubsData, error: clubsError } = await supabaseClient
             .from('clubs')
@@ -187,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const joinedClubId = joinedClubData?.club_id || null;
 
-        // Move joined club to top
+        // move joined club to top
         let orderedClubs = [...clubsData];
         if (joinedClubId) {
             const idx = orderedClubs.findIndex(c => c.id === joinedClubId);
@@ -213,15 +196,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupJoinClubButtons(joinedClubId);
     };
 
-    /* =====================================================
-    JOIN CLUB BUTTONS
-    ===================================================== */
+    // join club buttons
     const setupJoinClubButtons = async (joinedClubId) => {
         document.querySelectorAll('.join-btn').forEach(btn => {
             const clubId = btn.dataset.id;
             const conversationId = btn.dataset.conversationId;
 
-            // User already joined another club
+            // user already joined another club
             if (joinedClubId && clubId !== joinedClubId) {
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -251,9 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (memberError) throw memberError;
 
-                    /* ===============================
-                    Get club info
-                    =============================== */
+                    // get club info
                     const { data: clubData, error: clubError } =
                         await supabaseClient
                             .from('clubs')
@@ -263,9 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (clubError) throw clubError;
 
-                    /* ===============================
-                    Create message entry
-                    =============================== */
+                    // create message entry
                     const { error: messageError } =
                         await supabaseClient
                             .from('message')
@@ -281,9 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (messageError) throw messageError;
 
-                    /* ===============================
-                    Refresh UI
-                    =============================== */
+                    // refresh ui
                     alertSystem.show('Successfully joined the club!', 'success');
                     await getClubs();
 
@@ -300,10 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-
-    /* =====================================================
-    INITIALIZE
-    ===================================================== */
+    // init
     setupModalEvents();
     setupImageEvents();
     setupForm();
