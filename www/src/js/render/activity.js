@@ -21,7 +21,7 @@ export default function summary(active, totalLogin, totalLogout) {
                     </a>
                     
                     <!-- Reports Quick Action -->
-                    <a href="./testUI.html" class="relative">
+                    <a href="./report.html" class="relative">
                         <div class="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-white to-gray-50 border border-gray-200 rounded-xl hover:border-primary/50 hover:shadow-md transition-all duration-200 group">
                             <div class="relative">
                                 <i class="fas fa-flag text-gray-500 group-hover:text-red-500"></i>
