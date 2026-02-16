@@ -66,14 +66,14 @@ export function displayInformation(name, email, major, year_level, owner = false
                             </div>
                             <div class="flex items-center justify-between gap-4">
                                 <p class="text-gray-800 font-medium flex-1">${studentNumber}</p>
-                                ${!studentVerified ? `
-                                <a href="editProfile.html#studentNumberInput" class="inline-flex shrink-0">
-                                    <button class="bg-primary text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-200 cursor-pointer">
+                                ${owner && !studentVerified ? `
+                                    <a href="editProfile.html#studentNumberInput"
+                                    class="inline-flex items-center justify-center shrink-0 bg-primary text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-200 hover:opacity-90">
                                         Verify
-                                    </button>
-                                </a> ` : ''}
-                            </div>
-                        </div>
+                                    </a>
+                                ` : ''}
+                            </div >
+                        </div >
 
                         
                         <!--Email Field-->
