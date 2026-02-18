@@ -1,14 +1,12 @@
 import supabaseClient from '../supabase.js';
-import { alertSystem, formatRelativeTime, initLikeButtons, updateLikeButtonStates, renderPost } from '../utils/postUtils.js';
-import { initCommentsModal, loadComments, initDeleteComment, initCommentRealtime, initMentionUser } from '../utils/commentUtils.js';
-import { initEllipsisButtons, showDeleteConfirmation, hideDeleteConfirmation, initDeletePermanently } from '../utils/postDeleteUtils.js';
+import { alertSystem, initLikeButtons, updateLikeButtonStates, renderPost } from '../utils/postUtils.js';
+import { initCommentsModal, initDeleteComment, initCommentRealtime, initMentionUser } from '../utils/commentUtils.js';
+import { showDeleteConfirmation, hideDeleteConfirmation, initDeletePermanently } from '../utils/postDeleteUtils.js';
 import { initFollowButtons, initFriendRealtime } from '../utils/friendUtils.js';
 import { initReportModal, checkIfUserReported } from '../utils/reportUtils.js';
 import { initReactions } from '../utils/reactionUtils.js';
 import { unsubscribeAllReactions } from '../utils/realtimeReactions.js';
 import sanitize from '../utils/sanitize.js';
-
-import uploadedPost from '../render/post.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -24,10 +22,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const postButton = document.getElementById('postButton');
     const postsContainer = document.getElementById('dynamic-posts');
     const userAvatar = document.getElementById('userAvatar');
+    const developersPost = document.getElementById('developersPost');
 
     // app state
     let selectedMedia = null;
     const displayedPostIds = new Set();
+
+    // Infinite scroll state
+    let currentPage = 0;
+    const POSTS_PER_PAGE = 3;
+    let isLoading = false;
+    let hasMorePosts = true;
+    let loadingIndicator = null;
 
     const { data, error } = await supabaseClient.auth.getUser();
     const userId = data?.user?.id;
@@ -54,6 +60,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         "tarantadu", "tampal", "tampalasan", "tampalasan", "bembang", "bembangan",
         "yawa", "yagit", "iyot", "nipple", "panget", "pangit", "panot", "hairline", "sipunin", "tuwad", "dogstyle", "kadyot", "noo"
     ];
+
+    // Create loading indicator
+    function createLoadingIndicator() {
+        const loader = document.createElement('div');
+        loader.id = 'loading-indicator';
+        loader.className = 'text-center py-4 hidden';
+        loader.innerHTML = `
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+                <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-sm text-gray-600">Loading more posts...</span>
+            </div>
+        `;
+        postsContainer.parentNode.insertBefore(loader, postsContainer.nextSibling);
+        return loader;
+    }
+
+    loadingIndicator = createLoadingIndicator();
 
     async function loadProfilePic(userId, userAvatarElement) {
         let avatar = '../images/defaultAvatar.jpg';
@@ -233,43 +256,135 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // fetch posts
-    async function getPosts() {
-        const { data, error } = await supabaseClient
-            .from('posts')
-            .select('*, post_comments(count)')
-            .order("created_at", { ascending: false });
+    // fetch posts with pagination
+    async function getPosts(loadMore = false) {
+        if (isLoading || !hasMorePosts) return;
 
-        if (error) {
-            console.error("Error fetching posts:", error);
-            return;
+        isLoading = true;
+
+        if (loadMore) {
+            loadingIndicator.classList.remove('hidden');
         }
 
-        if (!data) return;
+        try {
+            const from = currentPage * POSTS_PER_PAGE;
+            const to = from + POSTS_PER_PAGE - 1;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const postId = urlParams.get('id');
+            const { data, error, count } = await supabaseClient
+                .from('posts')
+                .select('*, post_comments(count)', { count: 'exact' })
+                .order("created_at", { ascending: false })
+                .range(from, to);
 
-        let postsToRender = data;
-        if (postId) {
-            postsToRender = data.filter(p => p.id == postId);
-        }
+            if (error) {
+                console.error("Error fetching posts:", error);
+                return;
+            }
 
-        for (const post of postsToRender) {
-            await renderPost(post, displayedPostIds, postsContainer, "beforeend", true);
-        }
+            const developersPost = document.getElementById('developersPost');
 
-        if (postId) {
-            setTimeout(() => {
-                const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-                if (postElement) {
-                    postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (count === 0) {
+                if (developersPost) {
+                    developersPost.classList.remove('hidden');
                 }
-            }, 300);
+            } else {
+                // There are posts, hide developers post
+                if (developersPost) {
+                    developersPost.classList.add('hidden');
+                }
+            }
+
+            if (!data || data.length === 0) {
+                hasMorePosts = false;
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+
+            let postsToRender = data;
+            if (postId && !loadMore) {
+                postsToRender = data.filter(p => p.id == postId);
+            }
+
+            for (const post of postsToRender) {
+                await renderPost(post, displayedPostIds, postsContainer, "beforeend", true);
+            }
+            initializePostInteractions();
+
+            if (count && (currentPage + 1) * POSTS_PER_PAGE >= count) {
+                hasMorePosts = false;
+            }
+
+            if (loadMore) {
+                currentPage++;
+            }
+
+            if (postId && !loadMore) {
+                setTimeout(() => {
+                    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+                    if (postElement) {
+                        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300);
+            }
+
+        } catch (err) {
+            console.error("Error in getPosts:", err);
+        } finally {
+            isLoading = false;
+            loadingIndicator.classList.add('hidden');
+        }
+    }
+    function initializePostInteractions() {
+        document.querySelectorAll('.ellipsis-btn').forEach(btn => {
+            if (!btn.dataset.bound) {
+                btn.dataset.bound = "true";
+                btn.addEventListener('click', () => {
+                    const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
+                    const app = document.getElementById('app');
+                    const postId = btn.closest('.post').dataset.postId;
+                    ellipsisMenuModal.dataset.postId = postId;
+                    ellipsisMenuModal.classList.remove('hidden');
+                    app.classList.add('opacity-50');
+                });
+            }
+        });
+        initLikeButtons(alertSystem);
+        initFollowButtons(alertSystem);
+        initReportModal(alertSystem, checkIfUserReported);
+        initReactions(alertSystem);
+        initCommentsModal(alertSystem, bannedWords, userId);
+        updateLikeButtonStates();
+    }
+
+    // Infinite scroll detection
+    function handleScroll() {
+        if (isLoading || !hasMorePosts) return;
+
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const threshold = document.documentElement.scrollHeight - 1000;
+
+        if (scrollPosition >= threshold) {
+            getPosts(true);
         }
     }
 
-    // full image modal
+    // Debounced scroll handler for better performance
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    const debouncedHandleScroll = debounce(handleScroll, 100);
+
     window.viewFullImage = (url) => {
         const modal = document.getElementById('fullImageModal');
         document.getElementById('fullImageContent').src = url;
@@ -281,7 +396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.style.overflow = '';
     }
 
-    // realtime posts updates
     const postsChannel = supabaseClient
         .channel('public:posts')
         .on(
@@ -293,7 +407,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
             async (payload) => {
                 if (!displayedPostIds.has(payload.new.id)) {
-                    // fetch the complete post data with comments count
+
+                    const developersPost = document.getElementById('developersPost');
+                    if (developersPost && !developersPost.classList.contains('hidden')) {
+                        developersPost.classList.add('hidden');
+                    }
+
                     const { data: newPost, error } = await supabaseClient
                         .from('posts')
                         .select('*, post_comments(count)')
@@ -302,6 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (!error && newPost) {
                         await renderPost(newPost, displayedPostIds, postsContainer, 'afterbegin', true);
+                        initializePostInteractions();
                     }
                 }
             }
@@ -313,11 +433,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 schema: 'public',
                 table: 'posts'
             },
-            (payload) => {
+            async (payload) => {
                 const postEl = document.querySelector(`.post[data-post-id="${payload.old.id}"]`);
                 if (postEl) {
                     postEl.remove();
                     displayedPostIds.delete(payload.old.id);
+
+                    const { count, error } = await supabaseClient
+                        .from('posts')
+                        .select('*', { count: 'exact', head: true });
+
+                    if (!error && count === 0) {
+                        const developersPost = document.getElementById('developersPost');
+                        if (developersPost) {
+                            developersPost.classList.remove('hidden');
+                        }
+                    }
                 }
             }
         )
@@ -329,28 +460,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         unsubscribeAllReactions();
     });
 
-    // initialize
-    await loadUser();
-    await getPosts();
 
-    initEllipsisButtons(
-        () => showDeleteConfirmation(alertSystem),
-        () => hideDeleteConfirmation()
-    );
+    await loadUser();
+    if (developersPost) {
+        developersPost.classList.add('hidden');
+    }
+    await getPosts(false);
+
+    window.addEventListener('scroll', debouncedHandleScroll);
+
     initDeletePermanently(userId, alertSystem);
     initMentionUser(alertSystem);
-    // pass userId to comments modal
-    initCommentsModal(alertSystem, bannedWords, userId);
-    initFollowButtons(alertSystem);
     initDeleteComment(alertSystem);
     initCommentRealtime();
-    initReportModal(alertSystem, checkIfUserReported);
-    initReactions(alertSystem);
 
     if (userId) {
         initFriendRealtime(userId);
     }
+    setupModalHandlers();
 
     setTimeout(updateLikeButtonStates, 500);
-    setTimeout(() => initLikeButtons(alertSystem), 1000);
 });
+function setupModalHandlers() {
+    const ellipsisMenuModal = document.getElementById('ellipsisMenuModal');
+    const app = document.getElementById('app');
+    const closeBtn = document.getElementById('closeEllipsisMenu');
+    const deletePostBtn = document.getElementById('deletePostBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            ellipsisMenuModal.classList.add('hidden');
+            app.classList.remove('opacity-50');
+        };
+    }
+
+    if (deletePostBtn) {
+        deletePostBtn.onclick = () => {
+            showDeleteConfirmation(alertSystem);
+        };
+    }
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.onclick = () => {
+            hideDeleteConfirmation();
+        };
+    }
+}
