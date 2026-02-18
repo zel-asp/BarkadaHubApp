@@ -117,8 +117,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // character count
     postContent.addEventListener('input', () => {
-        charCount.textContent = postContent.value.length;
-        postButton.disabled = (postContent.value.length === 0 && !selectedMedia);
+        const text = postContent.value.trim();
+        charCount.textContent = text.length;
+        postButton.disabled = (text.length === 0 && !selectedMedia);
     });
 
     // media upload
