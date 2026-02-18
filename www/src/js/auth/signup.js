@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 studentNumberInput.classList.remove('border-red-400');
                 studentNumberInput.classList.add('border-green-400');
             } else {
-                feedbackDiv.innerHTML = `<i class="fas fa-exclamation-circle text-orange-500"></i> <span class="text-orange-600">Not found in system</span>`;
+                feedbackDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-orange-500"></i> <span class="text-orange-600">Not found in system</span>`;
                 feedbackDiv.style.display = 'flex';
                 studentNumberInput.classList.remove('border-green-400');
                 studentNumberInput.classList.add('border-orange-400');
