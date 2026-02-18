@@ -20,7 +20,7 @@ export default class AlertSystem {
         // define styles and icons for each alert type
         const types = {
             success: { bg: 'bg-green-50', border: 'border-green-500', icon: '<i class="fas fa-check-circle text-green-500"></i>' },
-            error: { bg: 'bg-red-50', border: 'border-red-500', icon: '<i class="fas fa-exclamation-circle text-red-500"></i>' },
+            error: { bg: 'bg-red-50', border: 'border-red-500', icon: '<i class="fas fa-fa-exclamation-triangle text-red-500"></i>' },
             loading: { bg: 'bg-blue-50', border: 'border-blue-500', icon: '<div class="loading-spinner"></div>' },
             info: { bg: 'bg-blue-50', border: 'border-blue-500', icon: '<i class="fas fa-info-circle text-blue-500"></i>' },
         };
@@ -76,7 +76,7 @@ export default class AlertSystem {
         if (type) {
             const types = {
                 success: { bg: 'bg-green-50', border: 'border-green-500', icon: '<i class="fas fa-check-circle text-green-500"></i>' },
-                error: { bg: 'bg-red-50', border: 'border-red-500', icon: '<i class="fas fa-exclamation-circle text-red-500"></i>' },
+                error: { bg: 'bg-red-50', border: 'border-red-500', icon: '<i class="fas fa-exclamation-triangle text-red-500"></i>' },
                 loading: { bg: 'bg-blue-50', border: 'border-blue-500', icon: '<div class="loading-spinner"></div>' },
                 info: { bg: 'bg-blue-50', border: 'border-blue-500', icon: '<i class="fas fa-info-circle text-blue-500"></i>' },
             };
