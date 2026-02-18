@@ -91,8 +91,17 @@ const showLoading = () => {
     loadingContainer.classList.remove('hidden');
 
     state.isLoading = true;
-};
 
+    setTimeout(() => {
+        if (state.isLoading) {
+            const loadingMessage = document.querySelector('#loadingContainer p[id="loadingMessage"]');
+            if (loadingMessage) {
+                loadingMessage.innerHTML = 'Connection slow. Please check your internet<span class="loading-dots"></span>';
+                loadingMessage.classList.add('text-amber-600');
+            }
+        }
+    }, 3000);
+};
 // hide loading screen with fade animation
 const hideLoading = () => {
     const loadingContainer = document.getElementById('loadingContainer');
