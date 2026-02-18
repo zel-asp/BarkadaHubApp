@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="p-4 border-b border-gray-100">
                     <div class="flex items-start gap-2">
                         <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                            <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            <i class="fas fa-exclamation-triangle text-red-500 text-xs"></i>
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-700 mb-1">Reason: ${formatReason(report.reason)}</p>
