@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 feedback.classList.remove('hidden');
                 feedback.innerHTML = `
-                    <i class="fas fa-exclamation-circle text-orange-500"></i>
+                    <i class="fas fa-exclamation-triangle text-orange-500"></i>
                     <span class="text-orange-600">Not found</span>
                 `;
 
