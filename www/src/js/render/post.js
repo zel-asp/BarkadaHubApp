@@ -153,11 +153,11 @@ export default function uploadedPost(
     const reportButtonHTML = !postOwner ? (
         isReported ?
             `<div class="relative group" title="Post reported">
-                <button class="report-btn w-full h-9 px-3 text-sm rounded-full bg-linear-to-br from-gray-400 to-gray-500 text-white shadow-sm cursor-default flex items-center justify-center"
+                <button class="report-btn w-full h-9 px-3 text-sm rounded-full bg-yellow-300 text-white shadow-sm cursor-default flex items-center justify-center"
                         data-post-id="${postId}" 
                         data-user-id="${userId}" 
                         disabled>
-                    <i class="fas fa-flag text-sm mr-1"></i> Reported
+                    <i class="fas fa-exclamation-triangle text-sm mr-1"></i> Reported
                 </button>
                 <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-lg">
                     <span>Reported</span>
@@ -166,10 +166,10 @@ export default function uploadedPost(
             </div>`
             :
             `<div class="relative group" title="Report post">
-                <button class="report-btn w-full h-9 px-3 text-sm rounded-full bg-linear-to-br from-red-400 to-red-500 text-white shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
+                <button class="report-btn w-full h-9 px-3 text-sm rounded-full bg-linear-to-br from-yellow-400 to-yellow-500 text-white shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
                         data-post-id="${postId}" 
                         data-user-id="${userId}">
-                    <i class="fas fa-flag text-sm mr-1"></i> Report
+                    <i class="fas fa-exclamation-triangle text-sm"></i>
                 </button>
                 <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-lg">
                     <span>Report</span>
