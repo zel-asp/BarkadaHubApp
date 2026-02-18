@@ -13,7 +13,7 @@
 
     <body class="bg-gray-50 min-h-screen" data-page="protected">
         <!-- for alerts -->
-        <div id="alertContainer" class="fixed top-5 right-5 z-100 max-w-md"></div>
+        <div id="alertContainer" class="fixed top-5 right-5 z-1000 max-w-md"></div>
 
         <!-- Main App (shown after login) -->
         <div id="app">
@@ -109,8 +109,8 @@
                                 <div id="dynamic-posts"></div>
 
                                 <!-- initial Post by Developers -->
-                                <div
-                                    class="bg-white rounded-xl shadow-sm p-4 sm:p-5 mb-4 sm:mb-6 border border-gray-100 animate-fadeIn">
+                                <div class="bg-white rounded-xl shadow-sm p-4 sm:p-5 mb-4 sm:mb-6 border border-gray-100 animate-fadeIn hidden"
+                                    id="developersPost">
                                     <div class="flex justify-between items-center mb-3 sm:mb-4">
                                         <a href="./developers.html">
                                             <div class="flex items-center gap-2 sm:gap-3">
