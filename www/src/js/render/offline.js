@@ -55,7 +55,7 @@ export function Loading() {
             <h2 class="text-2xl font-bold bg-primary bg-clip-text text-transparent animate-linear-x">
                 Loading, Please wait
             </h2>
-            <p class="text-gray-600 text-sm font-medium tracking-wide">Preparing content<span class="loading-dots">...</span></p>
+            <p id="loadingMessage" class="text-gray-600 text-sm font-medium tracking-wide">Preparing content<span class="loading-dots"></span></p>
         </div>
         
         <!-- Progress bar (optional) -->
@@ -122,6 +122,10 @@ export function Loading() {
     }
 }
 
+/* Warning text color */
+.text-amber-600 {
+    color: #d97706;
+}
 </style>
     `;
 }
